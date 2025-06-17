@@ -68,7 +68,7 @@ public enum GpsGnssType {
     /**
      * 接收机伪距的测量精度详细信息
      */
-    GMGTS("$GNGTS"),
+    GMGST("$GMGST"),
     ;
     private final String type;
 

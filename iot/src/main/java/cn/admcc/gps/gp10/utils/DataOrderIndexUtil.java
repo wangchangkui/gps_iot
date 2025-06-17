@@ -53,8 +53,6 @@ public class DataOrderIndexUtil {
                 } else {
                     // 区间模式
                     int[] range = order.range();
-
-
                     if (range.length == 2 && range[0] != -1 && range[1] != -1 && range[0] != range[1]) {
                         int start = range[0];
                         // 防止越界
@@ -110,8 +108,6 @@ public class DataOrderIndexUtil {
                 }
             }
         }
-
-
     }
 
 }

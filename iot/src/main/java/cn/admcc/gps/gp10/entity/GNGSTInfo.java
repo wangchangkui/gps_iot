@@ -20,7 +20,7 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper = true)
 @Data
 
-public class GSTGPNSSInfo extends BaseGpsInfo{
+public class GNGSTInfo extends BaseGpsInfo{
 
     /**
      * 格式：时时分分秒秒.秒秒秒
