@@ -1,0 +1,12 @@
+{
+    "name": "WiFiManager",
+    "version": "1.0.0",
+    "description": "ESP32 WiFi配置与管理模块",
+    "keywords": "wifi, esp32, webserver",
+    "authors": {
+        "name": "coder_wang",
+        "email": "17360402335@163.com"
+    },
+    "frameworks": "arduino",
+    "platforms": "espressif32"
+}

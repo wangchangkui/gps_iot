@@ -1,0 +1,61 @@
+
+
+REDIS_HOST: admcc.cn
+REDIS_PORT: 6565
+
+server:
+  port: 8564
+  db:
+    host: ${DB_HOST:172.24.49.78}
+    port: ${DB_PORT:15432}
+    name: ${DB_DATABASE:iot_gps}
+    user: ${DB_USER:postgres}
+    password: ${DB_PASSWORD:postgres}
+  redis:
+    host: ${REDIS_HOST:101.37.253.142}
+    port: ${REDIS_PORT:6565}
+  servlet:
+    context-path: /api
+
+thread:
+  core: 5
+  max: 10
+
+
+mybatis-plus:
+  mapper-locations: classpath*:mapper/**/*.xml
+  lazy-initialization:
+  global-config:
+    db-config:
+      # 全局配置已经删除的值
+      logic-delete-value: 1
+      # 全局配置未删除的值
+      logic-not-delete-value: 0
+  configuration:
+    ##日志
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+    map-underscore-to-camel-case: true
+
+spring:
+  datasource:
+    type: com.zaxxer.hikari.HikariDataSource
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://${server.db.host}:${server.db.port}/${server.db.name}
+    username: ${server.db.user}
+    password: ${server.db.password}
+  servlet:
+    multipart:
+      enabled: true
+      # 单个文件的最大值
+      max-file-size: 51200MB
+      # 上传文件总的最大值
+      max-request-size: 512000MB
+  data:
+    redis:
+      jedis:
+        pool:
+          min-idle: 0
+          max-idle: 8
+      host: ${server.redis.host}
+      port: ${server.redis.port}
+      password:
