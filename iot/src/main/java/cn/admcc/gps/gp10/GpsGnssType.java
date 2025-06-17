@@ -1,5 +1,6 @@
 package cn.admcc.gps.gp10;
 
+import cn.admcc.gps.gp10.decrypt.*;
 import lombok.Getter;
 
 /**
@@ -22,12 +23,12 @@ public enum GpsGnssType {
     /**
      * $GNGGA 全球导航卫星系统(GN) GGA( 接收机时间、位)置及定位相关的数据
      */
-    GNGGA("$GNGGA"),
+    GNGGA("$GNGGA", GNGGADecrypt.class),
 
     /**
      * 设备信息
      */
-    GPTXT("$GPTXT"),
+    GPTXT("$GPTXT", GPSTXTDecrypt.class),
 
     /**
      * 可见卫星的卫星
@@ -35,7 +36,7 @@ public enum GpsGnssType {
      * 方位角、载噪比
      * 等信息。
      */
-    GNGSV("$GPGSV"),
+    GNGSV("$GPGSV", GNGSVDecrypt.class),
 
     /**
      * 可见卫星的卫星
@@ -43,36 +44,39 @@ public enum GpsGnssType {
      * 方位角、载噪比
      * 等信息。
      */
-    BDGSV("$BDGSV"),
+    BDGSV("$BDGSV", BDGSVDecrypt.class),
 
     /**
      * 当前经度度坐标信息
      */
-    GNGLL("$GNGLL"),
+    GNGLL("$GNGLL", GNGGLDecrypt.class),
 
     /**
      * 用于定位的卫星编号与DOP信息。
      */
-    GNGSA("$GNGSA"),
+    GNGSA("$GNGSA", GNGSADecrypt.class),
 
     /**
      * 推荐的最小定位信息
      */
-    GNRMC("$GNRMC"),
+    GNRMC("$GNRMC", GNRMCDecrypt.class),
 
     /**
      * 对地速度与对地航向信息
      */
-    GNVTG("$GNVTG"),
+    GNVTG("$GNVTG", GPSVTGDecrypt.class),
 
     /**
      * 接收机伪距的测量精度详细信息
      */
-    GMGST("$GMGST"),
+    GMGST("$GMGST", GMGSTDecrypt.class),
     ;
     private final String type;
 
-    GpsGnssType(String type) {
+    private final Class<? extends DecryptI<?>> decryptClass;
+
+    GpsGnssType(String type, Class<? extends DecryptI<?>> decryptClass) {
         this.type = type;
+        this.decryptClass = decryptClass;
     }
 }

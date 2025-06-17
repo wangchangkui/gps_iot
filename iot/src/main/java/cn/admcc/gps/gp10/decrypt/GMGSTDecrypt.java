@@ -18,7 +18,7 @@ import java.lang.reflect.InvocationTargetException;
  */
 public class GMGSTDecrypt implements GnssTypeI, DecryptI<GNGSTInfo> {
     @Override
-    public GNGSTInfo decrypt(String baseGpsInfo, Object deviceId) throws TxtInfoException {
+    public GNGSTInfo decrypt(String baseGpsInfo, Object deviceId) {
         GNGSTInfo gsvgnssInfo = new GNGSTInfo();
         gsvgnssInfo.setDeviceId(deviceId);
         try {
