@@ -66,7 +66,35 @@
             <version>${parent.version}</version>
         </dependency>
 
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+
     </dependencies>
+
+    <profiles>
+
+        <profile>
+            <id>template</id>
+            <properties>
+                <build.profile.id>template</build.profile.id>
+            </properties>
+        </profile>
+        <!--本地环境 -->
+        <profile>
+            <id>dev</id>
+            <properties>
+                <build.profile.id>dev</build.profile.id>
+            </properties>
+            <activation>
+                <!--  解决运行报错org.yaml.snakeyaml.scanner.ScannerException: while scanning for the next token -->
+                <activeByDefault>true</activeByDefault>
+            </activation>
+        </profile>
+    </profiles>
+
+
     <build>
         <plugins>
             <plugin>
@@ -98,6 +126,26 @@
                 </configuration>
             </plugin>
         </plugins>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+                <includes>
+                    <include>application.yaml</include>
+                    <include>/static/*</include>
+                    <include>**/mapper/**/*.xml</include>
+                    <include>**/html/**/*</include>
+                    <include>**/static/**/*</include>
+                    <include>**/python/**.py</include>
+                    <include>**/*.properties</include>
+                    <include>application-${build.profile.id}.yaml</include>
+                    <include>style/*</include>
+                    <include>devices/*</include>
+                </includes>
+            </resource>
+        </resources>
     </build>
+
+
 
 </project>
