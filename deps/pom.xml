@@ -24,6 +24,18 @@
         <dependencies>
 
             <dependency>
+                <groupId>cn.admcc</groupId>
+                <artifactId>iot</artifactId>
+                <version>${parent.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>cn.admcc</groupId>
+                <artifactId>common</artifactId>
+                <version>${parent.version}</version>
+            </dependency>
+
+            <dependency>
                 <groupId>cn.hutool</groupId>
                 <artifactId>hutool-all</artifactId>
                 <version>${hutool.version}</version>

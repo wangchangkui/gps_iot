@@ -57,13 +57,13 @@
         <dependency>
             <groupId>cn.admcc</groupId>
             <artifactId>iot</artifactId>
-            <version>${parent.version}</version>
+
         </dependency>
 
         <dependency>
             <groupId>cn.admcc</groupId>
             <artifactId>common</artifactId>
-            <version>${parent.version}</version>
+
         </dependency>
 
         <dependency>
@@ -126,21 +126,16 @@
                 </configuration>
             </plugin>
         </plugins>
+        <finalName>${parent.artifactId}</finalName>
         <resources>
             <resource>
                 <directory>src/main/resources</directory>
                 <filtering>true</filtering>
                 <includes>
                     <include>application.yaml</include>
-                    <include>/static/*</include>
                     <include>**/mapper/**/*.xml</include>
-                    <include>**/html/**/*</include>
                     <include>**/static/**/*</include>
-                    <include>**/python/**.py</include>
-                    <include>**/*.properties</include>
                     <include>application-${build.profile.id}.yaml</include>
-                    <include>style/*</include>
-                    <include>devices/*</include>
                 </includes>
             </resource>
         </resources>
