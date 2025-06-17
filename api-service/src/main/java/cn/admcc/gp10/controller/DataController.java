@@ -1,5 +1,5 @@
 
-package cn.admcc.device.controller;
+package cn.admcc.gp10.controller;
 
 import cn.admcc.device.entity.dto.IotGpsData;
 import cn.admcc.gp10.service.DeviceTempDataServiceI;

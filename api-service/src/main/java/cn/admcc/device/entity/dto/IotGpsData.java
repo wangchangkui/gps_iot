@@ -12,4 +12,6 @@ import lombok.Data;
 public class IotGpsData {
 
     private String value;
+
+    private Long deviceId;
 }
