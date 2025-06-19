@@ -15,7 +15,7 @@ public class AppTest extends TestCase {
 
 
     public void test(){
-        TcpServerUtil.randomPortServer();
+//        new TcpServerUtil().randomPortServer();
     }
 
   

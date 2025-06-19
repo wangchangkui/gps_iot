@@ -58,3 +58,6 @@ spring:
       host: ${server.redis.host}
       port: ${server.redis.port}
       password:
+
+tcp:
+  port: 8000
