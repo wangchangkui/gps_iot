@@ -31,6 +31,10 @@
     </dependencyManagement>
 
     <dependencies>
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-all</artifactId>
+        </dependency>
 
         <dependency>
             <groupId>cn.hutool</groupId>

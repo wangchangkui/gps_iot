@@ -3,6 +3,7 @@ package cn.admcc;
 import cn.admcc.gps.gp10.entity.RMCGNSSInfo;
 import cn.admcc.gps.gp10.decrypt.GNRMCDecrypt;
 import cn.admcc.gps.gp10.exception.TxtInfoException;
+import cn.admcc.net.data.TcpServerUtil;
 import junit.framework.TestCase;
 
 import java.lang.reflect.InvocationTargetException;
@@ -11,6 +12,12 @@ import java.lang.reflect.InvocationTargetException;
  * Unit test for simple App.
  */
 public class AppTest extends TestCase {
+
+
+    public void test(){
+        TcpServerUtil.randomPortServer();
+    }
+
   
     /**
      * Rigourous Test :-)
