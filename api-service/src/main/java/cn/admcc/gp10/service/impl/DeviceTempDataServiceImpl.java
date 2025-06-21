@@ -28,12 +28,11 @@ public class DeviceTempDataServiceImpl extends ServiceImpl<DeviceTempDataMapper,
 
     @Override
     public void addData(IotGpsData data) {
-        // todo 测试数据
-        if(StrUtil.isEmpty(data.getValue())){
+        if(StrUtil.isEmpty(data.getValue()) || data.getDeviceId() == null){
             return;
         }
         DeviceTempData deviceTempData = new DeviceTempData();
-        deviceTempData.setDeviceId(1L);
+        deviceTempData.setDeviceId(data.getDeviceId());
         deviceTempData.setTempData(data.getValue().replaceAll("\\n",""));
         deviceTempData.setTime(LocalDateTime.now());
         deviceTempData.setId(IdUtil.getSnowflakeNextId());
