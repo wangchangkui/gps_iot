@@ -1,0 +1,12 @@
+{
+    "name": "MQTT数据传输",
+    "version": "1.0.0",
+    "description": "ESP32 MQTT数据传输模块",
+    "keywords": "mqtt, data",
+    "authors": {
+        "name": "coder_wang",
+        "email": "17360402335@163.com"
+    },
+    "frameworks": "arduino",
+    "platforms": "espressif32"
+}
