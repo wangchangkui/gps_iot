@@ -2,7 +2,7 @@
  * @Author: coder_wang 17360402335@163.com
  * @Date: 2024-11-27 21:58:30
  * @LastEditors: coder_wang 17360402335@163.com
- * @LastEditTime: 2025-06-21 22:46:35
+ * @LastEditTime: 2025-06-21 23:00:35
  * @FilePath: \esp32demo\src\main.cpp
  * @Description: ESP32 GPS数据采集上传系统
  */
@@ -16,15 +16,18 @@
 
 // 4G 模块串口配置,定义虚拟串口
 
+
+#define NET_4G_RX_TX Serial2 // 使用 Serial2 作为 4G模块 串口
+#define GPX_RX 16          // 4G模块 接收引脚
+#define GPX_TX 17          // 4G模块 发送引脚
+
+
 const int8_t G_RXD = 32;  // GPS 接收引脚
-const int8_t G_TXD = 23;  // GPS 发送引脚
-#define MODEM_BAUD 9600 // 4G模块波特率
+const int8_t G_TXD = 33;  // GPS 发送引脚
+#define MODEM_BAUD 115200 // 4G模块波特率
+EspSoftwareSerial::UART GPS_RX_TX; // GPS数据的收发
 
-EspSoftwareSerial::UART NET_4G_RX_TX; // 使用G_RXD和G_TXD作为4G模块的接收和发送引脚
 
-#define GPS_SERIAL Serial2 // 使用 Serial2 作为 GPS 串口
-#define GPX_RX 16          // GPS 接收引脚
-#define GPX_TX 17          // GPS 发送引脚
 #define RESET_BTN_PIN 0    // 重置按钮引脚，使用GPIO0（通常是ESP32开发板上的BOOT按钮）
 #define RESET_TIMEOUT 3000 // 长按重置时间（毫秒）
 #define GPS_BAUDRATE 9600  // GPS 波特率
@@ -157,15 +160,15 @@ bool sendATCommand(const char *command, unsigned long timeout, const char *expec
     Serial.print("semd command: ");
     Serial.println(command);
 
-    NET_4G_RX_TX.println(command);
+    GPS_RX_TX.println(command);
 
     unsigned long start_time = millis();
     String response = "";
 
     // 等待并读取响应
-    if (NET_4G_RX_TX.available())
+    if (GPS_RX_TX.available())
     {
-        char c = NET_4G_RX_TX.read();
+        char c = GPS_RX_TX.read();
         response += c;
 
         // 检查是否包含预期的回复
@@ -253,10 +256,12 @@ void setup()
 
     // 初始化 GPS 串口
     // GPS_SERIAL.begin(GPS_BAUDRATE, SERIAL_8N1, GPX_RX, GPX_TX);
+    GPS_RX_TX.begin(GPS_BAUDRATE,EspSoftwareSerial::SWSERIAL_8N1,G_RXD,G_TXD);
     Serial.println("GPS Module Initialized");
 
- 
-    NET_4G_RX_TX.begin(MODEM_BAUD, EspSoftwareSerial::SWSERIAL_8N1,G_RXD,G_TXD);
+
+    // 初始化 4G 模块串口
+    NET_4G_RX_TX.begin(MODEM_BAUD, SERIAL_8N1, GPX_RX, GPX_TX);
     // if (NET_4G_RX_TX)
     // {
         
@@ -282,15 +287,22 @@ void loop()
     isConfigMode = wifiManager.isConfigMode();
 
     // 读取GPS数据并上传
-    if (NET_4G_RX_TX.available() && !isConfigMode) // 仅在非配置模式下读取GPS数据
+    if (GPS_RX_TX.available() && !isConfigMode) // 仅在非配置模式下读取GPS数据
     {
-        String gpsData = NET_4G_RX_TX.readStringUntil('\n');
-        // sendDataToServer(gpsData, wifiManager.getServerUrl());
+        String gpsData = GPS_RX_TX.readStringUntil('\n');
         Serial.print("GPS Data: ");
         Serial.println(gpsData);
-        delay(5000); // 等待1秒
+        
     }
 
+    // 读取4G模块数据并上传
+    if (NET_4G_RX_TX.available() ) // 仅在非配置模式下读取4G模块数据
+    {
+        String modemData = NET_4G_RX_TX.readStringUntil('\n');
+        Serial.print("Modem Data: ");
+        Serial.println(modemData);
+    }
+    delay(5000); // 等待1秒
 
 
 }
