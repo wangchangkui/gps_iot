@@ -6,12 +6,7 @@
 #define GPX_RX 16            // 4G模块 接收引脚
 #define GPX_TX 17            // 4G模块 发送引脚
 #define MODEM_BAUD 115200          // 4G模块波特率
-
-
-// TCP服务器配置
-const char *SERVER_IP = "47.109.129.174"; // 替换为实际服务器IP
-const int SERVER_PORT = 8782;             // 替换为实际端口
-#define MODEM_TIMEOUT 10000               // AT指令超时时间（毫秒）
+#define MODEM_TIMEOUT 3000               // AT指令超时时间（毫秒）
 
 
 #include <Arduino.h>
@@ -20,6 +15,8 @@ const int SERVER_PORT = 8782;             // 替换为实际端口
 #include "WiFiManager.h"
 #include "SoftwareSerial.h"
 #include "Device.h"
+#include "Config.h"
+
 
 
 
@@ -39,5 +36,36 @@ bool sendATCommand(const char *command, unsigned long timeout = MODEM_TIMEOUT, c
 void setupNetwork();
 
 
+/**
+ * 安全读取4G模块数据（非阻塞式）
+ */
+void pollModemData(); 
 
+
+/**
+ * @brief 发送数据到服务器
+ * @param data 要发送的数据
+ * @return 发送成功返回true，失败返回false
+ */
+bool sendDataToServer(const String &data);
+
+
+
+/**
+ * 获取TCP连接状态
+ * @return true:TCP已连接, false:TCP未连接
+ */
+boolean net_work_is_tcp_connected();
+
+
+/**
+ * tcp 重新连接
+ */
+void connectTcp();
+
+
+/**
+ * 重启设备
+ */
+void resetMoudule();
 #endif
