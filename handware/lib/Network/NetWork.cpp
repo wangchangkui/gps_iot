@@ -84,9 +84,7 @@ bool sendDataToServer(const String &data)
  */
 void connectTcp()
 {
-    // 发送1A HEX格式 结束本次数据包
-    NET_4G_RX_TX.print("AT+CIPCLOSE=0\r"); // 关闭之前的连接
-    NET_4G_RX_TX.flush(); // 确保数据发送完毕
+    
 
     // 配置AP
     String apnCommand = "AT+QICSGP=1,1,\"\",\"\",\"\"";
