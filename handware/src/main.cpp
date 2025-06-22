@@ -2,7 +2,7 @@
  * @Author: coder_wang 17360402335@163.com
  * @Date: 2024-11-27 21:58:30
  * @LastEditors: coder_wang 17360402335@163.com
- * @LastEditTime: 2025-06-22 16:18:10
+ * @LastEditTime: 2025-06-22 21:48:42
  * @FilePath: \esp32demo\src\main.cpp
  * @Description: ESP32 GPS数据采集上传系统
  */
@@ -39,9 +39,9 @@ void setup()
     Serial.println("\n\n===== ESP32 4G Device Start =====");
 
     // 初始化 4G 模块串口
-    delay(1000); 
+    delay(10000); 
     setupNetwork();
-    
+
     // 设置重置按钮为输入上拉模式
     wifiManager.begin(RESET_BTN_PIN, RESET_TIMEOUT); // 初始化WiFi管理器，设置重置按钮引脚和超时时间
     Serial.println("WiFi Manager Initialized");

@@ -1,9 +1,6 @@
 #include "NetWork.h"
 
-
-
 boolean isTcpConnected = false; // TCP连接状态
-
 
 /**
  * 向 4G 模块发送 AT 命令并等待响应
@@ -67,43 +64,39 @@ bool sendATCommand(const char *command, unsigned long timeout, const char *expec
             (strcmp(expected_reply, "OK") != 0 && response.endsWith("OK\r\n")));
 }
 
-
 /**
  * @brief 发送数据到服务器
  * @param data 要发送的数据
  * @return 发送成功返回true，失败返回false
  */
-bool sendDataToServer(const String &data) {
-    
-    Serial.println("Sending data: " + data);
+bool sendDataToServer(const String &data)
+{   
     // 发送数据
-    NET_4G_RX_TX.print(data);
+    sendATCommand(data.c_str());
+    // 发送1A HEX格式 结束本次数据包
+    NET_4G_RX_TX.write(0x1A); // 发送 Ctrl+Z 结束符
+    NET_4G_RX_TX.print("\r"); // 确保发送完整指
     return true;
 }
 
 /**
  * @brief 单独处理TCP连接（带重试机制）
  */
-void connectTcp(){
+void connectTcp()
+{
+    // 发送1A HEX格式 结束本次数据包
+    NET_4G_RX_TX.print("AT+CIPCLOSE=0\r"); // 关闭之前的连接
+    NET_4G_RX_TX.flush(); // 确保数据发送完毕
+
+    // 配置AP
+    String apnCommand = "AT+QICSGP=1,1,\"\",\"\",\"\"";
+    sendATCommand(apnCommand.c_str());
+    // 开启网络
+    sendATCommand("AT+NETOPEN");
     String tcpCommand = "AT+CIPOPEN=0,\"TCP\",\"" + String(SERVER_IP) + "\"," + String(SERVER_PORT);
-     // 单独处理TCP连接（带重试机制）
-    for(int retry=0; retry<3; retry++) {
-        if(sendATCommand(tcpCommand.c_str(), MODEM_TIMEOUT, ">")) {
-            Serial.println("TCP connection established");
-            isTcpConnected = true;
-
-            break;
-        }
-        delay(1000);
-        Serial.println("TCP connect retrying...");
-    }
-    if (!isTcpConnected)
-    {
-        Serial.println("[ERROR] Failed to establish TCP connection");
-        return;
-    }
+    // 处理TCP连接
+    sendATCommand(tcpCommand.c_str());
 }
-
 
 /**
  * @brief 设置4G网络连接
@@ -111,6 +104,9 @@ void connectTcp(){
 void setupNetwork()
 {
     NET_4G_RX_TX.begin(MODEM_BAUD, SERIAL_8N1, GPX_RX, GPX_TX);
+    // 结束之前的连接
+    NET_4G_RX_TX.print("AT+CIPCLOSE=0\r"); // 关闭之前的连接
+    NET_4G_RX_TX.flush(); // 确保数据发送完毕
     delay(1000); // 等待4G模块稳定
     const char *initSequence[] = {
         "AT",                           // 基础测试
@@ -121,52 +117,36 @@ void setupNetwork()
         "AT+CSQ",                       // 信号质量
         "AT+COPS?",                     // 运营商信息
         "AT+QICSGP=1,1,\"\",\"\",\"\"", // APN设置
-        "AT+CIPMODE=1",                 // 设置为数据模式
-        "AT+CIPMODE?",                  // 数据模式查询
         "AT+NETOPEN",                   // 开启网络
         "AT+NETOPEN?",                  // 网络状态查询
         "AT+IPADDR",                    // 获取IP地址
         NULL                            // 结束标志
     };
 
-
     const char *expSequence[] = {
-        "OK",                           // 基础测试
-        "OK",                         // 关闭回显
-        "OK",                          // 查询模块信息
-        "OK",                     // 查询SIM卡ICCID
-        "OK",                     // SIM卡状态
-        "OK",                       // 信号质量
-        "OK",                     // 运营商信息
-        "OK", // APN设置
-        "OK",                 // 设置为数据模式
-        "OK",                  // 数据模式查询
-        "SUCCESS",                   // 开启网络
-        "OK",                  // 网络状态查询
-        "OK",                    // 获取IP地址
-        NULL                            // 结束标志
+        "OK",      // 基础测试
+        "OK",      // 关闭回显
+        "OK",      // 查询模块信息
+        "OK",      // 查询SIM卡ICCID
+        "OK",      // SIM卡状态
+        "OK",      // 信号质量
+        "OK",      // 运营商信息
+        "OK",      // APN设置
+        "SUCCESS", // 开启网络
+        "OK",      // 网络状态查询
+        "OK",      // 获取IP地址
+        NULL       // 结束标志
     };
-
-
-    
-
 
     for (int i = 0; initSequence[i]; i++)
     {
         // 跳过第8条网络开启指令 应为有可能会是ERROR: 902 902的含义是已经开启过了网络服务
-        if (!sendATCommand(initSequence[i],MODEM_TIMEOUT,expSequence[i]) && i != 8)
-        {
-            Serial.printf("Init failed at step %d\n", i);
-            break;
-        }
+        sendATCommand(initSequence[i], MODEM_TIMEOUT, expSequence[i]);
         delay(200); // 指令间间隔
     }
 
     connectTcp();
 }
-
-
-
 
 /**
  * 安全读取4G模块数据（非阻塞式）
@@ -211,18 +191,16 @@ void pollModemData()
     }
 }
 
-
 boolean net_work_is_tcp_connected()
 {
     return isTcpConnected;
 }
 
-
 void resetMoudule()
 {
     Serial.println("Resetting module...");
     NET_4G_RX_TX.print("AT+RESET");
-    delay(1000);        // 等待1秒
-    setupNetwork();     // 重新设置网络
+    delay(1000);    // 等待1秒
+    setupNetwork(); // 重新设置网络
     Serial.println("Module reset complete.");
 }
