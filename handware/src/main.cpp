@@ -2,7 +2,7 @@
  * @Author: coder_wang 17360402335@163.com
  * @Date: 2024-11-27 21:58:30
  * @LastEditors: coder_wang 17360402335@163.com
- * @LastEditTime: 2025-06-26 16:31:22
+ * @LastEditTime: 2025-06-29 18:37:54
  * @FilePath: \esp32demo\src\main.cpp
  * @Description: ESP32 GPS数据采集上传系统
  */
@@ -27,6 +27,9 @@ EspSoftwareSerial::UART GPS_RX_TX; // GPS数据的收发
 WiFiManager wifiManager;           // 实例化全局WiFi管理器对象
 uint64_t deviceID = getDeviceID(); // 获取设备唯一标识符
 
+// 定义网络信号状态灯，当网络连接时常亮，否则闪烁
+#define LED_PIN 2 // LED引脚，通常是GPIO2
+
 // 初始化设备
 void setup()
 {
@@ -39,8 +42,9 @@ void setup()
     Serial.println("\n\n===== ESP32 4G Device Start =====");
 
     // 初始化 4G 模块串口
-    delay(1000); 
+    delay(1000);
     setupNetwork();
+    pinMode(LED_PIN, OUTPUT); // 设置引脚为输出模式
 
     // 设置重置按钮为输入上拉模式
     wifiManager.begin(RESET_BTN_PIN, RESET_TIMEOUT); // 初始化WiFi管理器，设置重置按钮引脚和超时时间
@@ -56,7 +60,14 @@ void loop()
     // 等待1秒
     delay(1000);
 
-    // 读取GPS数据
+    if (!net_work_is_tcp_connected())
+    {
+        // led 长亮
+        digitalWrite(LED_PIN, HIGH); // 网络连接异常时LED常亮
+    }
+
+
+     // 读取GPS数据
     if (GPS_RX_TX.available())
     {
         String gpsData = GPS_RX_TX.readStringUntil('\n'); // 读取GPS数据直到换行符
@@ -64,9 +75,12 @@ void loop()
 
         if (gpsData.length() > 0)
         {
-               // 或设备ID，并且拼接到GPS数据前
-                gpsData = String(deviceID) + "," + gpsData; // 将设备ID添加
-                sendDataToServer(gpsData.c_str());
+            // 或设备ID，并且拼接到GPS数据前
+            gpsData = String(deviceID) + "," + gpsData;  // 将设备ID添加
+            NET_4G_RX_TX.println(gpsData);               // 发送数据
         }
     }
+
+
+   
 }

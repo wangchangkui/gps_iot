@@ -2,7 +2,7 @@
  * @Author: coder_wang 17360402335@163.com
  * @Date: 2025-06-17 20:41:51
  * @LastEditors: coder_wang 17360402335@163.com
- * @LastEditTime: 2025-06-22 10:51:43
+ * @LastEditTime: 2025-06-29 17:39:16
  * @FilePath: \handware\lib\config\config.h
  * @Description: 默认配置文件
  */
@@ -24,7 +24,7 @@
 #define SENSOR_PIN 4
 
 // TCP服务器配置
-#define SERVER_IP  "47.109.129.174" // 替换为实际服务器IP
+#define SERVER_IP  "admcc.cn" // 替换为实际服务器IP
 #define SERVER_PORT 8782             // 替换为实际端口
 
 #endif // CONFIG_H

@@ -15,6 +15,10 @@
         "*.tcc": "cpp",
         "memory": "cpp",
         "random": "cpp",
-        "new": "cpp"
+        "new": "cpp",
+        "istream": "cpp",
+        "functional": "cpp",
+        "tuple": "cpp",
+        "utility": "cpp"
     }
 }

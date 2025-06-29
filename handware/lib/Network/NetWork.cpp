@@ -20,7 +20,7 @@ bool sendATCommand(const char *command, unsigned long timeout, const char *expec
     // 发送指令（添加明确的回车换行）
     NET_4G_RX_TX.print(command);
     NET_4G_RX_TX.print("\r"); // 确保发送完整AT指令格式
-    Serial.printf("[AT] SEND: %s%c%c", command,'\r', '\n');
+    Serial.printf("[AT] SEND: %s%c", command, '\n');
     String response;
     unsigned long start = millis();
     bool found = false;
@@ -121,39 +121,66 @@ void setupNetwork()
 {
     NET_4G_RX_TX.begin(MODEM_BAUD, SERIAL_8N1, GPX_RX, GPX_TX);
 
-    // 关闭回显
-    if (!sendATCommand("ATE0", 1000, "OK"))
+    // 断开之前的连接
+    NET_4G_RX_TX.write("+++");
+    sendATCommand("AT+QICLOSE=0", 1000, "OK"); // 关闭之前的TCP连接
+
+    // 检查模块是否响应
+    if (!sendATCommand("AT", 1000, "OK"))
     {
-        Serial.println("[ERROR] Failed to disable echo.");
-        return;
+        Serial.println("[ERROR] 4G module not responding.");
+     
     }
+
+    // 关闭回显
+    sendATCommand("ATE0", 1000, "OK");
 
     // 2. 设置APN
     String apnCommand = "AT+QICSGP=1,1,\"\",\"\",\"\"";
     sendATCommand(apnCommand.c_str(), 3000, "OK");
 
+    int model_count = 0;
+    while (model_count < 4)
+    {
+        // 开启透传模式
+        if (sendATCommand("AT+CIPMODE=1", 1000, "OK"))
+        {
+            Serial.println("[4G] Transparent mode enabled.");
+            break;
+        }
+        else
+        {
+            Serial.println("[ERROR] Failed to enable transparent mode. Retrying... ");
+            
+        }
+        delay(1000); // 等待2秒后重试
+        model_count += 1;
+    }
+
     // 3. 开启移动网络
     int count = 0;
     while (count < 5)
     {
-        if (sendATCommand("AT+NETOPEN", 5000, "SUCCESS"))
+        if (sendATCommand("AT+NETOPEN", 5000, "SUCCESS") || sendATCommand("AT+NETOPEN", 5000, "902"))
         {
             break; // 成功开启网络
         }
         count++;
         Serial.printf("[4G] Attempt %d to open network failed, retrying...\n", count);
-        delay(2000); // 等待2秒后重试
+        delay(1000); // 等待2秒后重试
     }
 
-
-    if(!sendATCommand("AT+NETOPEN?", 5000, "1")){
+    if (!sendATCommand("AT+NETOPEN?", 5000, "1"))
+    {
         Serial.println("[ERROR] Failed to open network after multiple attempts.");
-        resetMoudule(); // 如果网络开启失败，重置模块
         return;
-    } else {
+    }
+    else
+    {
         Serial.println("[4G] Network opened successfully.");
     }
-    
+    isTcpConnected = true; // 连接成功
+
     // 5. 建立TCP连接
     String tcpCommand = "AT+CIPOPEN=0,\"TCP\",\"" + String(SERVER_IP) + "\"," + String(SERVER_PORT);
     sendATCommand(tcpCommand.c_str(), 10000, "SUCCESS");

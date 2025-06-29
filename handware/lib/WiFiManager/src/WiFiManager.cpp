@@ -2,7 +2,7 @@
  * @Author: coder_wang 17360402335@163.com
  * @Date: 2025-06-16 10:16:30
  * @LastEditors: coder_wang 17360402335@163.com
- * @LastEditTime: 2025-06-15 16:32:33
+ * @LastEditTime: 2025-06-29 18:04:44
  * @FilePath: \esp32demo\include\wifi_manager\WiFiManager.cpp
  * @Description: WiFi管理器实现
  */
@@ -248,7 +248,7 @@ void WiFiManager::begin(int resetBtnPin, int resetTimeout)
         // 尝试连接WiFi
         if (_connectToWifi())
         {
-            Serial.println("成功连接到WiFi，设备正常工作中");
+            Serial.println("成功连接到WiFi");
             _isConfigMode = false; // 切换到正常工作模式
             return;
         }
