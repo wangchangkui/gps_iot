@@ -20,7 +20,7 @@ bool sendATCommand(const char *command, unsigned long timeout, const char *expec
     // 发送指令（添加明确的回车换行）
     NET_4G_RX_TX.print(command);
     NET_4G_RX_TX.print("\r"); // 确保发送完整AT指令格式
-    Serial.printf("[AT] SEND: %s\r\n", command);
+    Serial.printf("[AT] SEND: %s%c%c", command,'\r', '\n');
     String response;
     unsigned long start = millis();
     bool found = false;
@@ -70,13 +70,32 @@ bool sendATCommand(const char *command, unsigned long timeout, const char *expec
  * @return 发送成功返回true，失败返回false
  */
 bool sendDataToServer(const String &data)
-{   
-    // 发送数据
-    sendATCommand(data.c_str());
-    // 发送1A HEX格式 结束本次数据包
-    NET_4G_RX_TX.write(0x1A); // 发送 Ctrl+Z 结束符
-    NET_4G_RX_TX.print("\r"); // 确保发送完整指
-    return true;
+{
+    int dataLen = data.length();
+
+    // 2. 发送数据长度声明
+    String sendCmd = "AT+CIPSEND=1," + String(dataLen);
+    if (!sendATCommand(sendCmd.c_str(), 3000, ">"))
+    {
+        Serial.println("Failed to enter data mode");
+        return false;
+    }
+
+    // 3. 发送实际数据
+    NET_4G_RX_TX.print(data); // 直接发送字符串
+    delay(500);               // 确保数据完整发送
+
+    // 4. 检查发送结果
+    if (sendATCommand("", 3000, "SUCCESS"))
+    { // 空指令检查响应
+        Serial.println("Data sent successfully");
+        return true;
+    }
+    else
+    {
+        Serial.println("Data send failed");
+        return false;
+    }
 }
 
 /**
@@ -84,7 +103,6 @@ bool sendDataToServer(const String &data)
  */
 void connectTcp()
 {
-    
 
     // 配置AP
     String apnCommand = "AT+QICSGP=1,1,\"\",\"\",\"\"";
@@ -102,48 +120,43 @@ void connectTcp()
 void setupNetwork()
 {
     NET_4G_RX_TX.begin(MODEM_BAUD, SERIAL_8N1, GPX_RX, GPX_TX);
-    // 结束之前的连接
-    NET_4G_RX_TX.print("AT+CIPCLOSE=0\r"); // 关闭之前的连接
-    NET_4G_RX_TX.flush(); // 确保数据发送完毕
-    delay(1000); // 等待4G模块稳定
-    const char *initSequence[] = {
-        "AT",                           // 基础测试
-        "ATE0",                         // 关闭回显
-        "ATI",                          // 查询模块信息
-        "AT+ICCID",                     // 查询SIM卡ICCID
-        "AT+CPIN?",                     // SIM卡状态
-        "AT+CSQ",                       // 信号质量
-        "AT+COPS?",                     // 运营商信息
-        "AT+QICSGP=1,1,\"\",\"\",\"\"", // APN设置
-        "AT+NETOPEN",                   // 开启网络
-        "AT+NETOPEN?",                  // 网络状态查询
-        "AT+IPADDR",                    // 获取IP地址
-        NULL                            // 结束标志
-    };
 
-    const char *expSequence[] = {
-        "OK",      // 基础测试
-        "OK",      // 关闭回显
-        "OK",      // 查询模块信息
-        "OK",      // 查询SIM卡ICCID
-        "OK",      // SIM卡状态
-        "OK",      // 信号质量
-        "OK",      // 运营商信息
-        "OK",      // APN设置
-        "SUCCESS", // 开启网络
-        "OK",      // 网络状态查询
-        "OK",      // 获取IP地址
-        NULL       // 结束标志
-    };
-
-    for (int i = 0; initSequence[i]; i++)
+    // 关闭回显
+    if (!sendATCommand("ATE0", 1000, "OK"))
     {
-        // 跳过第8条网络开启指令 应为有可能会是ERROR: 902 902的含义是已经开启过了网络服务
-        sendATCommand(initSequence[i], MODEM_TIMEOUT, expSequence[i]);
-        delay(200); // 指令间间隔
+        Serial.println("[ERROR] Failed to disable echo.");
+        return;
     }
 
-    connectTcp();
+    // 2. 设置APN
+    String apnCommand = "AT+QICSGP=1,1,\"\",\"\",\"\"";
+    sendATCommand(apnCommand.c_str(), 3000, "OK");
+
+    // 3. 开启移动网络
+    int count = 0;
+    while (count < 5)
+    {
+        if (sendATCommand("AT+NETOPEN", 5000, "SUCCESS"))
+        {
+            break; // 成功开启网络
+        }
+        count++;
+        Serial.printf("[4G] Attempt %d to open network failed, retrying...\n", count);
+        delay(2000); // 等待2秒后重试
+    }
+
+
+    if(!sendATCommand("AT+NETOPEN?", 5000, "1")){
+        Serial.println("[ERROR] Failed to open network after multiple attempts.");
+        resetMoudule(); // 如果网络开启失败，重置模块
+        return;
+    } else {
+        Serial.println("[4G] Network opened successfully.");
+    }
+    
+    // 5. 建立TCP连接
+    String tcpCommand = "AT+CIPOPEN=0,\"TCP\",\"" + String(SERVER_IP) + "\"," + String(SERVER_PORT);
+    sendATCommand(tcpCommand.c_str(), 10000, "SUCCESS");
 }
 
 /**

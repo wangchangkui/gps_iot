@@ -2,7 +2,7 @@
  * @Author: coder_wang 17360402335@163.com
  * @Date: 2024-11-27 21:58:30
  * @LastEditors: coder_wang 17360402335@163.com
- * @LastEditTime: 2025-06-22 21:48:42
+ * @LastEditTime: 2025-06-26 16:31:22
  * @FilePath: \esp32demo\src\main.cpp
  * @Description: ESP32 GPS数据采集上传系统
  */
@@ -39,7 +39,7 @@ void setup()
     Serial.println("\n\n===== ESP32 4G Device Start =====");
 
     // 初始化 4G 模块串口
-    delay(10000); 
+    delay(1000); 
     setupNetwork();
 
     // 设置重置按钮为输入上拉模式
