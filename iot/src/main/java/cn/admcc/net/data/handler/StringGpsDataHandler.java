@@ -1,11 +1,10 @@
 package cn.admcc.net.data.handler;
 
-import cn.admcc.gps.gp10.exception.TxtInfoException;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import lombok.extern.slf4j.Slf4j;
 
-import java.lang.reflect.InvocationTargetException;
+import java.time.LocalDateTime;
 
 /**
  * @author coder wang
@@ -52,9 +51,10 @@ public class StringGpsDataHandler extends SimpleChannelInboundHandler<String> {
                 dataPacket.setDeviceId(deviceId);
                 StringBuilder sb = new StringBuilder();
                 for (int i = 1; i < split.length; i++) {
-                    sb.append(split[i]);
+                    sb.append(split[i]).append(",");
                 }
-                dataPacket.setGpsData(sb.toString());
+                // 去掉最后一个,并输出
+                dataPacket.setGpsData( sb.substring(0,sb.length()-1));
             }
             dataPacketHandler.handler(dataPacket);
         }

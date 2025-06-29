@@ -112,6 +112,20 @@ public class TcpServerUtil {
                     @Override
                     protected void initChannel(SocketChannel ch) {
                         ch.pipeline()
+                                .addLast(new ChannelInboundHandlerAdapter() {
+                                             @Override
+                                             public void channelActive(ChannelHandlerContext ctx) throws Exception {
+                                                 log.info("Device connected: {}", ctx.channel().remoteAddress());
+                                                 super.channelActive(ctx);
+                                             }
+
+                                             @Override
+                                             public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+                                                 log.info("Device close: {}", ctx.channel().remoteAddress());
+                                                 super.channelInactive(ctx);
+                                             }
+                                         }
+                                )
                                 .addLast(new StringDecoder())
                                 .addLast(new StringGpsDataHandler(dataPacketHandler));
                     }

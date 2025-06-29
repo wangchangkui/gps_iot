@@ -49,7 +49,11 @@ void pollModemData();
  */
 bool sendDataToServer(const String &data);
 
-
+/**
+ * @brief 发送数据到4G模块
+ * @param data 要发送的数据
+ */
+bool sendData(const String &data, unsigned long timeout);
 
 /**
  * 获取TCP连接状态

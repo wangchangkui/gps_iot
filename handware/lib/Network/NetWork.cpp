@@ -64,6 +64,22 @@ bool sendATCommand(const char *command, unsigned long timeout, const char *expec
             (strcmp(expected_reply, "OK") != 0 && response.endsWith("OK\r\n")));
 }
 
+
+
+/**
+ * @brief 发送数据到4G模块
+ * @param data 要发送的数据
+ */
+bool sendData(const String &data, unsigned long timeout){
+    // 发送数据
+    NET_4G_RX_TX.println(data);
+    Serial.printf("[AT] SEND: %s%c", data, '\n');
+    pollModemData(); // 确保数据发送后立即处理模块响应
+
+    
+    return true;
+}
+
 /**
  * @brief 发送数据到服务器
  * @param data 要发送的数据
@@ -100,6 +116,7 @@ bool sendDataToServer(const String &data)
 
 /**
  * @brief 单独处理TCP连接（带重试机制）
+ * 已经弃用
  */
 void connectTcp()
 {
@@ -139,6 +156,9 @@ void setupNetwork()
     String apnCommand = "AT+QICSGP=1,1,\"\",\"\",\"\"";
     sendATCommand(apnCommand.c_str(), 3000, "OK");
 
+    // 设置TCP心跳间隔为60秒
+    sendATCommand("AT+MCIPCFG=60", 3000,"OK");
+
     int model_count = 0;
     while (model_count < 4)
     {
@@ -167,7 +187,7 @@ void setupNetwork()
         }
         count++;
         Serial.printf("[4G] Attempt %d to open network failed, retrying...\n", count);
-        delay(1000); // 等待2秒后重试
+        delay(200); // 等待2秒后重试
     }
 
     if (!sendATCommand("AT+NETOPEN?", 5000, "1"))
@@ -184,6 +204,10 @@ void setupNetwork()
     // 5. 建立TCP连接
     String tcpCommand = "AT+CIPOPEN=0,\"TCP\",\"" + String(SERVER_IP) + "\"," + String(SERVER_PORT);
     sendATCommand(tcpCommand.c_str(), 10000, "SUCCESS");
+
+    // 6. 进入 ATO 透传模式
+    sendATCommand("ATO", 3000, "CONNECT");
+    
 }
 
 /**
@@ -210,12 +234,6 @@ void pollModemData()
             if (buffer.length() > 0)
             {
                 Serial.printf("[4G] %s\n", buffer.c_str());
-
-                // 这里添加业务逻辑处理
-                if (buffer.startsWith("+CIPRXGET"))
-                {
-                    // 处理TCP数据示例
-                }
             }
             buffer = "";
         }
@@ -237,7 +255,6 @@ boolean net_work_is_tcp_connected()
 void resetMoudule()
 {
     Serial.println("Resetting module...");
-    NET_4G_RX_TX.print("AT+RESET");
     delay(1000);    // 等待1秒
     setupNetwork(); // 重新设置网络
     Serial.println("Module reset complete.");
