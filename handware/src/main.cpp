@@ -2,7 +2,7 @@
  * @Author: coder_wang 17360402335@163.com
  * @Date: 2024-11-27 21:58:30
  * @LastEditors: coder_wang 17360402335@163.com
- * @LastEditTime: 2025-06-29 18:37:54
+ * @LastEditTime: 2025-06-29 20:14:56
  * @FilePath: \esp32demo\src\main.cpp
  * @Description: ESP32 GPS数据采集上传系统
  */
@@ -67,20 +67,50 @@ void loop()
     }
 
 
-     // 读取GPS数据
+    // 读取GPS数据
     if (GPS_RX_TX.available())
     {
-        String gpsData = GPS_RX_TX.readStringUntil('\n'); // 读取GPS数据直到换行符
-        gpsData.trim();                                   // 去除首尾空格
+        // 给GPS数据一些累积时间
+        delay(100);
 
-        if (gpsData.length() > 0)
+        // 读取完整的NMEA语句
+        String gpsData = "";
+        while (GPS_RX_TX.available())
         {
-            // 或设备ID，并且拼接到GPS数据前
-            gpsData = String(deviceID) + "," + gpsData;  // 将设备ID添加
-            NET_4G_RX_TX.println(gpsData);               // 发送数据
+            char c = GPS_RX_TX.read();
+            if (c == '$') // NMEA语句始终以$开头
+            {
+                // 新语句开始，清空之前的数据
+                gpsData = "$";
+            }
+            else if (gpsData.length() > 0) // 已经开始收集一条语句
+            {
+                gpsData += c;
+
+                // 检查是否到了语句结尾（NMEA语句以\r\n结束）
+                if (c == '\n' && gpsData.indexOf('\r') != -1)
+                {
+                    // 完整的NMEA语句已获取
+                    gpsData.trim(); // 去除首尾空格和换行符
+
+                    // 进行简单的数据有效性检查
+                    if (gpsData.length() > 10 && gpsData.startsWith("$"))
+                    {
+                        Serial.print("有效GPS数据: ");
+                        Serial.println(gpsData);
+
+                        // 添加设备ID并发送
+                        String dataToSend = String(deviceID) + "," + gpsData;
+
+                        // 使用正确的发送函数而不是直接写入串口
+                        NET_4G_RX_TX.println(dataToSend);
+                    }
+
+                    // 重置，准备接收下一条语句
+                    gpsData = "";
+                    break;
+                }
+            }
         }
     }
-
-
-   
 }

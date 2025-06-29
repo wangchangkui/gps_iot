@@ -1,5 +1,6 @@
 package cn.admcc.gp10.iot.net;
 
+import cn.admcc.gp10.iot.gps10.GnssDecryptManager;
 import cn.admcc.gp10.iot.net.config.TcpConfig;
 import cn.admcc.net.data.TcpServerUtil;
 import cn.admcc.net.data.handler.DataPacket;
@@ -19,6 +20,10 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 public class StringDataPackageHandler implements DataPacketHandler {
+
+    private final GnssDecryptManager gnssDecryptManager;
+
+
 
 
 

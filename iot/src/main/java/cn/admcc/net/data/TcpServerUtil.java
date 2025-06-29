@@ -2,7 +2,7 @@ package cn.admcc.net.data;
 
 import cn.admcc.net.data.decoder.StringDecoder;
 import cn.admcc.net.data.handler.DataPacketHandler;
-import cn.admcc.net.data.handler.StringHandler;
+import cn.admcc.net.data.handler.StringGpsDataHandler;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioIoHandler;
@@ -110,10 +110,10 @@ public class TcpServerUtil {
                 .channel(NioServerSocketChannel.class)
                 .childHandler(new ChannelInitializer<SocketChannel>() {
                     @Override
-                    protected void initChannel(SocketChannel ch) throws Exception {
+                    protected void initChannel(SocketChannel ch) {
                         ch.pipeline()
                                 .addLast(new StringDecoder())
-                                .addLast(new StringHandler(dataPacketHandler));
+                                .addLast(new StringGpsDataHandler(dataPacketHandler));
                     }
                 })
                 .option(ChannelOption.SO_BACKLOG, 128)

@@ -16,7 +16,7 @@ public class DataPacket {
      * 设备ID
      */
     @DataIndex(order = 0)
-    private String deviceId;
+    private Long deviceId;
 
     /**
      * gps的数据
