@@ -1,10 +1,45 @@
 @import 'base.css';
 
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
 #app {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  font-weight: normal;
+  width: 100%;
+  height: 100%;
+}
+
+.el-container {
+  height: 100%;
+}
+
+.el-aside {
+  height: 100vh;
+}
+
+.el-main {
+  height: 100%;
+  padding: 20px;
+  background-color: #f0f2f5;
+}
+
+/* 确保内容区域占满剩余空间 */
+.layout-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.layout-container > .el-container {
+  flex: 1;
+  height: 100%;
 }
 
 a,
@@ -27,9 +62,4 @@ a,
     place-items: center;
   }
 
-  #app {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    padding: 0 2rem;
-  }
 }
