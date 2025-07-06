@@ -21,11 +21,7 @@
           </el-table-column>
           <el-table-column label="操作" width="120">
             <template #default="{ row }">
-              <el-button
-                type="primary"
-                link
-                @click="showTrack(row)"
-              >
+              <el-button type="primary" link @click="showTrack(row)">
                 查看轨迹
               </el-button>
             </template>
@@ -34,26 +30,27 @@
       </el-card>
     </div>
     <div class="map-view">
-      <vc-viewer
-        ref="viewerRef"
-        :animation="false"
-        :timeline="false"
-        :navigation="false"
-        @ready="onViewerReady"
-      >
-        <vc-entity
-          v-for="device in activeDevices"
-          :key="device.id"
-          :position="device.position"
-          :billboard="billboardConfig"
-          :label="getLabelConfig(device)"
-        />
-        <vc-entity-path
-          v-if="selectedDevice"
-          :positions="selectedDevice.track"
-          :material="pathMaterial"
-          :width="3"
-        />
+      <vc-viewer ref="viewerRef" :animation="false" :timeline="false" :navigation="false" :base-layer-picker="false"
+        @ready="onViewerReady">
+        <vc-layer-imagery>
+          <vc-layer-imagery>
+            <vc-layer-imagery>
+              <vc-imagery-provider-tianditu map-style="vec_w" :token="tiandituToken" />
+            </vc-layer-imagery>
+
+            <vc-layer-imagery>
+              <vc-imagery-provider-tianditu map-style="cva_w" :token="tiandituToken" />
+            </vc-layer-imagery>
+            
+          </vc-layer-imagery>
+
+        </vc-layer-imagery>
+
+        <template v-if="viewerRef">
+          <vc-entity v-for="device in activeDevices" :key="device.id" :position="device.position"
+            :billboard="billboardConfig" :label="getLabelConfig(device)" />
+          <vc-entity-path v-if="selectedDevice" :positions="selectedDevice.track" :material="pathMaterial" :width="3" />
+        </template>
       </vc-viewer>
     </div>
   </div>
@@ -61,7 +58,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import type { Viewer } from 'cesium'
+
 import * as Cesium from 'cesium'
 
 interface Device {
@@ -72,10 +69,12 @@ interface Device {
   track?: Cesium.Cartesian3[]
 }
 
-const viewerRef = ref<typeof Viewer>()
+const viewerRef = ref()
 const devices = ref<Device[]>([])
 const activeDevices = ref<Device[]>([])
 const selectedDevice = ref<Device | null>(null)
+
+const tiandituToken = import.meta.env.VITE_TIANDITU_TOKEN
 
 const billboardConfig = {
   image: '/marker.png',
@@ -98,11 +97,15 @@ const getLabelConfig = (device: Device) => ({
   pixelOffset: new Cesium.Cartesian2(0, -30)
 })
 
-const onViewerReady = (viewer: Viewer) => {
-  // 初始化地图视图
-  viewer.camera.flyTo({
-    destination: Cesium.Cartesian3.fromDegrees(116.397428, 39.90923, 1000000)
-  })
+const onViewerReady = (readyObject: any) => {
+  const { viewer } = readyObject
+  console.log('环境变量:', import.meta.env)
+  console.log('天地图Token:', import.meta.env.VITE_TIANDITU_TOKEN)
+
+  const imageryLayers = viewer.imageryLayers
+  imageryLayers.removeAll()
+
+  viewer.scene.globe.enableLighting = true
 }
 
 const refreshDevices = async () => {
@@ -134,9 +137,10 @@ const showTrack = async (device: Device) => {
       Cesium.Cartesian3.fromDegrees(116.398428, 39.91923, 0)
     ]
   }
-  
-  if (viewerRef.value) {
-    viewerRef.value.camera.flyTo({
+
+  const viewer = viewerRef.value?.cesiumObject
+  if (viewer) {
+    viewer.camera.setView({
       destination: Cesium.Cartesian3.fromDegrees(
         116.397428,
         39.90923,
@@ -156,17 +160,17 @@ onMounted(() => {
   height: 100%;
   display: flex;
   gap: 20px;
-  
+
   .control-panel {
     width: 300px;
-    
+
     .card-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
     }
   }
-  
+
   .map-view {
     flex: 1;
     position: relative;
@@ -174,4 +178,4 @@ onMounted(() => {
     overflow: hidden;
   }
 }
-</style> 
+</style>
