@@ -33,20 +33,36 @@
       </el-card>
     </div>
     <div class="map-view">
-      <vc-viewer ref="viewerRef" :animation="false" :timeline="false" :navigation="false" :base-layer-picker="false"
-        :creditsDisplay="false" :showCredit="false" @ready="onViewerReady">
+      <vc-viewer ref="viewerRef" 
+        :animation="false" 
+        :timeline="false" 
+        :navigation="false" 
+        :base-layer-picker="false"
+        :creditsDisplay="false" 
+        :showCredit="false" 
+        :selectionIndicator="false"
+        :infoBox="false"
+        :scene3DOnly="true"
+        :fullscreenButton="false"
+        :requestRenderMode="true"
+        :contextOptions="{
+          webgl: {
+            preserveDrawingBuffer: true
+          }
+        }"
+        @ready="onViewerReady">
         <vc-layer-imagery>
           <vc-layer-imagery>
             <vc-layer-imagery>
-              <vc-imagery-provider-tianditu map-style="vec_w" :token="tiandituToken" :minimumLevel="1" :maximumLevel="18" />
+              <vc-imagery-provider-tianditu map-style="vec_w" :minimumLevel="1" :maximumLevel="18"
+                :token="tiandituToken" />
             </vc-layer-imagery>
 
             <vc-layer-imagery>
-              <vc-imagery-provider-tianditu map-style="cva_w" :token="tiandituToken" :minimumLevel="1" :maximumLevel="18" />
+              <vc-imagery-provider-tianditu map-style="cva_w" :minimumLevel="1" :maximumLevel="18"
+                :token="tiandituToken" />
             </vc-layer-imagery>
-            
           </vc-layer-imagery>
-
         </vc-layer-imagery>
 
         <template v-if="viewerRef">
@@ -81,8 +97,9 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-
 import * as Cesium from 'cesium'
+
+const tiandituToken = import.meta.env.VITE_TIANDITU_TOKEN
 
 interface Device {
   id: string
@@ -103,14 +120,13 @@ const selectedDevice = ref<Device | null>(null)
 const trackDialogVisible = ref(false)
 const trackTimeRange = ref<[Date, Date]>([new Date(), new Date()])
 
-const tiandituToken = import.meta.env.VITE_TIANDITU_TOKEN
-
 const billboardConfig = {
   image: '/marker.png',
   verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
   scale: 0.3,
   pixelOffset: new Cesium.Cartesian2(0, 0)
 }
+
 
 const locationBillboardConfig = {
   image: '/location.png',
@@ -145,6 +161,19 @@ const onViewerReady = (readyObject: any) => {
   viewer.scene.screenSpaceCameraController.minimumZoomDistance = 50  // 最小缩放距离（米）
   viewer.scene.screenSpaceCameraController.maximumZoomDistance = 20000000  // 最大缩放距离（米）
   viewer.scene.screenSpaceCameraController.enableTilt = false  // 禁用倾斜
+  
+  // 禁用默认的双击事件
+  viewer.cesiumWidget.screenSpaceEventHandler.removeInputAction(Cesium.ScreenSpaceEventType.LEFT_DOUBLE_CLICK)
+  
+  // 设置默认视角
+  viewer.camera.setView({
+    destination: Cesium.Cartesian3.fromDegrees(116.397428, 39.90923, 8000000),
+    orientation: {
+      heading: 0,
+      pitch: -Cesium.Math.PI_OVER_TWO,
+      roll: 0
+    }
+  })
 }
 
 const refreshDevices = async () => {
@@ -167,13 +196,31 @@ const refreshDevices = async () => {
 const locateDevice = (device: Device) => {
   const viewer = viewerRef.value?.cesiumObject
   if (viewer) {
+    // 计算15级缩放对应的高度（米）
+    const height = 40075017 * Math.cos(device.position.lat * Math.PI / 180) / Math.pow(2, 15)
+    
     viewer.camera.flyTo({
       destination: Cesium.Cartesian3.fromDegrees(
         device.position.lng,
         device.position.lat,
-        1000
+        height
       ),
-      duration: 1
+      duration: 1,
+      complete: () => {
+        // 确保视角正对下方
+        viewer.camera.setView({
+          destination: Cesium.Cartesian3.fromDegrees(
+            device.position.lng,
+            device.position.lat,
+            height
+          ),
+          orientation: {
+            heading: 0,
+            pitch: -Cesium.Math.PI_OVER_TWO,
+            roll: 0
+          }
+        })
+      }
     })
   }
 }
@@ -214,17 +261,37 @@ onMounted(() => {
 
 <style scoped lang="scss">
 .map-container {
-  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   display: flex;
   gap: 20px;
+  padding: 20px;
+  box-sizing: border-box;
+  overflow: hidden;
 
   .control-panel {
     width: 300px;
+    height: 100%;
+    z-index: 2;
 
     .card-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
+    }
+
+    :deep(.el-card) {
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+
+      .el-card__body {
+        flex: 1;
+        overflow: hidden;
+      }
     }
   }
 
@@ -233,6 +300,18 @@ onMounted(() => {
     position: relative;
     border-radius: 4px;
     overflow: hidden;
+    background-color: #000;
+    box-shadow: 0 2px 12px 0 rgba(0,0,0,0.1);
+
+    :deep(.vc-viewer) {
+      position: absolute !important;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      width: 100% !important;
+      height: 100% !important;
+    }
   }
 }
 </style>

@@ -14,27 +14,27 @@
           <img src="../assets/logo.svg" alt="Logo" class="logo" v-if="!isCollapse">
           <img src="../assets/logo.svg" alt="Logo" class="logo-small" v-else>
         </div>
-        <el-menu-item index="/dashboard">
+        <el-menu-item index="/manage/dashboard">
           <el-icon><Odometer /></el-icon>
           <span>控制台</span>
         </el-menu-item>
-        <el-menu-item index="/map">
+        <el-menu-item index="/manage/map">
           <el-icon><Location /></el-icon>
           <span>地图监控</span>
         </el-menu-item>
-        <el-menu-item index="/devices">
+        <el-menu-item index="/manage/devices">
           <el-icon><Monitor /></el-icon>
           <span>设备管理</span>
         </el-menu-item>
-        <el-menu-item index="/device-control">
+        <el-menu-item index="/manage/device-control">
           <el-icon><SetUp /></el-icon>
           <span>设备控制</span>
         </el-menu-item>
-        <el-menu-item index="/users">
+        <el-menu-item index="/manage/users">
           <el-icon><User /></el-icon>
           <span>用户管理</span>
         </el-menu-item>
-        <el-menu-item index="/analysis">
+        <el-menu-item index="/manage/analysis">
           <el-icon><DataLine /></el-icon>
           <span>数据分析</span>
         </el-menu-item>
@@ -105,12 +105,16 @@ const handleLogout = () => {
 <style scoped lang="scss">
 .layout-container {
   height: 100vh;
+  width: 100vw;
+  display: flex;
   background-color: #f0f2f5;
+  overflow: hidden;
   
   .aside {
     transition: width 0.3s;
     position: relative;
     box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+    flex-shrink: 0;
     
     &::before {
       content: '';
@@ -177,11 +181,14 @@ const handleLogout = () => {
   }
   
   .main-container {
+    position: relative;
+    flex: 1;
     display: flex;
     flex-direction: column;
-    min-height: 100vh;
+    min-width: 0;
     
     .header {
+      position: relative;
       background-color: #fff;
       border-bottom: 1px solid #dcdfe6;
       display: flex;
@@ -189,6 +196,8 @@ const handleLogout = () => {
       justify-content: space-between;
       padding: 0 20px;
       height: 60px;
+      flex-shrink: 0;
+      z-index: 1;
       
       .header-left {
         display: flex;
@@ -211,11 +220,14 @@ const handleLogout = () => {
     }
     
     .el-main {
+      position: relative;
       flex: 1;
-      padding: 20px;
+      padding: 0;
       background-color: #f0f2f5;
-      height: calc(100vh - 60px);
-      overflow-y: auto;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
     }
   }
 }
