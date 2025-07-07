@@ -39,7 +39,7 @@
 
 ## 微信小程序界面
 
-![](images\wx_app.jpg)
+![](.\images\wx_app.jpg)
 
 
 ## 开发工具
