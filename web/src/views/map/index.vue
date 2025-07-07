@@ -271,6 +271,7 @@ onMounted(() => {
   padding: 20px;
   box-sizing: border-box;
   overflow: hidden;
+  height: calc(100vh - 60px); /* 减去顶部导航栏的高度 */
 
   .control-panel {
     width: 300px;
@@ -298,6 +299,7 @@ onMounted(() => {
   .map-view {
     flex: 1;
     position: relative;
+    height: 100%;
     border-radius: 4px;
     overflow: hidden;
     background-color: #000;

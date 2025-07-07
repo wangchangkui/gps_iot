@@ -7,13 +7,13 @@ import vueJsx from '@vitejs/plugin-vue-jsx'
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '')
-  
+
   return {
-    plugins: [
-      vue(),
-      vueDevTools(),
+  plugins: [
+    vue(),
+    vueDevTools(),
       vueJsx(),
-    ],
+  ],
     css: {
       preprocessorOptions: {
         scss: {
@@ -21,11 +21,11 @@ export default defineConfig(({ mode }) => {
         }
       }
     },
-    resolve: {
-      alias: {
-        '@': fileURLToPath(new URL('./src', import.meta.url))
-      },
+  resolve: {
+    alias: {
+      '@': fileURLToPath(new URL('./src', import.meta.url))
     },
+  },
     server: {
       headers: {
         'Cross-Origin-Embedder-Policy': 'require-corp',
