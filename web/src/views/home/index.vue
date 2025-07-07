@@ -80,7 +80,6 @@
           <p>邮箱：17360402335@163.com</p>
           
         </div>
-        
         <div class="footer-section">
           <h3>相关链接</h3>
           <a href="https://github.com/wangchangkui/gps_iot" target="_blank">

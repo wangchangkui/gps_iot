@@ -12,6 +12,22 @@
 
 * 移动端部分 Arduino
 * Springboot 3.5.0
+* 数据库 Postgresql 12
+* node 20.19
+
+
+
+## 目录结构说明
+    api-service ---- 后台服务
+    common      ---- 通用工具代码模块
+    deps        ---- 依赖模块
+    eda         ---- 嘉立创
+    handware    ---- esp32代码
+    iot         ---- 物联网模块
+    sql         ---- 数据库文件
+    web         ---- 前端
+    wx-app      ---- 微信小程序
+
 
 ## 参考资料
 
