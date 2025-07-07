@@ -80,6 +80,7 @@
           <p>邮箱：17360402335@163.com</p>
           
         </div>
+        
         <div class="footer-section">
           <h3>相关链接</h3>
           <a href="https://github.com/wangchangkui/gps_iot" target="_blank">
@@ -90,6 +91,7 @@
       </div>
       <div class="footer-bottom">
         <p>© 2025 ADMCC.cn . All rights reserved.</p>
+        <p><a href="https://beian.miit.gov.cn/" target="_blank" class="beian">蜀ICP备20013378号</a></p>
       </div>
     </footer>
   </div>
@@ -288,6 +290,15 @@ onMounted(() => {
     p {
       color: #999;
       font-size: 14px;
+      margin: 5px 0;
+    }
+
+    .beian {
+      color: #999;
+      text-decoration: none;
+      &:hover {
+        color: #666;
+      }
     }
   }
 }
