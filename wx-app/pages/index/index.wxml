@@ -1,27 +1,63 @@
 <!--index.wxml-->
-<scroll-view class="scrollarea" scroll-y type="list">
-  <view class="container">
-    <view class="userinfo">
-      <block wx:if="{{canIUseNicknameComp && !hasUserInfo}}">
-        <button class="avatar-wrapper" open-type="chooseAvatar" bind:chooseavatar="onChooseAvatar">
-          <image class="avatar" src="{{userInfo.avatarUrl}}"></image>
-        </button>
-        <view class="nickname-wrapper">
-          <text class="nickname-label">昵称</text>
-          <input type="nickname" class="nickname-input" placeholder="请输入昵称" bind:change="onInputChange" />
+<view class="page-container">
+  <map
+    id="map"
+    class="map"
+    longitude="{{longitude}}"
+    latitude="{{latitude}}"
+    scale="{{14}}"
+    markers="{{markers}}"
+    polyline="{{polylines}}"
+    show-location
+    bindmarkertap="handleMarkerTap"
+  ></map>
+
+  <!-- 添加日期搜索栏 -->
+  <view class="search-container glass-effect">
+    <view class="date-picker">
+      <view class="picker-item" bindtap="showStartPicker">
+        <text class="picker-label">开始时间</text>
+        <view class="picker-value">
+          <text>{{startDate}}</text>
+          <text class="picker-time">{{startTime}}</text>
         </view>
-      </block>
-      <block wx:elif="{{!hasUserInfo}}">
-        <button wx:if="{{canIUseGetUserProfile}}" bindtap="getUserProfile"> 获取头像昵称 </button>
-        <view wx:else> 请使用2.10.4及以上版本基础库 </view>
-      </block>
-      <block wx:else>
-        <image bindtap="bindViewTap" class="userinfo-avatar" src="{{userInfo.avatarUrl}}" mode="cover"></image>
-        <text class="userinfo-nickname">{{userInfo.nickName}}</text>
-      </block>
+      </view>
+      <view class="date-separator"></view>
+      <view class="picker-item" bindtap="showEndPicker">
+        <text class="picker-label">结束时间</text>
+        <view class="picker-value">
+          <text>{{endDate}}</text>
+          <text class="picker-time">{{endTime}}</text>
+        </view>
+      </view>
     </view>
-    <view class="usermotto">
-      <text class="user-motto">{{motto}}</text>
+    <view class="search-btn" bindtap="searchTrack">
+      <text class="search-text">查询轨迹</text>
     </view>
   </view>
-</scroll-view>
+
+  <view class="content-container">
+    <view class="pet-list glass-effect">
+      <view class="pet-list-header">
+        <text class="title">我的宠物</text>
+        <view class="refresh-btn" bindtap="refreshLocations">
+          <text class="refresh-text">刷新位置</text>
+        </view>
+      </view>
+      
+      <scroll-view scroll-y class="pet-items" enable-flex>
+        <view class="pet-item" wx:for="{{pets}}" wx:key="id" bindtap="showPetDetail" data-pet="{{item}}">
+          <image class="pet-avatar" src="{{item.avatar || '/assets/images/default-pet.png'}}" mode="aspectFill"/>
+          <view class="pet-info">
+            <view class="pet-name">{{item.name}}</view>
+            <view class="pet-location">{{item.address || '获取位置中...'}}</view>
+            <view class="pet-update-time">更新时间：{{item.updateTime}}</view>
+          </view>
+          <view class="navigate-btn" catchtap="navigateToPet" data-pet="{{item}}">
+            <text class="navigate-text">导航</text>
+          </view>
+        </view>
+      </scroll-view>
+    </view>
+  </view>
+</view>
