@@ -158,9 +158,9 @@ const fetchDevices = async () => {
   devices.value = [
     {
       id: '1',
-      name: '设备1',
+      name: '鸡腿',
       position: {
-        lng: 116.397428,
+        lng: 104.397428,
         lat: 39.90923,
         height: 0
       }
