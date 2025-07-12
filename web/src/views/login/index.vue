@@ -2,7 +2,7 @@
   <div class="login-container">
     <el-card class="login-card">
       <template #header>
-        <h2 class="login-title">GPS设备管理系统</h2>
+        <h2 class="login-title">ADMCC-鸡腿</h2>
       </template>
       <el-form
         ref="loginFormRef"
