@@ -38,35 +38,10 @@ void setupNetwork();
 
 
 /**
- * 安全读取4G模块数据（非阻塞式）
- */
-void pollModemData(); 
-
-
-/**
- * @brief 发送数据到服务器
- * @param data 要发送的数据
- * @return 发送成功返回true，失败返回false
- */
-bool sendDataToServer(const String &data);
-
-/**
- * @brief 发送数据到4G模块
- * @param data 要发送的数据
- */
-bool sendData(const String &data, unsigned long timeout);
-
-/**
  * 获取TCP连接状态
  * @return true:TCP已连接, false:TCP未连接
  */
 boolean net_work_is_tcp_connected();
-
-
-/**
- * tcp 重新连接
- */
-void connectTcp();
 
 
 /**

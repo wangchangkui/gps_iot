@@ -2,7 +2,7 @@
  * @Author: coder_wang 17360402335@163.com
  * @Date: 2025-06-22 10:36:45
  * @LastEditors: coder_wang 17360402335@163.com
- * @LastEditTime: 2025-07-13 14:53:05
+ * @LastEditTime: 2025-07-13 15:15:20
  * @FilePath: \handware\lib\Network\NetWork.cpp
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -68,19 +68,6 @@ bool sendATCommand(const char *command, unsigned long timeout, const char *expec
             (strcmp(expected_reply, "OK") != 0 && response.endsWith("OK\r\n")));
 }
 
-/**
- * @brief 发送数据到4G模块
- * @param data 要发送的数据
- */
-bool sendData(const String &data, unsigned long timeout)
-{
-    // 发送数据
-    NET_4G_RX_TX.println(data);
-    Serial.printf("[AT] SEND: %s%c", data, '\n');
-    pollModemData(); // 确保数据发送后立即处理模块响应
-
-    return true;
-}
 
 /**
  * @brief 发送数据到服务器
@@ -116,22 +103,6 @@ bool sendDataToServer(const String &data)
     }
 }
 
-/**
- * @brief 单独处理TCP连接（带重试机制）
- * 已经弃用
- */
-void connectTcp()
-{
-
-    // 配置AP
-    String apnCommand = "AT+QICSGP=1,1,\"\",\"\",\"\"";
-    sendATCommand(apnCommand.c_str());
-    // 开启网络
-    sendATCommand("AT+NETOPEN");
-    String tcpCommand = "AT+CIPOPEN=0,\"TCP\",\"" + String(SERVER_IP) + "\"," + String(SERVER_PORT);
-    // 处理TCP连接
-    sendATCommand(tcpCommand.c_str());
-}
 
 /**
  * @brief 设置4G网络连接
@@ -160,7 +131,7 @@ void setupNetwork()
     delay(100);
 
     // 设置TCP心跳间隔为60秒
-    sendATCommand("AT+MCIPCFG=60", 3000, "OK");
+    sendATCommand("AT+MCIPCFG=30", 3000, "OK");
     delay(100);
 
     int model_count = 0;
@@ -192,7 +163,7 @@ void setupNetwork()
         Serial.printf("[4G] Attempt %d to open network failed, retrying...\n", count);
         delay(200); // 等待2秒后重试
     }
-
+    // 再次检查
     if (!sendATCommand("AT+NETOPEN?", 5000, "1"))
     {
         Serial.println("[ERROR] Failed to open network after multiple attempts.");
@@ -242,10 +213,6 @@ void connectToMQTTClient()
         configCmd += ",,"; // 空用户名和密码
     }
     // 添加连接质量
-
-    
-
-
     sendATCommand(configCmd.c_str(), 3000,"OK");
 }
 
@@ -260,6 +227,7 @@ void connectToMQTTServer()
     else
     {
         Serial.println("[MQTT] Failed set  server config.");
+        isTcpConnected = false; // 设置TCP连接状态为false
     }
 }
 
@@ -274,7 +242,7 @@ void connectMqtt(){
     else
     {
         Serial.println("[MQTT] Failed to connect to server.");
-
+        isTcpConnected = false; // 设置TCP连接状态为false
     }
 }
 
@@ -288,6 +256,7 @@ void subScribeMqttTopic(){
     else
     {
         Serial.println("[MQTT] Failed to scribe topic to server.");
+        isTcpConnected = false; // 设置TCP连接状态为false
     }
 }
 
@@ -312,54 +281,19 @@ void publishMqttMessage(const String &message){
     }else{
         // 检查MQTT连接
         if(sendATCommand("AT+MQTTSTATU", 3000, "0")){
-
+            isTcpConnected = false;
             // 释放MQTT资源
             // AT+MIPCLOSE
             sendATCommand("AT+MIPCLOSE", 3000, "SUCCESS");
 
             // 从新建立连接
             Serial.println("[MQTT] MQTT connection lost, attempting to reconnect...");
-           startMQTT();
+            resetMoudule();
         }
 
     }
 }
-/**
- * 安全读取4G模块数据（非阻塞式）
- */
-void pollModemData()
-{
-    static String buffer;
 
-    while (NET_4G_RX_TX.available())
-    {
-        char c = NET_4G_RX_TX.read();
-
-        // 过滤控制字符
-        if (c == '\0' || c == 255)
-            continue;
-
-        buffer += c;
-
-        // 检测到完整行
-        if (c == '\n')
-        {
-            buffer.trim();
-            if (buffer.length() > 0)
-            {
-                Serial.printf("[4G] %s\n", buffer.c_str());
-            }
-            buffer = "";
-        }
-    }
-
-    // 防止缓冲区累积
-    if (buffer.length() > 512)
-    {
-        Serial.println("[WARN] Buffer overflow cleared");
-        buffer = "";
-    }
-}
 
 boolean net_work_is_tcp_connected()
 {
