@@ -31,6 +31,17 @@
  */
 bool sendATCommand(const char *command, unsigned long timeout = MODEM_TIMEOUT, const char *expected_reply = "OK");
 
+
+/**
+ * * @brief 发送 AT 命令，支持匹配多个预期关键字
+ * @param command AT 命令
+ *
+ * @param timeout 超时时间 (ms)
+ * @param expected_reply 期望的回复数组
+ * @param expected_count 期望回复的数量
+ * @return true:命令成功执行, false:命令执行失败
+ */
+bool sendATCommandMatchAny(const char *command, unsigned long timeout, const char *expected_reply[], size_t expected_count);
 /**
  * @brief 开启4G网口连接
  */
@@ -81,4 +92,11 @@ void startMQTT();
  * 发布MQTT消息
  */
 void publishMqttMessage(const String &message);
+
+
+/**
+ * @brief 关闭MQTT连接
+ * 释放MQTT资源
+ */
+void closeMqttConnection();
 #endif

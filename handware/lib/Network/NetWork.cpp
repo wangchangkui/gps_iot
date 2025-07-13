@@ -2,13 +2,11 @@
  * @Author: coder_wang 17360402335@163.com
  * @Date: 2025-06-22 10:36:45
  * @LastEditors: coder_wang 17360402335@163.com
- * @LastEditTime: 2025-07-13 15:15:20
+ * @LastEditTime: 2025-07-13 21:21:59
  * @FilePath: \handware\lib\Network\NetWork.cpp
- * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
+ * @Description: 网络模块实现 1，连接MQTT 2，发送数据 3，重启设备
  */
 #include "NetWork.h"
-
-
 
 boolean isTcpConnected = false; // TCP连接状态
 
@@ -21,53 +19,102 @@ boolean isTcpConnected = false; // TCP连接状态
  */
 bool sendATCommand(const char *command, unsigned long timeout, const char *expected_reply)
 {
-    // 发送指令（添加明确的回车换行）
-    NET_4G_RX_TX.print(command);
-    NET_4G_RX_TX.print("\r"); // 确保发送完整AT指令格式
-    Serial.printf("[AT] SEND: %s%c", command, '\n');
+    // 先清空缓冲区
+    while (NET_4G_RX_TX.available())
+        NET_4G_RX_TX.read();
+
+    NET_4G_RX_TX.write(command);
+    NET_4G_RX_TX.write("\r\n");
+    Serial.printf("[AT TX] %s\r\n", command);
+
     String response;
     unsigned long start = millis();
-    bool found = false;
-    // 增强型响应接收逻辑
+    unsigned long last_data_time = millis();
+
     while (millis() - start < timeout)
     {
-        while (NET_4G_RX_TX.available())
+        if (NET_4G_RX_TX.available())
         {
             char c = NET_4G_RX_TX.read();
-
-            // 过滤无效字符
-            if (c == '\0' || c == 255)
-                continue;
-
+            last_data_time = millis();
             response += c;
 
-            // 实时检测响应结束标志
-            if (response.endsWith("\r\n") ||
-                response.endsWith(expected_reply) ||
-                response.indexOf("ERROR") != -1)
+            if (response.indexOf(expected_reply) != -1)
             {
-                found = true;
+                Serial.printf("[AT] RECV: %s\n", response.c_str());
+                return true;
             }
         }
-
-        // 收到完整响应后额外等待50ms确保数据完整
-        if (found && (millis() - start > timeout / 2))
+        // 可选：若超过 500ms 没有新数据则提前结束
+        if (millis() - last_data_time > 500)
         {
-            delay(50);
             break;
         }
     }
-    // 规范化输出（去除多余空行）
-    response.trim();
-    if (response.length() > 0)
+
+    if (!response.isEmpty())
     {
         Serial.printf("[AT] RECV: %s\n", response.c_str());
     }
-    // 多条件成功判断
-    return (response.indexOf(expected_reply) != -1 ||
-            (strcmp(expected_reply, "OK") != 0 && response.endsWith("OK\r\n")));
+
+    return strlen(expected_reply) == 0 ? true : response.indexOf(expected_reply) != -1;
 }
 
+
+/**
+ * 发送 AT 命令，支持匹配多个预期关键字
+ * @param command AT 命令
+ * @param timeout 超时时间 (ms)
+ * @param expected_reply 关键字数组
+ * @param expected_count 关键字个数
+ */
+bool sendATCommandMatchAny(const char *command, unsigned long timeout, const char *expected_reply[], size_t expected_count)
+{
+    // 清空缓冲区
+    while (NET_4G_RX_TX.available())
+    {
+        NET_4G_RX_TX.read();
+    }
+
+    NET_4G_RX_TX.write(command);
+    NET_4G_RX_TX.write("\r\n");
+    Serial.printf("[AT TX] %s\r\n", command);
+
+    String response;
+    unsigned long start = millis();
+    unsigned long last_data_time = millis();
+
+    while (millis() - start < timeout)
+    {
+        if (NET_4G_RX_TX.available())
+        {
+            char c = NET_4G_RX_TX.read();
+            last_data_time = millis();
+            response += c;
+
+            // 检查所有关键字
+            for (size_t i = 0; i < expected_count; i++)
+            {
+                if (response.indexOf(expected_reply[i]) != -1)
+                {
+                    Serial.printf("[AT] RECV: %s\n", response.c_str());
+                    return true;
+                }
+            }
+        }
+
+        if (millis() - last_data_time > 500)
+        {
+            break;
+        }
+    }
+
+    if (!response.isEmpty()) {
+        Serial.printf("[AT] RECV: %s\n", response.c_str());
+    }
+
+    return false;
+}
 
 /**
  * @brief 发送数据到服务器
@@ -103,7 +150,6 @@ bool sendDataToServer(const String &data)
     }
 }
 
-
 /**
  * @brief 设置4G网络连接
  */
@@ -122,64 +168,33 @@ void setupNetwork()
     sendATCommand("ATE0", 1000, "OK");
     delay(100);
 
-    sendATCommand("AT+CEREG=0", 1000, "OK"); // 禁用网络注册状态报告
-    delay(100);
-
     // 2. 设置APN
     String apnCommand = "AT+QICSGP=1,1,\"\",\"\",\"\"";
     sendATCommand(apnCommand.c_str(), 3000, "OK");
     delay(100);
 
-    // 设置TCP心跳间隔为60秒
-    sendATCommand("AT+MCIPCFG=30", 3000, "OK");
-    delay(100);
-
-    int model_count = 0;
-    while (model_count < 4)
-    {
-        // 开启透传模式
-        if (sendATCommand("AT+CIPMODE=1", 1000, "OK"))
-        {
-            Serial.println("[4G] Transparent mode enabled.");
-            break;
-        }
-        else
-        {
-            Serial.println("[ERROR] Failed to enable transparent mode. Retrying... ");
-        }
-        delay(1000); // 等待2秒后重试
-        model_count += 1;
-    }
-
     // 3. 开启移动网络
     int count = 0;
     while (count < 5)
     {
-        if (sendATCommand("AT+NETOPEN", 5000, "SUCCESS") || sendATCommand("AT+NETOPEN", 5000, "902"))
+        const char *replies[] = { "SUCCESS","902"};
+        if (sendATCommandMatchAny("AT+NETOPEN", 2000,replies,2))
         {
             break; // 成功开启网络
         }
         count++;
         Serial.printf("[4G] Attempt %d to open network failed, retrying...\n", count);
-        delay(200); // 等待2秒后重试
-    }
-    // 再次检查
-    if (!sendATCommand("AT+NETOPEN?", 5000, "1"))
-    {
-        Serial.println("[ERROR] Failed to open network after multiple attempts.");
-        return;
-    }
-    else
-    {
-        Serial.println("[4G] Network opened successfully.");
+        delay(1000); 
     }
     isTcpConnected = true; // 连接成功
 
     startMQTT(); // 启动MQTT连接
 }
 
-void startMQTT(){
-    
+void startMQTT()
+{
+    // 关闭连接
+    closeMqttConnection();
     // 配置MQTT客户端
     connectToMQTTClient();
     // 配置MQTT服务器
@@ -189,7 +204,6 @@ void startMQTT(){
     // 订阅MQTT主题
     subScribeMqttTopic();
 }
-
 
 void connectToMQTTClient()
 {
@@ -213,13 +227,15 @@ void connectToMQTTClient()
         configCmd += ",,"; // 空用户名和密码
     }
     // 添加连接质量
-    sendATCommand(configCmd.c_str(), 3000,"OK");
+    configCmd += ",0,0,0,1883,2025";
+
+    sendATCommand(configCmd.c_str(), 3000, "OK");
 }
 
 void connectToMQTTServer()
 {
     // 设置服务器地址和端口
-    String serverCmd = "AT+MIPSTART=\"" + String(MQTT_BROKER) + "\"," + String(MQTT_PORT);
+    String serverCmd = "AT+MIPSTART=\"" + String(MQTT_BROKER) + "\"," + String(MQTT_PORT) + ",3";
     if (sendATCommand(serverCmd.c_str(), 10000, "SUCCESS"))
     {
         Serial.println("[MQTT]  server config successfully.");
@@ -227,14 +243,13 @@ void connectToMQTTServer()
     else
     {
         Serial.println("[MQTT] Failed set  server config.");
-        isTcpConnected = false; // 设置TCP连接状态为false
     }
 }
 
-
-void connectMqtt(){
-     // 设置服务器地址和端口 持久会话 并且 心跳机制为30s
-    String serverCmd = "AT+MCONNECT=" + String(0) + "," + String(30);
+void connectMqtt()
+{
+    // 设置服务器地址和端口 持久会话/临时会话 并且 心跳机制为30s
+    String serverCmd = "AT+MCONNECT=" + String(1) + "," + String(30);
     if (sendATCommand(serverCmd.c_str(), 10000, "SUCCESS"))
     {
         Serial.println("[MQTT] Connected  successfully.");
@@ -242,11 +257,11 @@ void connectMqtt(){
     else
     {
         Serial.println("[MQTT] Failed to connect to server.");
-        isTcpConnected = false; // 设置TCP连接状态为false
     }
 }
 
-void subScribeMqttTopic(){
+void subScribeMqttTopic()
+{
     // 订阅主题
     String serverCmd = "AT+MSUB=\"" + String(MQTT_TOPIC) + "\",1";
     if (sendATCommand(serverCmd.c_str(), 10000, "SUCCESS"))
@@ -256,44 +271,47 @@ void subScribeMqttTopic(){
     else
     {
         Serial.println("[MQTT] Failed to scribe topic to server.");
-        isTcpConnected = false; // 设置TCP连接状态为false
     }
 }
 
-String base64Encode(const String &input) {
- return base64::encode(input);
+String base64Encode(const String &input)
+{
+    return base64::encode(input);
 }
 
-
-void publishMqttMessage(const String &message){
+void publishMqttMessage(const String &message)
+{
     // 发布消息 AT+MPUB=<topic>,<qos>,<retain>,<message>
     // 将数据转换为base64
 
     String encodedMessage = base64Encode(message);
-    if (encodedMessage.isEmpty()) {
+    if (encodedMessage.isEmpty())
+    {
         Serial.println("[ERROR] Failed to encode message to Base64.");
         return;
     }
-    String serverCmd = "AT+MPUB=\"" + String(MQTT_TOPIC) + "\",1"+ ",0," + encodedMessage;
-    if (sendATCommand(serverCmd.c_str(), 10000, "SUCCESS"))
+    String serverCmd = "AT+MPUB=\"" + String(MQTT_TOPIC) + "\",1" + ",0," + encodedMessage;
+    sendATCommand(serverCmd.c_str(), 10000, "SUCCESS");
+    // 检查MQTT连接
+    if (sendATCommand("AT+MQTTSTATU", 3000, "0"))
     {
-        Serial.println("[MQTT]  publish message successfully.");
-    }else{
-        // 检查MQTT连接
-        if(sendATCommand("AT+MQTTSTATU", 3000, "0")){
-            isTcpConnected = false;
-            // 释放MQTT资源
-            // AT+MIPCLOSE
-            sendATCommand("AT+MIPCLOSE", 3000, "SUCCESS");
+        isTcpConnected = false;
+        // 释放MQTT资源
+        // AT+MIPCLOSE
+        sendATCommand("AT+MIPCLOSE", 3000, "SUCCESS");
 
-            // 从新建立连接
-            Serial.println("[MQTT] MQTT connection lost, attempting to reconnect...");
-            resetMoudule();
-        }
-
+        // 从新建立连接
+        Serial.println("[MQTT] MQTT connection lost, attempting to reconnect...");
+        resetMoudule();
     }
 }
 
+void closeMqttConnection()
+{
+    // 关闭MQTT连接
+    sendATCommand("AT+MDISCONNECT", 3000, "OK");
+    sendATCommand("AT+MQTTCLOSE", 3000, "OK");
+}
 
 boolean net_work_is_tcp_connected()
 {
