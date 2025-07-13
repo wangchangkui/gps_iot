@@ -61,3 +61,11 @@ spring:
 
 tcp:
   port: 8000
+
+## mq配置
+mqtt:
+  host: 127.0.0.1
+  user-name: admin
+  password: admin@123.
+  client-id: backend-server
+  topic: esp32/data
