@@ -2,7 +2,7 @@
  * @Author: coder_wang 17360402335@163.com
  * @Date: 2024-11-27 21:58:30
  * @LastEditors: coder_wang 17360402335@163.com
- * @LastEditTime: 2025-06-29 21:17:48
+ * @LastEditTime: 2025-07-13 11:28:30
  * @FilePath: \esp32demo\src\main.cpp
  * @Description: ESP32 GPS数据采集上传系统
  */
@@ -44,6 +44,7 @@ void setup()
     // 初始化 4G 模块串口
     delay(1000);
     setupNetwork();
+    
     pinMode(LED_PIN, OUTPUT); // 设置引脚为输出模式
 
     // 设置重置按钮为输入上拉模式
@@ -96,37 +97,8 @@ void loop()
                     // 进行简单的数据有效性检查
                     if (gpsData.length() > 10 && gpsData.startsWith("$"))
                     {
-                        // 添加设备ID并发送
-                        String dataToSend = String(deviceID) + "," + gpsData;
-                        // 使用正确的发送函数而不是直接写入串口
-                        NET_4G_RX_TX.println(dataToSend);
-                        Serial.print("Sending GPS Data: ");
-                        Serial.println(dataToSend);
-                        NET_4G_RX_TX.flush();
-                        // 查看4G串口是否有回复数据
-                        String response = "";
-                        unsigned long startTime = millis();
-                        while (millis() - startTime < 2000) // 等待2秒
-                        {
-                            if (NET_4G_RX_TX.available())
-                            {
-                                char responseChar = NET_4G_RX_TX.read();
-                                response += responseChar;
-                            }
-                        }
-                        if (response.length() > 0)
-                        {
-                            Serial.print("Response from 4G Module: ");
-                            Serial.println(response);
-                        }
-                        // 当服务断开连接的时候 DISCONNECTED:0
-                        if (response.indexOf("DISCONNECTED:0") != -1)
-                        {
-                            Serial.println("4G Module disconnected, attempting to reconnect...");
-                            // 重新连接网络
-                            resetMoudule();
-                        }
-
+                       
+                    
                     }
 
                     // 重置，准备接收下一条语句

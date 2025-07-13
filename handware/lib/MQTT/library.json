@@ -1,7 +1,7 @@
 {
     "name": "MQTT数据传输",
     "version": "1.0.0",
-    "description": "ESP32 MQTT数据传输模块",
+    "description": "ESP32 MQTT数据传输模块,但是不是4G模块的,这个需要注意",
     "keywords": "mqtt, data",
     "authors": {
         "name": "coder_wang",

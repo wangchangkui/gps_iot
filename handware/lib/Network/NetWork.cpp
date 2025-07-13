@@ -1,4 +1,14 @@
+/*
+ * @Author: coder_wang 17360402335@163.com
+ * @Date: 2025-06-22 10:36:45
+ * @LastEditors: coder_wang 17360402335@163.com
+ * @LastEditTime: 2025-07-13 11:51:08
+ * @FilePath: \handware\lib\Network\NetWork.cpp
+ * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
+ */
 #include "NetWork.h"
+
+
 
 boolean isTcpConnected = false; // TCP连接状态
 
@@ -11,12 +21,6 @@ boolean isTcpConnected = false; // TCP连接状态
  */
 bool sendATCommand(const char *command, unsigned long timeout, const char *expected_reply)
 {
-
-    // 清理接收缓冲区
-    while (NET_4G_RX_TX.available())
-    {
-        NET_4G_RX_TX.read();
-    }
     // 发送指令（添加明确的回车换行）
     NET_4G_RX_TX.print(command);
     NET_4G_RX_TX.print("\r"); // 确保发送完整AT指令格式
@@ -64,19 +68,17 @@ bool sendATCommand(const char *command, unsigned long timeout, const char *expec
             (strcmp(expected_reply, "OK") != 0 && response.endsWith("OK\r\n")));
 }
 
-
-
 /**
  * @brief 发送数据到4G模块
  * @param data 要发送的数据
  */
-bool sendData(const String &data, unsigned long timeout){
+bool sendData(const String &data, unsigned long timeout)
+{
     // 发送数据
     NET_4G_RX_TX.println(data);
     Serial.printf("[AT] SEND: %s%c", data, '\n');
     pollModemData(); // 确保数据发送后立即处理模块响应
 
-    
     return true;
 }
 
@@ -137,27 +139,29 @@ void connectTcp()
 void setupNetwork()
 {
     NET_4G_RX_TX.begin(MODEM_BAUD, SERIAL_8N1, GPX_RX, GPX_TX);
-
-    // 断开之前的连接
-    NET_4G_RX_TX.write("+++");
-    sendATCommand("AT+QICLOSE=0", 1000, "OK"); // 关闭之前的TCP连接
-
+    Serial.println("[4G] Initializing network...");
     // 检查模块是否响应
     if (!sendATCommand("AT", 1000, "OK"))
     {
         Serial.println("[ERROR] 4G module not responding.");
-     
     }
+    delay(100);
 
     // 关闭回显
     sendATCommand("ATE0", 1000, "OK");
+    delay(100);
+
+    sendATCommand("AT+CEREG=0", 1000, "OK"); // 禁用网络注册状态报告
+    delay(100);
 
     // 2. 设置APN
     String apnCommand = "AT+QICSGP=1,1,\"\",\"\",\"\"";
     sendATCommand(apnCommand.c_str(), 3000, "OK");
+    delay(100);
 
     // 设置TCP心跳间隔为60秒
-    sendATCommand("AT+MCIPCFG=60", 3000,"OK");
+    sendATCommand("AT+MCIPCFG=60", 3000, "OK");
+    delay(100);
 
     int model_count = 0;
     while (model_count < 4)
@@ -171,7 +175,6 @@ void setupNetwork()
         else
         {
             Serial.println("[ERROR] Failed to enable transparent mode. Retrying... ");
-            
         }
         delay(1000); // 等待2秒后重试
         model_count += 1;
@@ -201,13 +204,68 @@ void setupNetwork()
     }
     isTcpConnected = true; // 连接成功
 
-    // 5. 建立TCP连接
-    String tcpCommand = "AT+CIPOPEN=0,\"TCP\",\"" + String(SERVER_IP) + "\"," + String(SERVER_PORT);
-    sendATCommand(tcpCommand.c_str(), 10000, "SUCCESS");
+    // 配置MQTT客户端
+    connectToMQTTClient();
+    // 配置MQTT服务器
+    connectToMQTTServer();
+    // 连接MQTT服务器
+    connectMqtt();
+}
 
-    // 6. 进入 ATO 透传模式
-    sendATCommand("ATO", 3000, "CONNECT");
-    
+void connectToMQTTClient()
+{
+    uint64_t deviceID = getDeviceID(); // 获取设备唯一标识符
+    // 添加客户段id
+    String client_id = String(deviceID);
+    // 构建AT+MCONFIG命令
+    String configCmd = "AT+MCONFIG=";
+
+    // 添加客户端ID (必须)
+    configCmd += "\"" + client_id + "\"";
+
+    // 添加用户名和密码 (可选)
+    if (strlen(MQTT_USERNAME) > 0)
+    {
+        configCmd += ",\"" + String(MQTT_USERNAME) + "\"";
+        configCmd += ",\"" + String(MQTT_PASSWORD) + "\"";
+    }
+    else
+    {
+        configCmd += ",,"; // 空用户名和密码
+    }
+    sendATCommand(configCmd.c_str(), 3000,"OK");
+}
+
+void connectToMQTTServer()
+{
+    // 设置服务器地址和端口
+    String serverCmd = "AT+MIPSTART=\"" + String(MQTT_BROKER) + "\"," + String(MQTT_PORT);
+    if (sendATCommand(serverCmd.c_str(), 10000, "SUCCESS"))
+    {
+        Serial.println("[MQTT]  server config successfully.");
+        isTcpConnected = true; // 设置TCP连接状态为已连接
+    }
+    else
+    {
+        Serial.println("[MQTT] Failed set  server config.");
+        isTcpConnected = false; // 设置TCP连接状态为未连接
+    }
+}
+
+
+void connectMqtt(){
+     // 设置服务器地址和端口 持久会话 并且 心跳机制为30s
+    String serverCmd = "AT+MCONNECT=" + String(1) + "," + String(30);
+    if (sendATCommand(serverCmd.c_str(), 10000, "SUCCESS"))
+    {
+        Serial.println("[MQTT] Connected  successfully.");
+        isTcpConnected = true; // 设置TCP连接状态为已连接
+    }
+    else
+    {
+        Serial.println("[MQTT] Failed to connect to server.");
+        isTcpConnected = false; // 设置TCP连接状态为未连接
+    }
 }
 
 /**

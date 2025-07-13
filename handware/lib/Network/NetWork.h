@@ -72,4 +72,21 @@ void connectTcp();
  * 重启设备
  */
 void resetMoudule();
+
+
+/**
+ * 建立MQTT客户端
+ */
+void connectToMQTTClient();
+
+/**
+ * 建立MQTTServer
+ */
+void connectToMQTTServer();
+
+
+/**
+ * 发送MQTT连接
+ */
+void connectMqtt();
 #endif
