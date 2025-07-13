@@ -1,11 +1,17 @@
 package cn.admcc.net.mqtt;
 
+import cn.admcc.net.mqtt.config.MqStarterConfig;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.integration.channel.DirectChannel;
+import org.springframework.integration.core.MessageProducer;
+import org.springframework.integration.mqtt.inbound.MqttPahoMessageDrivenChannelAdapter;
 import org.springframework.integration.mqtt.outbound.MqttPahoMessageHandler;
 import org.springframework.integration.mqtt.support.MqttHeaders;
 import org.springframework.messaging.Message;
+import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.stereotype.Service;
 /**
@@ -16,9 +22,12 @@ import org.springframework.stereotype.Service;
 public class MqttPublisher implements InitializingBean {
     private final MqttPahoMessageHandler mqttHandler;
 
+    private final MqStarterConfig mqStarterConfig;
+
     @Autowired
-    public MqttPublisher(MqttPahoMessageHandler mqttHandler) {
+    public MqttPublisher(MqttPahoMessageHandler mqttHandler,MqStarterConfig mqStarterConfig) {
         this.mqttHandler = mqttHandler;
+        this.mqStarterConfig = mqStarterConfig;
     }
 
     public void publish(String topic, String payload) {

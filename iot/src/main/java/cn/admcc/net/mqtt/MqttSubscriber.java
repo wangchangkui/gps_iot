@@ -1,14 +1,18 @@
 package cn.admcc.net.mqtt;
 
 import cn.admcc.net.mqtt.config.MqStarterConfig;
+import cn.hutool.core.codec.Base64;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.integration.annotation.ServiceActivator;
+import org.springframework.integration.channel.DirectChannel;
 import org.springframework.integration.mqtt.core.MqttPahoClientFactory;
 import org.springframework.integration.mqtt.inbound.MqttPahoMessageDrivenChannelAdapter;
+import org.springframework.integration.mqtt.support.DefaultPahoMessageConverter;
+import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.MessageHandler;
 
 /**
@@ -19,10 +23,15 @@ import org.springframework.messaging.MessageHandler;
 public class MqttSubscriber implements InitializingBean {
 
     private final MqStarterConfig mqStarterConfig;
-    private static final String CLIENT_ID = "spring-boot-client-" + System.currentTimeMillis();
+
 
     public MqttSubscriber(MqStarterConfig mqStarterConfig) {
         this.mqStarterConfig = mqStarterConfig;
+    }
+
+    @Bean
+    public MessageChannel mqttInboundChannel(){
+        return new DirectChannel();
     }
 
     @Bean
@@ -31,23 +40,28 @@ public class MqttSubscriber implements InitializingBean {
         // 订阅主题
         String[] topics = {mqStarterConfig.getTopic()};
         MqttPahoMessageDrivenChannelAdapter adapter = 
-            new MqttPahoMessageDrivenChannelAdapter(CLIENT_ID, factory, topics);
-        
+            new MqttPahoMessageDrivenChannelAdapter(mqStarterConfig.getClientId(),factory, topics);
+
+        adapter.setConverter(new DefaultPahoMessageConverter());
         adapter.setQos(1);
-        adapter.setOutputChannelName("mqttInputChannel");
+        adapter.setOutputChannel(mqttInboundChannel());
         return adapter;
     }
 
 
     @Bean
-    @ServiceActivator(inputChannel = "mqttInputChannel")
+    @ServiceActivator(inputChannel = "mqttInboundChannel")
     public MessageHandler messageHandler() {
         return message -> {
             String topic = (String) message.getHeaders().get("mqtt_receivedTopic");
             String payload = (String) message.getPayload();
             
-           log.info("Received from [{}]: {}", topic, payload);
-            // 在此处添加业务逻辑处理
+
+           // base64解密
+            byte[] decode = Base64.decode(payload);
+            String deviceMessage = new String(decode);
+            log.info("Received from [{}]: {}", topic, deviceMessage);
+
         };
     }
 

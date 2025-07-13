@@ -2,7 +2,7 @@
  * @Author: coder_wang 17360402335@163.com
  * @Date: 2025-06-22 10:36:45
  * @LastEditors: coder_wang 17360402335@163.com
- * @LastEditTime: 2025-07-13 11:51:08
+ * @LastEditTime: 2025-07-13 14:53:05
  * @FilePath: \handware\lib\Network\NetWork.cpp
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -204,13 +204,21 @@ void setupNetwork()
     }
     isTcpConnected = true; // 连接成功
 
+    startMQTT(); // 启动MQTT连接
+}
+
+void startMQTT(){
+    
     // 配置MQTT客户端
     connectToMQTTClient();
     // 配置MQTT服务器
     connectToMQTTServer();
     // 连接MQTT服务器
     connectMqtt();
+    // 订阅MQTT主题
+    subScribeMqttTopic();
 }
+
 
 void connectToMQTTClient()
 {
@@ -233,6 +241,11 @@ void connectToMQTTClient()
     {
         configCmd += ",,"; // 空用户名和密码
     }
+    // 添加连接质量
+
+    
+
+
     sendATCommand(configCmd.c_str(), 3000,"OK");
 }
 
@@ -243,31 +256,74 @@ void connectToMQTTServer()
     if (sendATCommand(serverCmd.c_str(), 10000, "SUCCESS"))
     {
         Serial.println("[MQTT]  server config successfully.");
-        isTcpConnected = true; // 设置TCP连接状态为已连接
     }
     else
     {
         Serial.println("[MQTT] Failed set  server config.");
-        isTcpConnected = false; // 设置TCP连接状态为未连接
     }
 }
 
 
 void connectMqtt(){
      // 设置服务器地址和端口 持久会话 并且 心跳机制为30s
-    String serverCmd = "AT+MCONNECT=" + String(1) + "," + String(30);
+    String serverCmd = "AT+MCONNECT=" + String(0) + "," + String(30);
     if (sendATCommand(serverCmd.c_str(), 10000, "SUCCESS"))
     {
         Serial.println("[MQTT] Connected  successfully.");
-        isTcpConnected = true; // 设置TCP连接状态为已连接
     }
     else
     {
         Serial.println("[MQTT] Failed to connect to server.");
-        isTcpConnected = false; // 设置TCP连接状态为未连接
+
     }
 }
 
+void subScribeMqttTopic(){
+    // 订阅主题
+    String serverCmd = "AT+MSUB=\"" + String(MQTT_TOPIC) + "\",1";
+    if (sendATCommand(serverCmd.c_str(), 10000, "SUCCESS"))
+    {
+        Serial.println("[MQTT]  scribe topic  successfully.");
+    }
+    else
+    {
+        Serial.println("[MQTT] Failed to scribe topic to server.");
+    }
+}
+
+String base64Encode(const String &input) {
+ return base64::encode(input);
+}
+
+
+void publishMqttMessage(const String &message){
+    // 发布消息 AT+MPUB=<topic>,<qos>,<retain>,<message>
+    // 将数据转换为base64
+
+    String encodedMessage = base64Encode(message);
+    if (encodedMessage.isEmpty()) {
+        Serial.println("[ERROR] Failed to encode message to Base64.");
+        return;
+    }
+    String serverCmd = "AT+MPUB=\"" + String(MQTT_TOPIC) + "\",1"+ ",0," + encodedMessage;
+    if (sendATCommand(serverCmd.c_str(), 10000, "SUCCESS"))
+    {
+        Serial.println("[MQTT]  publish message successfully.");
+    }else{
+        // 检查MQTT连接
+        if(sendATCommand("AT+MQTTSTATU", 3000, "0")){
+
+            // 释放MQTT资源
+            // AT+MIPCLOSE
+            sendATCommand("AT+MIPCLOSE", 3000, "SUCCESS");
+
+            // 从新建立连接
+            Serial.println("[MQTT] MQTT connection lost, attempting to reconnect...");
+           startMQTT();
+        }
+
+    }
+}
 /**
  * 安全读取4G模块数据（非阻塞式）
  */

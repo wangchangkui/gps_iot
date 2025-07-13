@@ -16,6 +16,7 @@
 #include "SoftwareSerial.h"
 #include "Device.h"
 #include "Config.h"
+#include <base64.h>
 
 
 
@@ -89,4 +90,20 @@ void connectToMQTTServer();
  * 发送MQTT连接
  */
 void connectMqtt();
+
+
+/**
+ * 订阅主题
+ */
+void subScribeMqttTopic();
+
+
+/**
+ * 启动MQTT
+ */
+void startMQTT();
+/**
+ * 发布MQTT消息
+ */
+void publishMqttMessage(const String &message);
 #endif

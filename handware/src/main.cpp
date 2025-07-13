@@ -2,7 +2,7 @@
  * @Author: coder_wang 17360402335@163.com
  * @Date: 2024-11-27 21:58:30
  * @LastEditors: coder_wang 17360402335@163.com
- * @LastEditTime: 2025-07-13 11:28:30
+ * @LastEditTime: 2025-07-13 14:54:59
  * @FilePath: \esp32demo\src\main.cpp
  * @Description: ESP32 GPS数据采集上传系统
  */
@@ -65,6 +65,11 @@ void loop()
     {
         // led 长亮
         digitalWrite(LED_PIN, HIGH); // 网络连接异常时LED常亮
+        // 重启网络
+        Serial.println("Network disconnected, attempting to reconnect...");
+        setupNetwork(); // 重新设置网络
+        delay(1000); // 等待1秒
+        return; // 跳过后续处理
     }
 
 
@@ -97,8 +102,15 @@ void loop()
                     // 进行简单的数据有效性检查
                     if (gpsData.length() > 10 && gpsData.startsWith("$"))
                     {
-                       
-                    
+                        
+                         // 添加设备ID并发送
+                        String dataToSend = String(deviceID) + "," + gpsData;
+                        
+
+                        // 发布数据到MQTT服务器
+                        publishMqttMessage(dataToSend);
+
+                        delay(500); // 确保数据发送完成
                     }
 
                     // 重置，准备接收下一条语句
