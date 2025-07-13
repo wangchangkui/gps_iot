@@ -19,11 +19,16 @@
         <mybatis.plus.version>3.5.12</mybatis.plus.version>
         <hutool.version>5.8.16</hutool.version>
         <netty.version>4.2.2.Final</netty.version>
+        <mqtt-clent.version>1.2.5</mqtt-clent.version>
     </properties>
 
     <dependencyManagement>
         <dependencies>
-
+            <dependency>
+                <groupId>org.eclipse.paho</groupId>
+                <artifactId>org.eclipse.paho.client.mqttv3</artifactId>
+                <version>${mqtt-clent.version}</version>
+            </dependency>
 
             <dependency>
                 <groupId>io.netty</groupId>

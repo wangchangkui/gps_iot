@@ -36,6 +36,17 @@
             <artifactId>netty-all</artifactId>
         </dependency>
 
+        <!-- MQTT 集成依赖 -->
+        <dependency>
+            <groupId>org.springframework.integration</groupId>
+            <artifactId>spring-integration-mqtt</artifactId>
+        </dependency>
+
+        <!-- Eclipse Paho 客户端 -->
+        <dependency>
+            <groupId>org.eclipse.paho</groupId>
+            <artifactId>org.eclipse.paho.client.mqttv3</artifactId>
+        </dependency>
 
 
         <dependency>

@@ -64,8 +64,9 @@ tcp:
 
 ## mq配置
 mqtt:
-  host: 127.0.0.1
+  host: tcp://your-mqtt-server:1883
   user-name: admin
   password: admin@123.
   client-id: backend-server
   topic: esp32/data
+  keepAlive: 30
