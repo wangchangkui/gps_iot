@@ -22,6 +22,11 @@
 
 
 /**
+ * @brief 发送命令
+ */
+bool AT_CMD(String data,char * keyword ,int num);
+
+/**
  * @brief 设置4G网络连接
  * 向 4G 模块发送 AT 命令并等待响应
  * @param command AT 命令

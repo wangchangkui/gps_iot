@@ -2,7 +2,7 @@
  * @Author: coder_wang 17360402335@163.com
  * @Date: 2024-11-27 21:58:30
  * @LastEditors: coder_wang 17360402335@163.com
- * @LastEditTime: 2025-07-13 14:54:59
+ * @LastEditTime: 2025-07-14 22:43:03
  * @FilePath: \esp32demo\src\main.cpp
  * @Description: ESP32 GPS数据采集上传系统
  */
@@ -35,7 +35,10 @@ void setup()
 {
     Serial.begin(115200);
     Serial.println("\n\n===== ESP32 GPS Device Start =====");
-
+    // led 长亮
+    
+    pinMode(LED_PIN, OUTPUT); // 设置引脚为输出模式
+    digitalWrite(LED_PIN, HIGH); // 网络连接异常时LED常亮
     // 初始化 GPS 串口
     GPS_RX_TX.begin(GPS_BAUDRATE, EspSoftwareSerial::SWSERIAL_8N1, G_RXD, G_TXD);
     Serial.println("GPS Module Initialized");
@@ -44,8 +47,7 @@ void setup()
     // 初始化 4G 模块串口
     delay(1000);
     setupNetwork();
-    
-    pinMode(LED_PIN, OUTPUT); // 设置引脚为输出模式
+
 
     // 设置重置按钮为输入上拉模式
     wifiManager.begin(RESET_BTN_PIN, RESET_TIMEOUT); // 初始化WiFi管理器，设置重置按钮引脚和超时时间
@@ -68,10 +70,9 @@ void loop()
         // 重启网络
         Serial.println("Network disconnected, attempting to reconnect...");
         setupNetwork(); // 重新设置网络
-        delay(1000); // 等待1秒
-        return; // 跳过后续处理
+        delay(1000);    // 等待1秒
+        return;         // 跳过后续处理
     }
-
 
     // 读取GPS数据
     if (GPS_RX_TX.available())
@@ -102,10 +103,9 @@ void loop()
                     // 进行简单的数据有效性检查
                     if (gpsData.length() > 10 && gpsData.startsWith("$"))
                     {
-                        
-                         // 添加设备ID并发送
+
+                        // 添加设备ID并发送
                         String dataToSend = String(deviceID) + "," + gpsData;
-                        
 
                         // 发布数据到MQTT服务器
                         publishMqttMessage(dataToSend);
