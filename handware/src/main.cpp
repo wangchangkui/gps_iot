@@ -2,7 +2,7 @@
  * @Author: coder_wang 17360402335@163.com
  * @Date: 2024-11-27 21:58:30
  * @LastEditors: coder_wang 17360402335@163.com
- * @LastEditTime: 2025-07-14 22:43:03
+ * @LastEditTime: 2025-07-15 16:13:53
  * @FilePath: \esp32demo\src\main.cpp
  * @Description: ESP32 GPS数据采集上传系统
  */
@@ -29,6 +29,11 @@ uint64_t deviceID = getDeviceID(); // 获取设备唯一标识符
 
 // 定义网络信号状态灯，当网络连接时常亮，否则闪烁
 #define LED_PIN 2 // LED引脚，通常是GPIO2
+
+
+// 监控单片串口
+#define UART_PORT Serial1
+
 
 // 初始化设备
 void setup()
@@ -61,7 +66,7 @@ void loop()
     wifiManager.handle(); // 处理WiFi管理器的Web请求
 
     // 等待1秒
-    delay(1000);
+    delay(5000);
 
     if (!net_work_is_tcp_connected())
     {
@@ -103,14 +108,11 @@ void loop()
                     // 进行简单的数据有效性检查
                     if (gpsData.length() > 10 && gpsData.startsWith("$"))
                     {
-
                         // 添加设备ID并发送
                         String dataToSend = String(deviceID) + "," + gpsData;
 
                         // 发布数据到MQTT服务器
                         publishMqttMessage(dataToSend);
-
-                        delay(500); // 确保数据发送完成
                     }
 
                     // 重置，准备接收下一条语句
@@ -120,4 +122,5 @@ void loop()
             }
         }
     }
+
 }

@@ -55,12 +55,9 @@ public class MqttSubscriber implements InitializingBean {
         return message -> {
             String topic = (String) message.getHeaders().get("mqtt_receivedTopic");
             String payload = (String) message.getPayload();
-            
 
-           // base64解密
-            byte[] decode = Base64.decode(payload);
-            String deviceMessage = new String(decode);
-            log.info("Received from [{}]: {}", topic, deviceMessage);
+            log.info("Received from [{}]: {}", topic, payload);
+            // todo 业务处理
 
         };
     }
