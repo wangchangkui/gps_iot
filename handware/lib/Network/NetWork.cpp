@@ -2,7 +2,7 @@
  * @Author: coder_wang 17360402335@163.com
  * @Date: 2025-06-22 10:36:45
  * @LastEditors: coder_wang 17360402335@163.com
- * @LastEditTime: 2025-07-14 22:42:22
+ * @LastEditTime: 2025-07-15 15:19:16
  * @FilePath: \handware\lib\Network\NetWork.cpp
  * @Description: 网络模块实现 1，连接MQTT 2，发送数据 3，重启设备
  */
@@ -14,7 +14,7 @@ bool AT_CMD(String data, char *keyword, int num)
 {
     while (NET_4G_RX_TX.available())
         NET_4G_RX_TX.read();
-    Serial.println("AT: "+data); // 发送AT指令
+    Serial.println("AT: " + data); // 发送AT指令
     int i = 0;
     char inchar;
     char UNO_RECV[256] = {0};
@@ -23,7 +23,7 @@ bool AT_CMD(String data, char *keyword, int num)
 
     while (num--)
     {
-    
+
         delay(10);
         while (NET_4G_RX_TX.available())
         {
@@ -189,23 +189,59 @@ void setupNetwork()
 {
     NET_4G_RX_TX.begin(MODEM_BAUD, SERIAL_8N1, GPX_RX, GPX_TX);
     Serial.println("[4G] Initializing network...");
-    // 检查模块是否响应
-    closeMqttConnection(); // 确保之前的连接被关闭
-    delay(1500);
-    while (!AT_CMD("ATE0\r\n", "OK\r\n", 1500));
-    while (!AT_CMD("AT+QICSGP=1,1,"",\"\",\"\"\r\n", "OK\r\n", 5000));
-    if (AT_CMD("AT+NETOPEN?\r\n", "NETOPEN:0", 3000))
+
+    // 1. 检查模块是否响应联网
+    if (sendATCommand("AT+CEREG?", 2000, "+CEREG: 0,0"))
     {
-        while (!AT_CMD("AT+NETOPEN\r\n", "NETOPEN:SUCCESS", 7000)){
-            if(AT_CMD("AT+NETOPEN\r\n", "NETOPEN:902", 7000)){
-                break;
+        // 检查模块是否响应
+        closeMqttConnection(); // 确保之前的连接被关闭
+        delay(1500);
+        // 获取ICCD
+        sendATCommand("AT+ICCID", 2000, "OK");
+
+        // 设置APN
+        while (!sendATCommand("AT+QICSGP=1,1,\"\",\"\",\"\"", 5000, "OK"))
+        {
+            delay(500); // 等待500毫秒
+            /* code */
+            Serial1.println("QICSGP Loading, ...");
+        }
+
+        // 检查网络
+        const char *AT_NETOPEN_OK = "AT+NETOPEN?";
+        const char *AT_NETOPEN = "AT+NETOPEN";
+
+        int retryCount = 0;
+        // ：网络状态0：关闭 1：打开
+        if (!sendATCommand(AT_NETOPEN_OK, 3000, "NETOPEN:1"))
+        {
+
+            while (!sendATCommand(AT_NETOPEN, 7000, "NETOPEN:SUCCESS"))
+            {
+                retryCount++;
+                delay(2000); // 等待1秒
+                if (sendATCommand(AT_NETOPEN, 7000, "ERROR:902"))
+                {
+                    delay(500);
+                    break;
+                }
+                Serial.println("AT+NETOPEN Loading, current retry count: " + String(retryCount));
+                // 如果重试次数超过15次，则重启设备
+
+                if (retryCount > 15)
+                {
+                    // 重启模块ss
+                    // sendATCommand("AT+RESET", 5000, "OK");
+                    delay(3000);
+                    ESP.restart(); // 重启设备
+                }
             }
         }
-        isTcpConnected = true; // 连接成功
+        startMQTT();
     }
 
+    isTcpConnected = true; // 连接成功
     delay(1000);
-    startMQTT();
 }
 
 void startMQTT()
@@ -242,23 +278,44 @@ void connectToMQTTClient()
         configCmd += ",,"; // 空用户名和密码
     }
     // 添加连接质量
-    configCmd += ",0,0,0,1883,2025"; // 0: QoS, 0: retain, 0: clean session, 1883: port, 2025: keep alive
+    configCmd += ",0,0,0,1883,2024"; // 0: QoS, 0: retain, 0: clean session, 1883: port, 2025: keep alive
     sendATCommand(configCmd.c_str(), 3000, "OK");
 }
 
 void connectToMQTTServer()
 {
     String cmd = "AT+MIPSTART=\"" + String(MQTT_BROKER) + "\"," + String(MQTT_PORT) + ",3";
-    while (!AT_CMD(cmd, "MIPSTART: SUCCESS", 7000)); // 连接服务器 端口号
-    // 设置服务器地址和端口
+    int retryCount = 0;
+    while (!sendATCommand(cmd.c_str(), 5000, "MIPSTART: SUCCESS"))
+    {
+        retryCount++;
+        delay(2000); // 等待2秒
+        Serial.println("[MQTT]  start, loding...");
+        // 如果重试次数超过5次，则重启设备
+        if (retryCount > 5)
+        {
+            return;
+        }
+    }
+
     Serial.println("[MQTT]  server config successfully.");
 }
 
 void connectMqtt()
 {
     // 设置服务器地址和端口 持久会话/临时会话 并且 心跳机制为30s
-    while (!AT_CMD("AT+MCONNECT=1,60\r\n", "MCONNECT: SUCCESS", 3000))
-        ;
+    int count = 0;
+    while (!sendATCommand("AT+MCONNECT=1,60", 5000, "MCONNECT: SUCCESS"))
+    {
+        count++;
+        delay(2000);
+        Serial.println("[MQTT]  start, loding...");
+        if (count > 5)
+        {
+            return;
+        }
+    }
+
     Serial.println("[MQTT]  connect successfully.");
 }
 
@@ -266,9 +323,8 @@ void subScribeMqttTopic()
 {
 
     // 订阅主题
-    String serverCmd = "AT+MSUB=\"" + String(MQTT_SUB_TOPIC) +"\",1\r\n";
-    while (!AT_CMD(serverCmd, "MSUB: SUCCESS", 3000))
-        ; // 订阅主题
+    String serverCmd = "AT+MSUB=\"" + String(MQTT_SUB_TOPIC) + "\",1";
+    sendATCommand(serverCmd.c_str(), 3000, "MSUB: SUCCESS");
 }
 
 String base64Encode(const String &input)
@@ -287,15 +343,16 @@ void publishMqttMessage(const String &message)
         Serial.println("[ERROR] Failed to encode message to Base64.");
         return;
     }
-    String serverCmd = "AT+MPUB=\"" + String(MQTT_TOPIC) + "\r\n"",1" + ",0," + encodedMessage;
-    while (!AT_CMD(serverCmd, "MPUB: SUCCESS", 3000))
-        ; // 发布主题
+    String serverCmd = "AT+MPUB=\"" + String(MQTT_TOPIC) + "\""
+                                                           ",1" +
+                       ",0," + encodedMessage;
+    sendATCommand(serverCmd.c_str(), 3000, "MPUB: SUCCESS");
 }
 
 void closeMqttConnection()
 {
     // 关闭MQTT连接
-    AT_CMD("AT+MDISCONNECT\r\n", "OK\r\n", 1500);
+    sendATCommand("AT+MIPSTOP", 1500, "OK\r\n");
 }
 
 boolean net_work_is_tcp_connected()
