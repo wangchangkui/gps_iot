@@ -17,10 +17,10 @@ import java.time.LocalDateTime;
 public class BDGSVDecrypt extends GNGSVDecrypt{
 
     @Override
-    public GSVGNSSInfo decrypt(String baseGpsInfo, Object deviceId) throws TxtInfoException {
+    public GSVGNSSInfo decryptData(String baseGpsInfo, Object deviceId) throws TxtInfoException {
         // 示例：  $BDGSV,4,2,13,16,45,174,27,23,11,173,24,24,12,071,30,25,24,123,25,0*75
         log.info("[{}] 收到来自设备ID 为{}的数据信息：{}" , LocalDateTime.now(),deviceId,baseGpsInfo);
-        GSVGNSSInfo decrypt = super.decrypt(baseGpsInfo, deviceId);
+        GSVGNSSInfo decrypt = super.decryptData(baseGpsInfo, deviceId);
         decrypt.setType("BD");
         return decrypt;
     }

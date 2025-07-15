@@ -24,4 +24,10 @@ public class BaseGpsInfo {
     private String cs;
 
 
+    /**
+     * 原始数据
+     */
+    private String dataSource;
+
+
 }

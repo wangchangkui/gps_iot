@@ -1,13 +1,10 @@
 package cn.admcc.gp10.iot.net;
 
-import cn.admcc.gp10.iot.gps10.GnssDecryptManager;
-import cn.admcc.gp10.iot.net.config.TcpConfig;
-import cn.admcc.net.data.TcpServerUtil;
+import cn.admcc.gps.gp10.GnssDecryptManager;
 import cn.admcc.net.data.handler.DataPacket;
 import cn.admcc.net.data.handler.DataPacketHandler;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.stereotype.Component;
 
 /**
@@ -33,9 +30,7 @@ public class StringDataPackageHandler implements DataPacketHandler {
 
     @Override
     public Object handler(DataPacket data) {
-        log.info("正在处理数据：{}",data);
-        // todo 等待实现业务
-        return null;
+        return gnssDecryptManager.decrypt(data.getGpsData(), data.getDeviceId());
     }
 
 

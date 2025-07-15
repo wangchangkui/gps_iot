@@ -1,7 +1,5 @@
-package cn.admcc.gp10.iot.gps10;
+package cn.admcc.gps.gp10;
 
-import cn.admcc.gps.gp10.DecryptI;
-import cn.admcc.gps.gp10.GpsGnssType;
 import cn.admcc.gps.gp10.exception.GnssDecryptException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.InitializingBean;
@@ -35,7 +33,8 @@ public class GnssDecryptManager implements InitializingBean {
     public Object decrypt(String code,Object deviceId){
         String type = code.split(",")[0];
         if(!decryptIMap.containsKey(type)){
-            throw new GnssDecryptException("找不到对应的解析对象:"+type);
+          log.error("找不到对应的解析对象 : {}",type);
+            return null;
         }
         return decryptIMap.get(type).decrypt(code, deviceId);
     }

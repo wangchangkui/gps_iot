@@ -51,6 +51,18 @@ public class GpsUtcTimeUtil {
 
 
     /**
+     * 解析UTC时间到
+     * @param utcTime 调用resetGpsUtcTimeToGmtTime后处理的时间 请不要直接传入原始时间
+     * @return LocalDateTime
+     */
+    public static LocalDateTime paresLocalDateTime(String utcTime){
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        return LocalDateTime.parse(utcTime,formatter);
+    }
+
+
+    /**
      * 将日期格式从 "日日月月年年" 转换为 "yyyy-MM-dd"
      * @param date 输入的日期字符串，格式为 "日日月月年年"
      * @return 格式化后的日期字符串，格式为 "yyyy-MM-dd"

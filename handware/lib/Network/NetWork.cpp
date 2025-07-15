@@ -2,7 +2,7 @@
  * @Author: coder_wang 17360402335@163.com
  * @Date: 2025-06-22 10:36:45
  * @LastEditors: coder_wang 17360402335@163.com
- * @LastEditTime: 2025-07-15 16:43:02
+ * @LastEditTime: 2025-07-15 21:28:29
  * @FilePath: \handware\lib\Network\NetWork.cpp
  * @Description: 网络模块实现 1，连接MQTT 2，发送数据 3，重启设备
  */
@@ -241,7 +241,7 @@ void setupNetwork()
 void startMQTT()
 {
     // 检查MQTT是否以及连接
-    if (sendATCommand("AT+MQTTSTATU", 3000, " +MQTTSTATU: 0"))
+    if (sendATCommand("AT+MQTTSTATU", 3000, "MQTTSTATU: 0"))
     {
         // 配置MQTT客户端
         connectToMQTTClient();
@@ -338,7 +338,6 @@ void publishMqttMessage(const String &message)
                        ",0," + "\"" + message + "\"";
     if (sendATCommand(serverCmd.c_str(), 3000, "MPUB: SUCCESS"))
     {
-        Serial.println("[MQTT]  publish message successfully: " + message);
         SEND_FAIL_COUNT = 0; // 重置发送失败计数
         return;
     }

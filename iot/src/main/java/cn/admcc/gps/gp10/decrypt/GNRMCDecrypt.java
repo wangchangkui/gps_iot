@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.InvocationTargetException;
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 /**
  * @author coder wang
@@ -20,7 +21,7 @@ import java.time.LocalDateTime;
 @Slf4j
 public class GNRMCDecrypt implements GnssTypeI, DecryptI<RMCGNSSInfo> {
     @Override
-    public RMCGNSSInfo decrypt(String baseGpsInfo, Object deviceId) throws TxtInfoException {
+    public RMCGNSSInfo decryptData(String baseGpsInfo, Object deviceId) throws TxtInfoException {
         log.info("[{}] 收到来自设备ID 为{}的数据信息：{}" , LocalDateTime.now(),deviceId,baseGpsInfo);
         // 样例数据$GNGGA,115001.000,3028.01364,N,10406.49959,E,1,08,1.3,575.6,M,-43.0,M,,*65
         RMCGNSSInfo rmcgnssInfo = new RMCGNSSInfo();
@@ -35,6 +36,19 @@ public class GNRMCDecrypt implements GnssTypeI, DecryptI<RMCGNSSInfo> {
         rmcgnssInfo.setLat(LonLatUtil.resetLonLat(rmcgnssInfo.getLat()));
         rmcgnssInfo.setLon(LonLatUtil.resetLonLat(rmcgnssInfo.getLon()));
         rmcgnssInfo.setUtcTime(GpsUtcTimeUtil.resetGpsUtcTimeToGmtTime(rmcgnssInfo.getUtcTime()));
+
+
+        if (Optional.ofNullable(rmcgnssInfo.getLat()).isPresent()) {
+            rmcgnssInfo.setLat(LonLatUtil.resetLonLat(rmcgnssInfo.getLat()));
+        }
+        if(Optional.ofNullable(rmcgnssInfo.getUtcTime()).isPresent()){
+            rmcgnssInfo.setUtcTime(GpsUtcTimeUtil.resetGpsUtcTimeToGmtTime(rmcgnssInfo.getUtcTime()));
+        }
+        if (Optional.ofNullable(rmcgnssInfo.getLon()).isPresent()) {
+            rmcgnssInfo.setLon(LonLatUtil.resetLonLat(rmcgnssInfo.getLon()));
+        }
+
+
         return rmcgnssInfo;
     }
 

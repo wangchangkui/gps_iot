@@ -4,7 +4,6 @@ import cn.admcc.gps.gp10.DecryptI;
 import cn.admcc.gps.gp10.GnssTypeI;
 import cn.admcc.gps.gp10.GpsGnssType;
 import cn.admcc.gps.gp10.entity.GNGSTInfo;
-import cn.admcc.gps.gp10.entity.GSVGNSSInfo;
 import cn.admcc.gps.gp10.exception.TxtInfoException;
 import cn.admcc.gps.gp10.utils.DataOrderIndexUtil;
 
@@ -18,7 +17,7 @@ import java.lang.reflect.InvocationTargetException;
  */
 public class GMGSTDecrypt implements GnssTypeI, DecryptI<GNGSTInfo> {
     @Override
-    public GNGSTInfo decrypt(String baseGpsInfo, Object deviceId) {
+    public GNGSTInfo decryptData(String baseGpsInfo, Object deviceId) {
         GNGSTInfo gsvgnssInfo = new GNGSTInfo();
         gsvgnssInfo.setDeviceId(deviceId);
         try {

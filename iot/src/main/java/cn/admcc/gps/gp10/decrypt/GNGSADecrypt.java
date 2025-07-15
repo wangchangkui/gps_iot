@@ -25,7 +25,7 @@ public class GNGSADecrypt implements GnssTypeI, DecryptI<GSAGNSSInfo> {
     }
 
     @Override
-    public GSAGNSSInfo decrypt(String baseGpsInfo, Object deviceId) throws TxtInfoException {
+    public GSAGNSSInfo decryptData(String baseGpsInfo, Object deviceId) throws TxtInfoException {
         log.info("[{}] 收到来自设备ID 为{}的数据信息：{}" , LocalDateTime.now(),deviceId,baseGpsInfo);
         // 样例数据$GNGSA,A,3,11,13,15,18,20,24,29,194,195,199,,,1.4,0.8,1.1,1*0C
         GSAGNSSInfo gsagnssInfo = new GSAGNSSInfo();

@@ -108,4 +108,6 @@ public class GAGNSSInfo extends BaseGpsInfo{
      */@DataIndex(order = 14)
     private String diffSta;
 
+
+
 }

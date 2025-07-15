@@ -2,7 +2,7 @@
  * @Author: coder_wang 17360402335@163.com
  * @Date: 2024-11-27 21:58:30
  * @LastEditors: coder_wang 17360402335@163.com
- * @LastEditTime: 2025-07-15 16:13:53
+ * @LastEditTime: 2025-07-15 21:20:44
  * @FilePath: \esp32demo\src\main.cpp
  * @Description: ESP32 GPS数据采集上传系统
  */
@@ -66,12 +66,11 @@ void loop()
     wifiManager.handle(); // 处理WiFi管理器的Web请求
 
     // 等待1秒
-    delay(5000);
-
+    delay(30000);
+    // led 长亮
+    digitalWrite(LED_PIN, HIGH);
     if (!net_work_is_tcp_connected())
     {
-        // led 长亮
-        digitalWrite(LED_PIN, HIGH); // 网络连接异常时LED常亮
         // 重启网络
         Serial.println("Network disconnected, attempting to reconnect...");
         setupNetwork(); // 重新设置网络
@@ -113,6 +112,8 @@ void loop()
 
                         // 发布数据到MQTT服务器
                         publishMqttMessage(dataToSend);
+
+                        digitalWrite(LED_PIN, LOW);
                     }
 
                     // 重置，准备接收下一条语句

@@ -30,7 +30,7 @@ public class GNGSVDecrypt implements GnssTypeI, DecryptI<GSVGNSSInfo> {
     }
 
     @Override
-    public GSVGNSSInfo decrypt(String baseGpsInfo, Object deviceId) throws TxtInfoException {
+    public GSVGNSSInfo decryptData(String baseGpsInfo, Object deviceId) throws TxtInfoException {
         log.info("[{}] 收到来自设备ID 为{}的数据信息：{}" , LocalDateTime.now(),deviceId,baseGpsInfo);
 
         // 测试样例  $GPGSV,3,1,12,05,37,054,17,11,18,134,21,13,42,032,25,15,66,347,28,0*62

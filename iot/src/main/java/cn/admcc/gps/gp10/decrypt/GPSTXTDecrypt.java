@@ -27,7 +27,7 @@ public class GPSTXTDecrypt implements GnssTypeI, DecryptI<TXTGNSSInfo> {
     }
 
     @Override
-    public TXTGNSSInfo decrypt(String baseGpsInfo,Object deviceId) throws TxtInfoException {
+    public TXTGNSSInfo decryptData(String baseGpsInfo, Object deviceId) throws TxtInfoException {
 
         log.info("[{}] 收到来自设备ID 为{}的数据信息：{}" , LocalDateTime.now(),deviceId,baseGpsInfo);
 

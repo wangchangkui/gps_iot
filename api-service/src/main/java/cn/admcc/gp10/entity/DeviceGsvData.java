@@ -41,11 +41,7 @@ public class DeviceGsvData {
     @TableField("satellite_num")
     private Short satelliteNum;
 
-    /**
-     * 数据id 与device_gsv_satellite_data表关联查询
-     */
-    @TableField("data_id")
-    private Long dataId;
+
 
     /**
      * 原始数据

@@ -1,10 +1,13 @@
 package cn.admcc.net.mqtt;
 
+import cn.admcc.gps.gp10.TempDataHandler;
+import cn.admcc.gps.gp10.entity.BaseGpsInfo;
+import cn.admcc.net.data.handler.DataPacket;
+import cn.admcc.net.data.handler.DataPacketHandler;
 import cn.admcc.net.mqtt.config.MqStarterConfig;
-import cn.hutool.core.codec.Base64;
+import cn.hutool.extra.spring.SpringUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.integration.annotation.ServiceActivator;
@@ -14,6 +17,8 @@ import org.springframework.integration.mqtt.inbound.MqttPahoMessageDrivenChannel
 import org.springframework.integration.mqtt.support.DefaultPahoMessageConverter;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.MessageHandler;
+
+import java.util.Optional;
 
 /**
  * @author wck
@@ -56,8 +61,28 @@ public class MqttSubscriber implements InitializingBean {
             String topic = (String) message.getHeaders().get("mqtt_receivedTopic");
             String payload = (String) message.getPayload();
 
-            log.info("Received from [{}]: {}", topic, payload);
-            // todo 业务处理
+
+            String[] split = payload.split(",");
+            // 第一位为设备的ID，其余的为数据包，1.确认设备是Id是一个Long 类型，2，确定数据包是以$开头
+            int dataPackageLength = 2;
+            if(split.length > dataPackageLength){
+                DataPacketHandler bean = SpringUtil.getBean(DataPacketHandler.class);
+                DataPacket dataPacket = new DataPacket(payload);
+                BaseGpsInfo handler =  (BaseGpsInfo) bean.handler(dataPacket);
+                // 保存临时数据数据的标签
+                TempDataHandler tempDataHandler = SpringUtil.getBean(TempDataHandler.class);
+                if(Optional.ofNullable(tempDataHandler).isPresent()){
+                    tempDataHandler.handler(handler);
+                }
+
+                // 业务数据入库
+
+
+
+
+
+            }
+
 
         };
     }

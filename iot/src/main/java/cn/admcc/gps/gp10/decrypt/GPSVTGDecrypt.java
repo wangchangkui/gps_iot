@@ -18,7 +18,7 @@ import java.time.LocalDateTime;
 @Slf4j
 public class GPSVTGDecrypt implements GnssTypeI, DecryptI<VTGGNSSInfo> {
     @Override
-    public VTGGNSSInfo decrypt(String baseGpsInfo, Object deviceId){
+    public VTGGNSSInfo decryptData(String baseGpsInfo, Object deviceId){
         log.info("[{}] 收到来自设备ID 为{}的数据信息：{}" , LocalDateTime.now(),deviceId,baseGpsInfo);
         // 样例数据$GNGGA,115001.000,3028.01364,N,10406.49959,E,1,08,1.3,575.6,M,-43.0,M,,*65
         VTGGNSSInfo rmcgnssInfo = new VTGGNSSInfo();

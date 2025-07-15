@@ -21,7 +21,7 @@ public class DeviceGsvSatelliteData {
     private Long id;
 
     /**
-     * 数据id 来自device_gsv_data表data_id字段
+     * 数据id 来自device_gsv_data表id字段
      */
     @TableField("data_id")
     private Long dataId;

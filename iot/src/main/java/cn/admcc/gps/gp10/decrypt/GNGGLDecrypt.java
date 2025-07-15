@@ -12,6 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.InvocationTargetException;
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 /**
  * @author coder wang
@@ -27,7 +28,7 @@ public class GNGGLDecrypt implements GnssTypeI, DecryptI<GLLGNSSInfo> {
     }
 
     @Override
-    public GLLGNSSInfo decrypt(String baseGpsInfo, Object deviceId) throws TxtInfoException {
+    public GLLGNSSInfo decryptData(String baseGpsInfo, Object deviceId) throws TxtInfoException {
         log.info("[{}] 收到来自设备ID 为{}的数据信息：{}" , LocalDateTime.now(),deviceId,baseGpsInfo);
         // 样例数据$GNGLL,3028.01217,N,10406.50000,E,114547.000,A,A*4F
         GLLGNSSInfo gllgnssInfo = new GLLGNSSInfo();
@@ -39,12 +40,22 @@ public class GNGGLDecrypt implements GnssTypeI, DecryptI<GLLGNSSInfo> {
             throw new TxtInfoException("无法解密数据包："+baseGpsInfo,e);
         }
         // 解析数据
-        String mode = gllgnssInfo.getMode();
-        String[] modeTxt = mode.split("\\*");
-        gllgnssInfo.setMode(modeTxt[0]);
-        gllgnssInfo.setLon(LonLatUtil.resetLonLat(gllgnssInfo.getLon()));
-        gllgnssInfo.setLat(LonLatUtil.resetLonLat(gllgnssInfo.getLat()));
-        gllgnssInfo.setUtcTime(GpsUtcTimeUtil.resetGpsUtcTimeToGmtTime(gllgnssInfo.getUtcTime()));
+        if(Optional.ofNullable(gllgnssInfo.getMode()).isPresent()){
+            String mode = gllgnssInfo.getMode();
+            String[] modeTxt = mode.split("\\*");
+            gllgnssInfo.setMode(modeTxt[0]);
+        }
+
+        if (Optional.ofNullable(gllgnssInfo.getLat()).isPresent()) {
+            gllgnssInfo.setLat(LonLatUtil.resetLonLat(gllgnssInfo.getLat()));
+        }
+        if (Optional.ofNullable(gllgnssInfo.getLon()).isPresent()) {
+            gllgnssInfo.setLon(LonLatUtil.resetLonLat(gllgnssInfo.getLon()));
+        }
+        if(Optional.ofNullable(gllgnssInfo.getUtcTime()).isPresent()){
+            gllgnssInfo.setUtcTime(GpsUtcTimeUtil.resetGpsUtcTimeToGmtTime(gllgnssInfo.getUtcTime()));
+        }
+
         return gllgnssInfo;
     }
 }

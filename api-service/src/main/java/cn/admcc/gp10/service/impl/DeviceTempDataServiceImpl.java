@@ -4,6 +4,9 @@ import cn.admcc.gp10.dao.DeviceTempDataMapper;
 import cn.admcc.gp10.entity.DeviceTempData;
 import cn.admcc.device.entity.dto.IotGpsData;
 import cn.admcc.gp10.service.DeviceTempDataServiceI;
+import cn.admcc.gps.gp10.InsertDataToDbInterface;
+import cn.admcc.gps.gp10.TempDataHandler;
+import cn.admcc.gps.gp10.entity.BaseGpsInfo;
 import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -22,7 +25,7 @@ import java.time.LocalDateTime;
 @Service
 @Slf4j
 @RequiredArgsConstructor
-public class DeviceTempDataServiceImpl extends ServiceImpl<DeviceTempDataMapper, DeviceTempData> implements DeviceTempDataServiceI {
+public class DeviceTempDataServiceImpl extends ServiceImpl<DeviceTempDataMapper, DeviceTempData> implements DeviceTempDataServiceI, TempDataHandler {
 
 
 
@@ -37,6 +40,18 @@ public class DeviceTempDataServiceImpl extends ServiceImpl<DeviceTempDataMapper,
         deviceTempData.setTime(LocalDateTime.now());
         deviceTempData.setId(IdUtil.getSnowflakeNextId());
         log.info("deviceTempData:{}",deviceTempData);
+        this.save(deviceTempData);
+    }
+
+
+
+    @Override
+    public void handler(BaseGpsInfo baseGpsInfo) {
+        DeviceTempData deviceTempData = new DeviceTempData();
+        deviceTempData.setDeviceId((Long) baseGpsInfo.getDeviceId());
+        deviceTempData.setTempData(baseGpsInfo.getDataSource());
+        deviceTempData.setTime(LocalDateTime.now());
+        deviceTempData.setId(IdUtil.getSnowflakeNextId());
         this.save(deviceTempData);
     }
 }

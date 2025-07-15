@@ -3,6 +3,7 @@ package cn.admcc.gps.gp10.utils;
 
 
 import cn.admcc.gps.gp10.exception.TxtInfoException;
+import cn.hutool.core.exceptions.UtilException;
 import cn.hutool.core.util.ReflectUtil;
 import cn.hutool.core.util.StrUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -48,7 +49,11 @@ public class DataOrderIndexUtil {
                         }
                     }
                     if (!StrUtil.isEmpty(orders)) {
-                        ReflectUtil.setFieldValue(targetValue, field, orders);
+                        try {
+                            ReflectUtil.setFieldValue(targetValue, field, orders);
+                        } catch (UtilException e) {
+                            log.error("设置对象失败了",e);
+                        }
                     }
                 } else {
                     // 区间模式

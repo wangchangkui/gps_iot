@@ -12,4 +12,5 @@ public interface GnssTypeI {
      * @return 参考GpsGnssType类的前缀
      */
     String getType();
+
 }

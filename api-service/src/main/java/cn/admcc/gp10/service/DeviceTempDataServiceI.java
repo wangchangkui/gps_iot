@@ -17,4 +17,7 @@ public interface DeviceTempDataServiceI extends IService<DeviceTempData> {
      * @param data 数据
      */
     void addData(IotGpsData data);
+
+
+
 }
