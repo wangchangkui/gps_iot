@@ -158,7 +158,7 @@
         </div>
 
         <!-- 弹出信息面板 -->
-        <div v-if="popupInfo.visible" class="popup-overlay" @click="closePopup" style="position: absolute;top: 120px;left: 20px;background-color: aliceblue;">
+        <div v-if="popupInfo.visible" class="popup-overlay" @click="closePopup">
           <div class="popup-content" @click.stop>
             <div class="popup-header">
               <h3>{{ popupInfo.data.name }}</h3>
@@ -311,7 +311,7 @@ const onViewerReady = (cesiumInstance: any) => {
   
   // 设置相机初始位置（2D模式）
   viewer.camera.setView({
-    destination: Cesium.Cartesian3.fromDegrees(104.397428, 39.90923, 1000000),
+    destination: Cesium.Cartesian3.fromDegrees(104.0700,30.6749, 1000000),
     orientation: {
       heading: 0.0,
       pitch: -Cesium.Math.PI_OVER_TWO,
@@ -376,6 +376,9 @@ const onViewerReady = (cesiumInstance: any) => {
       }
     }
   }, Cesium.ScreenSpaceEventType.MOUSE_MOVE)
+
+  // 默认获取当前用户的位置
+  getUserLocation()
 }
 
 // 处理实体点击事件
@@ -664,26 +667,26 @@ onMounted(() => {
 
   // 弹出面板样式
   .popup-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.5);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 2000;
-    backdrop-filter: blur(5px);
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    background: rgba(0, 0, 0, 0.5) !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    z-index: 2000 !important;
+    backdrop-filter: blur(5px) !important;
   }
 
   .popup-content {
-    background: white;
-    border-radius: 12px;
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
-    min-width: 300px;
-    max-width: 400px;
-    animation: popupSlideIn 0.3s ease-out;
+    background: white !important;
+    border-radius: 12px !important;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3) !important;
+    min-width: 300px !important;
+    max-width: 400px !important;
+    animation: popupSlideIn 0.3s ease-out !important;
   }
 
   .popup-header {

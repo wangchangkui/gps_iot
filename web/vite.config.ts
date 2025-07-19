@@ -3,6 +3,7 @@ import { defineConfig, loadEnv } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import vueDevTools from 'vite-plugin-vue-devtools'
 import vueJsx from '@vitejs/plugin-vue-jsx'
+import { resolve } from 'path'
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
@@ -23,7 +24,8 @@ export default defineConfig(({ mode }) => {
     },
   resolve: {
     alias: {
-      '@': fileURLToPath(new URL('./src', import.meta.url))
+      '@': fileURLToPath(new URL('./src', import.meta.url)),
+      'cesium': resolve(__dirname, 'node_modules/cesium')
     },
   },
     server: {
@@ -32,6 +34,16 @@ export default defineConfig(({ mode }) => {
       headers: {
         'Cross-Origin-Embedder-Policy': 'require-corp',
         'Cross-Origin-Opener-Policy': 'same-origin',
+      }
+    },
+    build: {
+      rollupOptions: {
+        external: ['cesium'],
+        output: {
+          globals: {
+            cesium: 'Cesium'
+          }
+        }
       }
     },
     define: {

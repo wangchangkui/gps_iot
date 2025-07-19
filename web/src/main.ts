@@ -2,7 +2,7 @@
  * @Author: coder_wang 17360402335@163.com
  * @Date: 2025-06-17 21:58:18
  * @LastEditors: coder_wang 17360402335@163.com
- * @LastEditTime: 2025-07-06 14:27:53
+ * @LastEditTime: 2025-07-19 16:13:48
  * @FilePath: \web\src\main.ts
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -30,7 +30,7 @@ app.use(createPinia())
 app.use(router)
 app.use(ElementPlus)
 app.use(VueCesium, {
-  cesiumPath: 'https://unpkg.com/cesium/Build/Cesium/Cesium.js',
+  cesiumPath: '/Cesuim/Cesium1.131/Cesium.js',
   accessToken: import.meta.env.VITE_CESIUM_ACCESS_TOKEN
 })
 
