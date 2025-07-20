@@ -5,6 +5,8 @@
       <div class="logo">
         <img src="/marker.png" alt="logo" />
         <span>Admcc</span>
+
+        <span style="font-size: 12px;color: #999;margin-left: 10px;">当前在线设备：{{ devices.length }}</span>
       </div>
       <div class="nav-right">
         <template v-if="isLoggedIn">
@@ -27,142 +29,90 @@
 
     <!-- 地图展示区 -->
     <main class="main-content">
-              <vc-viewer
-          ref="viewerRef"
-          :animation="false"
-          :timeline="false"
-          :navigation="true"
-          :home-button="true"
-          :fullscreen-button="false"
-          :base-layer-picker="false"
-          :geocoder="true"
-          :scene-mode-picker="true"
-          :navigation-help-button="false"
-          :info-box="false"
-          :selection-indicator="false"
-          :show-credit="false"
-          :scene3d-only="false"
-          :should-animate="false"
-          @ready="onViewerReady"
-        >
+      <vc-viewer ref="viewerRef" :animation="false" :timeline="false" :navigation="true" :home-button="true"
+        :fullscreen-button="false" :base-layer-picker="false" :geocoder="true" :scene-mode-picker="true"
+        :navigation-help-button="false" :info-box="false" :selection-indicator="false" :show-credit="false"
+        :scene3d-only="false" :should-animate="false" @ready="onViewerReady">
         <!-- 地图图层 -->
-               <!-- 取消天地图默认的 1w次请求的限制 -->
+        <!-- 取消天地图默认的 1w次请求的限制 -->
         <!-- <vc-layer-imagery>
           <vc-imagery-provider-tianditu
             :token="tiandituToken"
             :map-style="'cia_w'"
           />
         </vc-layer-imagery> -->
-        
+
         <!-- 矢量底图图层 -->
         <vc-layer-imagery>
-          <vc-imagery-provider-wmts
-            :url="getVecWmtsUrl()"
-            :layer="'vec'"
-            wmts-style="default"
-            tileMatrixSetID="w"
-            :tileMatrixLabels="wmtsMatrixLabels"
-          />
+          <vc-imagery-provider-wmts :url="getVecWmtsUrl()" :layer="'vec'" wmts-style="default" tileMatrixSetID="w"
+            :tileMatrixLabels="wmtsMatrixLabels" />
         </vc-layer-imagery>
 
         <!-- 矢量注记图层 -->
         <vc-layer-imagery>
-          <vc-imagery-provider-wmts
-            :url="getCvaWmtsUrl()"
-            :layer="'cva'"
-            wmts-style="default"
-            tileMatrixSetID="w"
-            :tileMatrixLabels="wmtsMatrixLabels"
-          />
+          <vc-imagery-provider-wmts :url="getCvaWmtsUrl()" :layer="'cva'" wmts-style="default" tileMatrixSetID="w"
+            :tileMatrixLabels="wmtsMatrixLabels" />
         </vc-layer-imagery>
 
 
-                  <!-- 设备位置 -->
-          <vc-entity
-            v-for="device in devices"
-            :key="device.id"
-            :position="Cesium.Cartesian3.fromDegrees(device.position.lng, device.position.lat, device.position.height)"
-            @click="handleEntityClick(device, false)"
-          >
-            <vc-graphics-billboard
-              :image="'/marker.png'"
-              :vertical-origin="Cesium.VerticalOrigin.BOTTOM"
-              :scale="0.3"
-            />
-            <vc-graphics-label
-              :text="device.name"
-              :font="'14pt sans-serif'"
-              :fill-color="Cesium.Color.LIME"
-              :outline-color="Cesium.Color.BLACK"
-              :outline-width="3"
-              :style="Cesium.LabelStyle.FILL_AND_OUTLINE"
-              :pixel-offset="new Cesium.Cartesian2(0, -35)"
-              :show="true"
-              :show-background="true"
-              :background-color="Cesium.Color.BLACK"
-              :background-padding="new Cesium.Cartesian2(8, 4)"
-            />
-          </vc-entity>
+        <!-- 设备位置 -->
+        <vc-entity v-for="device in devices" :key="device.id"
+          :position="Cesium.Cartesian3.fromDegrees(device.position.lng, device.position.lat, device.position.height)"
+          @click="handleEntityClick(device, false)">
+          <vc-graphics-billboard :image="'/marker.png'" :vertical-origin="Cesium.VerticalOrigin.BOTTOM" :scale="0.3" />
+          <vc-graphics-label :text="device.name" :font="'14pt sans-serif'" :fill-color="Cesium.Color.LIME"
+            :outline-color="Cesium.Color.BLACK" :outline-width="3" :style="Cesium.LabelStyle.FILL_AND_OUTLINE"
+            :pixel-offset="new Cesium.Cartesian2(0, -35)" :show="true" :show-background="true"
+            :background-color="Cesium.Color.BLACK" :background-padding="new Cesium.Cartesian2(8, 4)" />
+        </vc-entity>
 
-          <!-- 用户GPS位置 -->
-          <vc-entity
-            v-if="userLocation.isVisible"
-            :key="userLocation.id"
-            :position="Cesium.Cartesian3.fromDegrees(userLocation.position.lng, userLocation.position.lat, userLocation.position.height)"
-            @click="handleEntityClick(userLocation, true)"
-          >
-            <vc-graphics-billboard
-              :image="'/boy.png'"
-              :vertical-origin="Cesium.VerticalOrigin.BOTTOM"
-              :scale="0.2"
-            />
-            <vc-graphics-label
-              :text="userLocation.name"
-              :font="'15pt sans-serif'"
-              :fill-color="Cesium.Color.LIME"
-              :outline-color="Cesium.Color.BLACK"
-              :outline-width="3"
-              :style="Cesium.LabelStyle.FILL_AND_OUTLINE"
-              :pixel-offset="new Cesium.Cartesian2(0, -40)"
-              :show="true"
-              :show-background="true"
-              :background-color="Cesium.Color.BLACK"
-              :background-padding="new Cesium.Cartesian2(8, 4)"
-            />
-          </vc-entity>
+        <!-- 用户GPS位置 -->
+        <vc-entity v-if="userLocation.isVisible" :key="userLocation.id"
+          :position="Cesium.Cartesian3.fromDegrees(userLocation.position.lng, userLocation.position.lat, userLocation.position.height)"
+          @click="handleEntityClick(userLocation, true)">
+          <vc-graphics-billboard :image="'/boy.png'" :vertical-origin="Cesium.VerticalOrigin.BOTTOM" :scale="0.2" />
+          <vc-graphics-label :text="userLocation.name" :font="'15pt sans-serif'" :fill-color="Cesium.Color.LIME"
+            :outline-color="Cesium.Color.BLACK" :outline-width="3" :style="Cesium.LabelStyle.FILL_AND_OUTLINE"
+            :pixel-offset="new Cesium.Cartesian2(0, -40)" :show="true" :show-background="true"
+            :background-color="Cesium.Color.BLACK" :background-padding="new Cesium.Cartesian2(8, 4)" />
+        </vc-entity>
       </vc-viewer>
 
-              <!-- 经纬度信息面板 -->
-        <div class="coordinate-info" style="position: absolute;top: 20px;left: 20px;">
-          <div class="coordinate-item">
-            <span class="label">经度:</span>
-            <span class="value">{{ coordinates.lng }}</span>
-          </div>
-          <div class="coordinate-item">
-            <span class="label">纬度:</span>
-            <span class="value">{{ coordinates.lat }}</span>
-          </div>
-         
+      <!-- 经纬度信息面板 -->
+      <div class="coordinate-info" style="position: absolute;top: 20px;left: 20px;">
+        <div class="coordinate-item">
+          <span class="label">经度:</span>
+          <span class="value">{{ coordinates.lng }}</span>
+          &nbsp;&nbsp;
+          <span class="label">纬度:</span>
+          <span class="value">{{ coordinates.lat }}</span>
         </div>
+      </div>
 
-                <!-- 获取位置按钮 -->
-        <div class="location-button" style="position: absolute;top: 80px;left: 20px;">
-          <el-button 
-            type="primary" 
-            size="small" 
-            @click="getUserLocation"
-            :icon="'Location'"
-          >
- 
-          </el-button>
-        </div>
 
-        <!-- 弹出信息面板 -->
-        <div v-if="popupInfo.visible" class="popup-overlay" @click="closePopup">
-          <div class="popup-content" @click.stop>
-            <div class="popup-header">
-              <h3>{{ popupInfo.data.name }}</h3>
-            </div>
+
+      <!-- 弹出信息面板 -->
+      <div v-if="popupInfo.visible" class="popup-overlay" @click="closePopup"
+           style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:2000;">
+        <div
+          class="popup-content"
+          @click.stop
+          :style="{
+            position: 'absolute',
+            left: popupInfo.position.x + 'px',
+            top: popupInfo.position.y - 280 + 'px', 
+            transform: 'translate(-50%, 0)',
+            zIndex: 3001,
+            pointerEvents: 'auto',
+            minWidth: '300px',
+            maxWidth: '400px'
+          }"
+        >
+          <el-card class="box-card">
+            <template #header>
+              <span>{{ popupInfo.data.name }}</span>
+              <el-button size="small " style="float: right; padding: 3px 0" type="text" @click="closePopup">关闭</el-button>
+            </template>
             <div class="popup-body">
               <div class="coordinate-display">
                 <div class="coord-item">
@@ -179,19 +129,16 @@
                 </div>
               </div>
               <div class="popup-actions">
-                <el-button 
-                  type="primary" 
-                  size="small" 
+                <el-button type="primary" size="small"
                   @click="navigateToLocation(popupInfo.data.lng, popupInfo.data.lat)"
-                  :disabled="popupInfo.data.isUserLocation"
-                  :icon="'Location'"
-                >
+                  :disabled="popupInfo.data.isUserLocation" :icon="'Location'">
                   {{ popupInfo.data.isUserLocation ? '无法导航到自己的位置' : '导航到此位置' }}
                 </el-button>
               </div>
             </div>
-          </div>
+          </el-card>
         </div>
+      </div>
     </main>
 
     <!-- 底部信息 -->
@@ -204,7 +151,7 @@
         <div class="footer-section">
           <h3>联系方式</h3>
           <p>邮箱：17360402335@163.com</p>
-          
+
         </div>
         <div class="footer-section">
           <h3>相关链接</h3>
@@ -282,8 +229,8 @@ const devices = ref([
     id: '1',
     name: '鸡腿',
     position: {
-      lng: 104.397428,
-      lat: 31.90923,
+      lng: 104.108377,
+      lat: 30.467283,
       height: 0
     }
   }
@@ -292,26 +239,24 @@ const devices = ref([
 
 const getCvaWmtsUrl = () => {
   // 构建url
-  let baseUrl = "https://tianditu-cva-w.admcc.cn/cva_w/wmts?tk="+tiandituToken
+  let baseUrl = "https://tianditu-cva-w.admcc.cn/cva_w/wmts?tk=" + tiandituToken
   return baseUrl
 }
 
 
 const getVecWmtsUrl = () => {
   // 构建url
-  let baseUrl = "https://tianditu-vec-w.admcc.cn/vec_w/wmts?tk="+tiandituToken
+  let baseUrl = "https://tianditu-vec-w.admcc.cn/vec_w/wmts?tk=" + tiandituToken
   return baseUrl
 }
 
 const onViewerReady = (cesiumInstance: any) => {
   const { Cesium, viewer } = cesiumInstance
-  
-  // 设置为2D平铺模式
-  viewer.scene.morphTo2D(0)
-  
-  // 设置相机初始位置（2D模式）
+
+
+  // 设置相机初始位置
   viewer.camera.setView({
-    destination: Cesium.Cartesian3.fromDegrees(104.0700,30.6749, 1000000),
+    destination: Cesium.Cartesian3.fromDegrees(104.108377, 30.467283, 1000000),
     orientation: {
       heading: 0.0,
       pitch: -Cesium.Math.PI_OVER_TWO,
@@ -330,7 +275,7 @@ const onViewerReady = (cesiumInstance: any) => {
   viewer.scene.screenSpaceCameraController.enableTranslate = true
   viewer.scene.screenSpaceCameraController.enableZoom = true
   viewer.scene.screenSpaceCameraController.enableTilt = true
-  
+
   // 禁用双击缩放
   viewer.scene.screenSpaceCameraController.enableDoubleClickZoom = false
 
@@ -344,7 +289,7 @@ const onViewerReady = (cesiumInstance: any) => {
     const height = viewer.camera.positionCartographic.height
     const minHeight = 100 // 对应19层级的最小高度
     const maxHeight = 20000000 // 对应18层级的最大高度
-    
+
     if (height < minHeight) {
       viewer.camera.setView({
         destination: Cesium.Cartesian3.fromDegrees(
@@ -387,23 +332,45 @@ const handleEntityClick = (entity: any, isUserLocation: boolean) => {
   const position = entity.position || entity
   const lng = position.lng || position.longitude
   const lat = position.lat || position.latitude
-
-
-  // 获取我自己的位置
-  getUserLocation()
-
-  // 获取我自己的位置
- 
-  const userLng = userLocation.value.position.lng
-  const userLat = userLocation.value.position.lat
-  console.log(userLng,userLat)
-
-
+ // 飞行到用户位置
+ if (viewerRef.value?.cesiumObject) {
+        viewerRef.value.cesiumObject.camera.flyTo({
+          destination: Cesium.Cartesian3.fromDegrees(lng, lat, 10000)
+        })
+      }
   
+
+  // 获取viewer对象
+  const viewer = viewerRef.value?.cesiumObject
+  let screenPosition = { x: 0, y: 0 }
+  if (viewer) {
+    const cartesian = Cesium.Cartesian3.fromDegrees(lng, lat, position.height || 0)
+   
+   
+    // 计算屏幕像素坐标（相对于canvas左上角）
+    const windowPos = Cesium.SceneTransforms.worldToWindowCoordinates(viewer.scene, cartesian)
+
+    console.log(Cesium.SceneTransforms.worldToWindowCoordinates(viewer.scene, cartesian))
+    if (windowPos) {
+      // 需要减去canvas在页面中的偏移量，使其相对于.main-content
+      const canvas = viewer.scene.canvas
+      const rect = canvas.getBoundingClientRect()
+      // main-content 也可能有边距，需获取其rect
+      const mainContent = document.querySelector('.main-content') as HTMLElement
+      const mainRect = mainContent ? mainContent.getBoundingClientRect() : { left: 0, top: 0 }
+      screenPosition = {
+        x: windowPos.x + rect.left - mainRect.left,
+        y: windowPos.y + rect.top - mainRect.top
+      }
+
+
+      console.log(screenPosition)
+    }
+  }
   // 设置弹出面板数据
   popupInfo.value = {
     visible: true,
-    position: { x: 0, y: 0 }, // 将在CSS中居中显示
+    position: screenPosition, // 屏幕像素坐标
     data: {
       id: entity.id,
       name: entity.name,
@@ -421,13 +388,10 @@ const closePopup = () => {
 
 // 导航到指定位置
 const navigateToLocation = (lng: number, lat: number) => {
-  if (viewerRef.value?.cesiumObject) {
-    viewerRef.value.cesiumObject.camera.flyTo({
-      destination: Cesium.Cartesian3.fromDegrees(lng, lat, 5000),
-      duration: 2.0
-    })
-  }
-  closePopup()
+  // 调用高德地图api接口 获取地址
+  // 1.获取当前用户的位置 ，如果用户位置定位为空 则获取当前设备的位置，如果再次为空 则弹出提示无法获取用户的位置
+
+  
 }
 
 // 获取用户GPS位置
@@ -438,11 +402,11 @@ const getUserLocation = () => {
   }
 
   ElMessage.info('正在获取您的位置...')
-  
+
   navigator.geolocation.getCurrentPosition(
     (position) => {
       const { longitude, latitude, altitude } = position.coords
-      
+
       userLocation.value = {
         id: 'user',
         name: '我的位置',
@@ -453,15 +417,10 @@ const getUserLocation = () => {
         },
         isVisible: true
       }
-      
+
       ElMessage.success('位置获取成功！')
-      
-      // 飞行到用户位置
-      if (viewerRef.value?.cesiumObject) {
-        viewerRef.value.cesiumObject.camera.flyTo({
-          destination: Cesium.Cartesian3.fromDegrees(longitude, latitude, 10000)
-        })
-      }
+
+     
     },
     (error) => {
       console.error('获取位置失败:', error)
@@ -503,7 +462,8 @@ onMounted(() => {
 
 <style scoped lang="scss">
 .home-container {
-  padding-top: 40px; /* 为固定的头部腾出空间 */
+  padding-top: 40px;
+  /* 为固定的头部腾出空间 */
   min-height: 100vh;
 
 }
@@ -521,22 +481,22 @@ onMounted(() => {
   left: 0;
   right: 0;
   z-index: 1000;
-  
+
   .logo {
     display: flex;
     align-items: center;
     gap: 10px;
-    
+
     img {
       height: 40px;
     }
-    
+
     span {
       font-size: 20px;
       font-weight: bold;
     }
   }
-  
+
   .nav-right {
     display: flex;
     gap: 10px;
@@ -548,7 +508,8 @@ onMounted(() => {
   /* 地图区域占据初始视口减去头部的高度，并留出边距 */
   height: calc(100vh - 120px);
   margin: 30px;
-  position: relative; /* 用于内部 Cesium 视图的绝对定位 */
+  position: relative;
+  /* 用于内部 Cesium 视图的绝对定位 */
   width: calc(100% - 45px);
   border-radius: 20px;
   overflow: hidden;
@@ -623,6 +584,7 @@ onMounted(() => {
     .beian {
       color: #999;
       text-decoration: none;
+
       &:hover {
         color: #666;
       }
@@ -667,7 +629,7 @@ onMounted(() => {
 
   // 弹出面板样式
   .popup-overlay {
-    position: fixed !important;
+    position: relative !important;
     top: 0 !important;
     left: 0 !important;
     right: 0 !important;
@@ -710,7 +672,7 @@ onMounted(() => {
       width: 24px;
       height: 24px;
       border-radius: 50%;
-      
+
       &:hover {
         background: #f5f5f5;
         color: #666;
@@ -761,10 +723,11 @@ onMounted(() => {
       opacity: 0;
       transform: translateY(-20px) scale(0.95);
     }
+
     to {
       opacity: 1;
       transform: translateY(0) scale(1);
     }
   }
 }
-</style> 
+</style>
