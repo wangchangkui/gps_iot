@@ -62,7 +62,7 @@
           <vc-graphics-billboard :image="'/marker.png'" :vertical-origin="Cesium.VerticalOrigin.BOTTOM" :scale="0.3" />
           <vc-graphics-label :text="device.name" :font="'14pt sans-serif'" :fill-color="Cesium.Color.LIME"
             :outline-color="Cesium.Color.BLACK" :outline-width="3" :style="Cesium.LabelStyle.FILL_AND_OUTLINE"
-            :pixel-offset="new Cesium.Cartesian2(0, -35)" :show="true" :show-background="true"
+            :pixel-offset="new Cesium.Cartesian2(0, -70)" :show="true" :show-background="true"
             :background-color="Cesium.Color.BLACK" :background-padding="new Cesium.Cartesian2(8, 4)" />
         </vc-entity>
 
@@ -73,7 +73,7 @@
           <vc-graphics-billboard :image="'/boy.png'" :vertical-origin="Cesium.VerticalOrigin.BOTTOM" :scale="0.2" />
           <vc-graphics-label :text="userLocation.name" :font="'15pt sans-serif'" :fill-color="Cesium.Color.LIME"
             :outline-color="Cesium.Color.BLACK" :outline-width="3" :style="Cesium.LabelStyle.FILL_AND_OUTLINE"
-            :pixel-offset="new Cesium.Cartesian2(0, -40)" :show="true" :show-background="true"
+            :pixel-offset="new Cesium.Cartesian2(0, -80)" :show="true" :show-background="true"
             :background-color="Cesium.Color.BLACK" :background-padding="new Cesium.Cartesian2(8, 4)" />
         </vc-entity>
       </vc-viewer>
@@ -93,25 +93,22 @@
 
       <!-- 弹出信息面板 -->
       <div v-if="popupInfo.visible" class="popup-overlay" @click="closePopup"
-           style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:2000;">
-        <div
-          class="popup-content"
-          @click.stop
-          :style="{
-            position: 'absolute',
-            left: popupInfo.position.x + 'px',
-            top: popupInfo.position.y - 280 + 'px', 
-            transform: 'translate(-50%, 0)',
-            zIndex: 3001,
-            pointerEvents: 'auto',
-            minWidth: '300px',
-            maxWidth: '400px'
-          }"
-        >
+        style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:2000;">
+        <div class="popup-content" @click.stop :style="{
+          position: 'absolute',
+          left: popupInfo.position.x + 'px',
+          top: popupInfo.position.y - 280 + 'px',
+          transform: 'translate(-50%, 0)',
+          zIndex: 3001,
+          pointerEvents: 'auto',
+          minWidth: '300px',
+          maxWidth: '400px'
+        }">
           <el-card class="box-card">
             <template #header>
               <span>{{ popupInfo.data.name }}</span>
-              <el-button size="small " style="float: right; padding: 3px 0" type="text" @click="closePopup">关闭</el-button>
+              <el-button size="small " style="float: right; padding: 3px 0" type="text"
+                @click="closePopup">关闭</el-button>
             </template>
             <div class="popup-body">
               <div class="coordinate-display">
@@ -172,12 +169,19 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import * as Cesium from 'cesium'
+
 import ElMessage from 'element-plus/es/components/message/index'
 
 const router = useRouter()
 const viewerRef = ref()
 const tiandituToken = import.meta.env.VITE_TIANDITU_TOKEN || ''
+
+
+
+// 兼容 public 方式引入 Cesium
+const Cesium = (window as any).Cesium
+defineExpose({ Cesium })
+
 
 // 用户状态
 const isLoggedIn = ref(false)
@@ -332,21 +336,21 @@ const handleEntityClick = (entity: any, isUserLocation: boolean) => {
   const position = entity.position || entity
   const lng = position.lng || position.longitude
   const lat = position.lat || position.latitude
- // 飞行到用户位置
- if (viewerRef.value?.cesiumObject) {
-        viewerRef.value.cesiumObject.camera.flyTo({
-          destination: Cesium.Cartesian3.fromDegrees(lng, lat, 10000)
-        })
-      }
-  
+  // 飞行到用户位置
+  if (viewerRef.value?.cesiumObject) {
+    viewerRef.value.cesiumObject.camera.flyTo({
+      destination: Cesium.Cartesian3.fromDegrees(lng, lat, 10000)
+    })
+  }
+
 
   // 获取viewer对象
   const viewer = viewerRef.value?.cesiumObject
   let screenPosition = { x: 0, y: 0 }
   if (viewer) {
     const cartesian = Cesium.Cartesian3.fromDegrees(lng, lat, position.height || 0)
-   
-   
+
+
     // 计算屏幕像素坐标（相对于canvas左上角）
     const windowPos = Cesium.SceneTransforms.worldToWindowCoordinates(viewer.scene, cartesian)
 
@@ -389,9 +393,9 @@ const closePopup = () => {
 // 导航到指定位置
 const navigateToLocation = (lng: number, lat: number) => {
   // 调用高德地图api接口 获取地址
-  // 1.获取当前用户的位置 ，如果用户位置定位为空 则获取当前设备的位置，如果再次为空 则弹出提示无法获取用户的位置
+  // todo 1.获取当前用户的位置 ，如果用户位置定位为空 则获取当前设备的位置，如果再次为空 则弹出提示无法获取用户的位置
 
-  
+
 }
 
 // 获取用户GPS位置
@@ -420,7 +424,7 @@ const getUserLocation = () => {
 
       ElMessage.success('位置获取成功！')
 
-     
+
     },
     (error) => {
       console.error('获取位置失败:', error)

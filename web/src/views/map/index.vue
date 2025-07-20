@@ -97,7 +97,11 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import * as Cesium from 'cesium'
+
+// 兼容 public 方式引入 Cesium
+const Cesium = (window as any).Cesium
+defineExpose({ Cesium })
+
 
 const tiandituToken = import.meta.env.VITE_TIANDITU_TOKEN
 
