@@ -171,16 +171,12 @@ import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 
 import ElMessage from 'element-plus/es/components/message/index'
+import * as Cesium from 'cesium'
 
 const router = useRouter()
 const viewerRef = ref()
 const tiandituToken = import.meta.env.VITE_TIANDITU_TOKEN || ''
 
-
-
-// 兼容 public 方式引入 Cesium
-const Cesium = (window as any).Cesium
-defineExpose({ Cesium })
 
 
 // 用户状态

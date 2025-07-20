@@ -97,13 +97,9 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-
-// 兼容 public 方式引入 Cesium
-const Cesium = (window as any).Cesium
-defineExpose({ Cesium })
-
-
+import * as Cesium from 'cesium'
 const tiandituToken = import.meta.env.VITE_TIANDITU_TOKEN
+
 
 interface Device {
   id: string
@@ -155,7 +151,8 @@ const getLabelConfig = (device: Device) => ({
 })
 
 const onViewerReady = (readyObject: any) => {
-  const { viewer } = readyObject
+  const {Cesium,  viewer } = readyObject
+  
   const imageryLayers = viewer.imageryLayers
   imageryLayers.removeAll()
   
