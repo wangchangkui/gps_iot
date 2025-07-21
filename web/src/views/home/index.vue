@@ -55,25 +55,25 @@
         </vc-layer-imagery>
 
 
-        <!-- 设备位置 -->
+        <!-- 设备位置 暂时关闭掉用户的标签 -->
         <vc-entity v-for="device in devices" :key="device.id"
           :position="Cesium.Cartesian3.fromDegrees(device.position.lng, device.position.lat, device.position.height)"
           @click="handleEntityClick(device, false)">
           <vc-graphics-billboard :image="'/marker.png'" :vertical-origin="Cesium.VerticalOrigin.BOTTOM" :scale="0.3" />
           <vc-graphics-label :text="device.name" :font="'14pt sans-serif'" :fill-color="Cesium.Color.LIME"
             :outline-color="Cesium.Color.BLACK" :outline-width="3" :style="Cesium.LabelStyle.FILL_AND_OUTLINE"
-            :pixel-offset="new Cesium.Cartesian2(0, -70)" :show="true" :show-background="true"
+            :pixel-offset="new Cesium.Cartesian2(0, -70)" :show="false" :show-background="false"
             :background-color="Cesium.Color.BLACK" :background-padding="new Cesium.Cartesian2(8, 4)" />
         </vc-entity>
 
-        <!-- 用户GPS位置 -->
+        <!-- 用户GPS位置 暂时关闭掉用户的标签 -->
         <vc-entity v-if="userLocation.isVisible" :key="userLocation.id"
           :position="Cesium.Cartesian3.fromDegrees(userLocation.position.lng, userLocation.position.lat, userLocation.position.height)"
           @click="handleEntityClick(userLocation, true)">
           <vc-graphics-billboard :image="'/boy.png'" :vertical-origin="Cesium.VerticalOrigin.BOTTOM" :scale="0.2" />
           <vc-graphics-label :text="userLocation.name" :font="'15pt sans-serif'" :fill-color="Cesium.Color.LIME"
             :outline-color="Cesium.Color.BLACK" :outline-width="3" :style="Cesium.LabelStyle.FILL_AND_OUTLINE"
-            :pixel-offset="new Cesium.Cartesian2(0, -80)" :show="true" :show-background="true"
+            :pixel-offset="new Cesium.Cartesian2(0, -80)" :show="false" :show-background="false"
             :background-color="Cesium.Color.BLACK" :background-padding="new Cesium.Cartesian2(8, 4)" />
         </vc-entity>
       </vc-viewer>
