@@ -20,10 +20,85 @@
         <hutool.version>5.8.16</hutool.version>
         <netty.version>4.2.2.Final</netty.version>
         <mqtt-clent.version>1.2.5</mqtt-clent.version>
+        <gt.version>31.0</gt.version>
     </properties>
 
     <dependencyManagement>
         <dependencies>
+
+            <dependency>
+                <groupId>org.geotools</groupId>
+                <artifactId>gt-main</artifactId>
+                <version>${gt.version}</version>
+            </dependency>
+
+            <!-- https://mvnrepository.com/artifact/org.geotools/gt-geojson-store -->
+            <dependency>
+                <groupId>org.geotools</groupId>
+                <artifactId>gt-geojson-store</artifactId>
+                <version>${gt.version}</version>
+            </dependency>
+
+            <!--船新版本geojson支持-->
+            <dependency>
+                <groupId>org.geotools</groupId>
+                <artifactId>gt-geojson-core</artifactId>
+                <version>${gt.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.geotools</groupId>
+                <artifactId>gt-shapefile</artifactId>
+                <version>${gt.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.geotools</groupId>
+                <artifactId>gt-geotiff</artifactId>
+                <version>${gt.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.geotools</groupId>
+                <artifactId>gt-epsg-hsql</artifactId>
+                <version>${gt.version}</version>
+            </dependency>
+
+            <!-- https://mvnrepository.com/artifact/org.geotools.xsd/gt-xsd-kml -->
+            <dependency>
+                <groupId>org.geotools.xsd</groupId>
+                <artifactId>gt-xsd-kml</artifactId>
+                <version>${gt.version}</version>
+            </dependency>
+
+            <!-- https://mvnrepository.com/artifact/org.geotools.xsd/gt-xsd-sld -->
+            <dependency>
+                <groupId>org.geotools.xsd</groupId>
+                <artifactId>gt-xsd-sld</artifactId>
+                <version>${gt.version}</version>
+            </dependency>
+
+            <!-- https://mvnrepository.com/artifact/org.geotools/gt-arcgrid -->
+            <dependency>
+                <groupId>org.geotools</groupId>
+                <artifactId>gt-arcgrid</artifactId>
+                <version>${gt.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.geotools</groupId>
+                <artifactId>gt-coverage</artifactId>
+                <version>${gt.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.geotools</groupId>
+                <artifactId>gt-cql</artifactId>
+                <version>${gt.version}</version>
+            </dependency>
+
+
+
             <dependency>
                 <groupId>org.eclipse.paho</groupId>
                 <artifactId>org.eclipse.paho.client.mqttv3</artifactId>

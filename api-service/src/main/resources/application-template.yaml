@@ -70,3 +70,8 @@ mqtt:
   client-id: backend-server
   topic: esp32/data
   keepAlive: 30
+
+## 高德的配置
+gd:
+  api-token: 940ce1ea6a9b829869d8a515eed2de33
+  baseUrl: https://restapi.amap.com

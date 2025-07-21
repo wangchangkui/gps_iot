@@ -60,10 +60,17 @@
           :position="Cesium.Cartesian3.fromDegrees(device.position.lng, device.position.lat, device.position.height)"
           @click="handleEntityClick(device, false)">
           <vc-graphics-billboard :image="'/marker.png'" :vertical-origin="Cesium.VerticalOrigin.BOTTOM" :scale="0.3" />
-          <vc-graphics-label :text="device.name" :font="'14pt sans-serif'" :fill-color="Cesium.Color.LIME"
-            :outline-color="Cesium.Color.BLACK" :outline-width="3" :style="Cesium.LabelStyle.FILL_AND_OUTLINE"
-            :pixel-offset="new Cesium.Cartesian2(0, -70)" :show="false" :show-background="false"
-            :background-color="Cesium.Color.BLACK" :background-padding="new Cesium.Cartesian2(8, 4)" />
+          <vc-graphics-label 
+          :text="device.name" 
+          :font="'14pt sans-serif'" 
+          :fill-color="Cesium.Color.LIME"
+          :outline-color="Cesium.Color.BLACK" 
+          :outline-width="3" 
+          :style="Cesium.LabelStyle.FILL_AND_OUTLINE"
+          :pixel-offset="new Cesium.Cartesian2(0, -70)" 
+          :show="false" :show-background="false"
+          :background-color="Cesium.Color.BLACK" 
+          :background-padding="new Cesium.Cartesian2(8, 4)" />
         </vc-entity>
 
         <!-- 用户GPS位置 暂时关闭掉用户的标签 -->
@@ -71,10 +78,16 @@
           :position="Cesium.Cartesian3.fromDegrees(userLocation.position.lng, userLocation.position.lat, userLocation.position.height)"
           @click="handleEntityClick(userLocation, true)">
           <vc-graphics-billboard :image="'/boy.png'" :vertical-origin="Cesium.VerticalOrigin.BOTTOM" :scale="0.2" />
-          <vc-graphics-label :text="userLocation.name" :font="'15pt sans-serif'" :fill-color="Cesium.Color.LIME"
-            :outline-color="Cesium.Color.BLACK" :outline-width="3" :style="Cesium.LabelStyle.FILL_AND_OUTLINE"
-            :pixel-offset="new Cesium.Cartesian2(0, -80)" :show="false" :show-background="false"
-            :background-color="Cesium.Color.BLACK" :background-padding="new Cesium.Cartesian2(8, 4)" />
+          <vc-graphics-label 
+          :text="userLocation.name" :font="'15pt sans-serif'" 
+          :fill-color="Cesium.Color.LIME"
+          :outline-color="Cesium.Color.BLACK" 
+          :outline-width="3" 
+          :style="Cesium.LabelStyle.FILL_AND_OUTLINE"
+          :pixel-offset="new Cesium.Cartesian2(0, -80)" 
+          :show="false" :show-background="false"
+          :background-color="Cesium.Color.BLACK" 
+          :background-padding="new Cesium.Cartesian2(8, 4)" />
         </vc-entity>
       </vc-viewer>
 
@@ -348,10 +361,10 @@ const handleEntityClick = (entity: any, isUserLocation: boolean) => {
     const cartesian = Cesium.Cartesian3.fromDegrees(lng, lat, position.height || 0)
 
 
-    // 计算屏幕像素坐标（相对于canvas左上角）
+    // 计算屏幕像素坐标 2D模式下无法获得真实坐标（相对于canvas左上角）
     const windowPos = Cesium.SceneTransforms.worldToWindowCoordinates(viewer.scene, cartesian)
 
-    console.log(Cesium.SceneTransforms.worldToWindowCoordinates(viewer.scene, cartesian))
+
     if (windowPos) {
       // 需要减去canvas在页面中的偏移量，使其相对于.main-content
       const canvas = viewer.scene.canvas
@@ -365,7 +378,7 @@ const handleEntityClick = (entity: any, isUserLocation: boolean) => {
       }
 
 
-      console.log(screenPosition)
+
     }
   }
   // 设置弹出面板数据
@@ -391,6 +404,11 @@ const closePopup = () => {
 const navigateToLocation = (lng: number, lat: number) => {
   // 调用高德地图api接口 获取地址
   // todo 1.获取当前用户的位置 ，如果用户位置定位为空 则获取当前设备的位置，如果再次为空 则弹出提示无法获取用户的位置
+  const position =  userLocation.value.position
+  console.log(position)
+  // 保留6位小数
+  const user_lng = position.lng.toFixed(6)
+  const user_lat = position.lat.toFixed(6)
 
 
 }
@@ -420,8 +438,6 @@ const getUserLocation = () => {
       }
 
       ElMessage.success('位置获取成功！')
-
-
     },
     (error) => {
       console.error('获取位置失败:', error)
@@ -441,7 +457,7 @@ const getUserLocation = () => {
     },
     {
       enableHighAccuracy: true,
-      timeout: 10000,
+      timeout: 20000,
       maximumAge: 60000
     }
   )
