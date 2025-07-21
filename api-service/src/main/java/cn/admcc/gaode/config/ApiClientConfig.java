@@ -9,7 +9,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.http.codec.json.Jackson2JsonDecoder;
 import org.springframework.http.codec.json.Jackson2JsonEncoder;
+import org.springframework.util.unit.DataSize;
 import org.springframework.web.reactive.function.client.ExchangeStrategies;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.service.invoker.HttpServiceProxyFactory;
@@ -40,13 +42,16 @@ public class ApiClientConfig {
                 .builder()
                 .codecs(configurer -> {
                     configurer.defaultCodecs().jackson2JsonEncoder(new Jackson2JsonEncoder(snakeCaseOm, MediaType.APPLICATION_JSON));
-                }).build();
-        final String domain = gdConfig.getBaseUrl();
+                    configurer.defaultCodecs().jackson2JsonDecoder(new Jackson2JsonDecoder(snakeCaseOm, MediaType.APPLICATION_JSON));
+
+                })
+                .build();
+        String domain = gdConfig.getBaseUrl();
 
         // 请求路径
         WebClientAdapter webClientAdapter = WebClientAdapter.create(
                 WebClient.builder()
-                        .baseUrl("%s/".formatted(domain))
+                        .baseUrl("%s".formatted(domain))
                         .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                         .exchangeStrategies(exchangeStrategies)
                         .build()

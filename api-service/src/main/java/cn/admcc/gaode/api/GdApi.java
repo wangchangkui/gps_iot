@@ -1,13 +1,15 @@
 package cn.admcc.gaode.api;
 
 import cn.admcc.gaode.entity.PathPlanningRequest;
-
+import cn.admcc.gaode.entity.PathPlanningResponse;
 import org.springframework.stereotype.Component;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.service.annotation.GetExchange;
 import org.springframework.web.service.annotation.HttpExchange;
 import org.springframework.web.service.annotation.PostExchange;
+
+import java.util.Map;
 
 /**
  * @author coder wang
@@ -25,7 +27,7 @@ public interface GdApi {
      * @param parameters 路径规划必要的参数
      * @return Object
      */
-    @GetExchange("/v5/direction/driving")
-    Object pathPlaningApi(PathPlanningRequest parameters);
+    @PostExchange("/v5/direction/driving")
+    PathPlanningResponse pathPlaningApi(@RequestParam Map<?,?> parameters);
 
 }

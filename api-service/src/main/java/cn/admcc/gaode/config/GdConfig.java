@@ -19,7 +19,7 @@ public class GdConfig {
     /**
      * 高德地图的token
      */
-    private String gdToken;
+    private String apiToken;
 
     /**
      * 默认访问的url

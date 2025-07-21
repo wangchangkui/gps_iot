@@ -1,5 +1,6 @@
 package cn.admcc.gaode.controller;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -11,5 +12,6 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @RestController
 @RequestMapping("/api/gd")
+@RequiredArgsConstructor
 public class PathPlanningController {
 }
