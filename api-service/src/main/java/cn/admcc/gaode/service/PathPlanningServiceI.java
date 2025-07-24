@@ -1,5 +1,9 @@
 package cn.admcc.gaode.service;
 
+import cn.admcc.gaode.entity.TmcsVo;
+
+import java.util.List;
+
 /**
  * @author coder wang
  * @version 1.0.0
@@ -15,7 +19,7 @@ public interface PathPlanningServiceI {
      * @param endPoint 终点目标
      * @return 路径
      */
-    Object pathPlanning(String startPoint, String endPoint);
+    List<TmcsVo> pathPlanning(String startPoint, String endPoint);
 
 
 

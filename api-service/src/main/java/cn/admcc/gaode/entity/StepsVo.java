@@ -2,6 +2,8 @@ package cn.admcc.gaode.entity;
 
 import lombok.Data;
 
+import java.util.List;
+
 /**
  * @author coder wang
  * @version 1.0.0
@@ -16,4 +18,6 @@ public class StepsVo {
     private String orientation;
 
     private Double stepDistance;
+
+    private List<TmcsVo> tmcs;
 }

@@ -36,14 +36,12 @@ public class ApiClientConfig {
     @Bean
     public GdApi gdApi() {
         ObjectMapper snakeCaseOm = JacksonUtils.getSnakeCaseOm();
-
         // 实体解析
         ExchangeStrategies exchangeStrategies = ExchangeStrategies
                 .builder()
                 .codecs(configurer -> {
                     configurer.defaultCodecs().jackson2JsonEncoder(new Jackson2JsonEncoder(snakeCaseOm, MediaType.APPLICATION_JSON));
                     configurer.defaultCodecs().jackson2JsonDecoder(new Jackson2JsonDecoder(snakeCaseOm, MediaType.APPLICATION_JSON));
-
                 })
                 .build();
         String domain = gdConfig.getBaseUrl();

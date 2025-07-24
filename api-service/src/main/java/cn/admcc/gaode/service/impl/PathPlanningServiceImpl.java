@@ -5,6 +5,7 @@ import cn.admcc.gaode.config.GdConfig;
 import cn.admcc.gaode.entity.PathPlanningRequest;
 import cn.admcc.gaode.entity.PathPlanningResponse;
 import cn.admcc.gaode.entity.PathsVo;
+import cn.admcc.gaode.entity.TmcsVo;
 import cn.admcc.gaode.entity.enums.GdApiResponseStatus;
 import cn.admcc.gaode.exception.GdException;
 import cn.admcc.gaode.service.PathPlanningServiceI;
@@ -15,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -33,13 +35,15 @@ public class PathPlanningServiceImpl implements PathPlanningServiceI {
     private final GdConfig gdConfig;
 
     @Override
-    public Object pathPlanning(String startPoint, String endPoint) {
+    public List<TmcsVo> pathPlanning(String startPoint, String endPoint) {
 
         PathPlanningRequest pathPlanningRequest = new PathPlanningRequest(gdConfig.getApiToken(), startPoint, endPoint);
         // 默认采用0号方案，具体可以参考高德API接口
         pathPlanningRequest.setStrategy(0);
-        ObjectMapper objectMapper = JacksonUtils.getObjectMapper();
-        Map<String, Object> map = objectMapper.convertValue(pathPlanningRequest, new TypeReference<>() {});
+        pathPlanningRequest.setShowFields("tmcs");
+
+        ObjectMapper snakeCaseOm = JacksonUtils.getSnakeCaseOm();
+        Map<String, Object> map = snakeCaseOm.convertValue(pathPlanningRequest, new TypeReference<>() {});
 
         PathPlanningResponse pathPlanningResponse = gdApi.pathPlaningApi(map);
         if(pathPlanningResponse.getStatus().equals(GdApiResponseStatus.ERROR.getCode())) {
@@ -53,8 +57,6 @@ public class PathPlanningServiceImpl implements PathPlanningServiceI {
 
         // 默认取第一条数据
         PathsVo pathsVo = pathPlanningResponse.getRoute().getPaths().get(0);
-
-
-        return pathPlanningResponse;
+        return pathsVo.getSteps().stream().flatMap(p -> p.getTmcs().stream()).toList();
     }
 }
