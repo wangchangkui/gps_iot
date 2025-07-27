@@ -54,9 +54,9 @@
           <!-- 性别 -->
           <el-form-item label="性别" prop="gender">
             <el-radio-group v-model="form.gender" class="gender-group">
-              <el-radio label="male">男</el-radio>
-              <el-radio label="female">女</el-radio>
-    
+              <el-radio value="male">男</el-radio>
+              <el-radio value="female">女</el-radio>
+              <el-radio value="other">其他</el-radio>
             </el-radio-group>
           </el-form-item>
           
@@ -197,7 +197,8 @@ import { ref, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import type { FormInstance, FormRules } from 'element-plus'
 import ElMessage from 'element-plus/es/components/message/index'
-import path from 'path'
+
+import { get_captcha } from '../../utils/api/user/login_user_api'
 
 const router = useRouter()
 const formRef = ref<FormInstance>()
@@ -208,8 +209,12 @@ const codeButtonText = ref('获取验证码')
 const codeButtonDisabled = ref(false)
 const countdown = ref(60)
 
+
+
+
+
 // 图片验证码URL
-const captchaUrl = ref('/api/captcha?t=' + new Date().getTime())
+const captchaUrl = ref('')
 
 // 表单数据
 const form = reactive({
@@ -221,8 +226,19 @@ const form = reactive({
   phone: '',
   phoneCode: '',
   captcha: '',
+  captchaCode: '',
   agreement: false
 })
+
+
+// 获取验证码
+const getCaptcha = async () => {
+  const res = await get_captcha()
+  captchaUrl.value = res.data.captchaBase64
+  form.captchaCode = res.data.captchaId
+}
+
+
 
 // 密码验证
 const validatePass = (rule: any, value: string, callback: any) => {
@@ -340,7 +356,7 @@ const getVerificationCode = () => {
 
 // 刷新图片验证码
 const refreshCaptcha = () => {
-  captchaUrl.value = '/api/captcha?t=' + new Date().getTime()
+  getCaptcha()
 }
 
 // 显示用户协议
@@ -392,7 +408,7 @@ const goToHome = () => {
 
 // 组件挂载时刷新验证码
 onMounted(() => {
-  refreshCaptcha()
+  getCaptcha()
 })
 </script>
 
