@@ -70,7 +70,7 @@
 
         <!-- 设备位置 暂时关闭掉用户的标签 -->
         <vc-entity v-for="device in devices" :key="device.id"
-          :position="Cesium.Cartesian3.fromDegrees(device.position.lng, device.position.lat, device.position.height)"
+          :position="fromDegrees(device.position.lng, device.position.lat, device.position.height)"
           @click="handleEntityClick(device, false)">
           <vc-graphics-billboard :image="'/marker.png'" :vertical-origin="Cesium.VerticalOrigin.BOTTOM" :scale="0.3" />
           <vc-graphics-label 
@@ -88,7 +88,7 @@
 
         <!-- 用户GPS位置 暂时关闭掉用户的标签 -->
         <vc-entity v-if="userLocation.isVisible" :key="userLocation.id"
-          :position="Cesium.Cartesian3.fromDegrees(userLocation.position.lng, userLocation.position.lat, userLocation.position.height)"
+          :position="fromDegrees(userLocation.position.lng, userLocation.position.lat, userLocation.position.height)"
           @click="handleEntityClick(userLocation, true)">
           <vc-graphics-billboard :image="'/boy.png'" :vertical-origin="Cesium.VerticalOrigin.BOTTOM" :scale="0.2" />
           <vc-graphics-label 
@@ -199,8 +199,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, onMounted, watch } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import { get_direction } from '../../utils/api/gd/gd_api'
 
 import ElMessage from 'element-plus/es/components/message/index'
@@ -226,6 +226,19 @@ const coordinates = ref({
   height: '0'
 })
 
+
+
+
+
+const fromDegrees = (lng: number, lat: number, height: number) => {
+   
+    try{
+     return  Cesium.Cartesian3.fromDegrees(lng, lat, height);
+    }catch(e){
+      // 刷新页面 因为可能是重定向过来的 导致cesium没有加载
+      window.location.reload();
+    }
+}
 
 const wmtsMatrixLabels = ref([
   '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18'
@@ -268,6 +281,7 @@ const devices = ref([
     }
   }
 ])
+
 
 // 地图类型
 const mapType = ref('gaode') // 修改默认值为'gaode'
@@ -315,6 +329,7 @@ const handleMapTypeChange = (value: string) => {
     }, 500)
   }
 }
+
 
 const onViewerReady = (cesiumInstance: any) => {
   const { Cesium, viewer } = cesiumInstance

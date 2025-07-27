@@ -179,6 +179,8 @@
           
           <div class="register-footer">
             <span>已有账号? <a href="#" @click.prevent="goToLogin">返回登录</a></span>
+            <span class="footer-divider">|</span>
+            <span><a href="#" @click.prevent="goToHome">返回首页</a></span>
           </div>
         </el-form>
         
@@ -195,6 +197,7 @@ import { ref, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import type { FormInstance, FormRules } from 'element-plus'
 import ElMessage from 'element-plus/es/components/message/index'
+import path from 'path'
 
 const router = useRouter()
 const formRef = ref<FormInstance>()
@@ -380,6 +383,11 @@ const handleRegister = async () => {
 // 跳转到登录页
 const goToLogin = () => {
   router.push('/login')
+}
+
+// 跳转到首页
+const goToHome = () => {
+  window.location.href = '/'
 }
 
 // 组件挂载时刷新验证码
@@ -585,6 +593,14 @@ onMounted(() => {
   text-align: center;
   font-size: 14px;
   color: #606266;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  
+  .footer-divider {
+    margin: 0 10px;
+    color: #dcdfe6;
+  }
   
   a {
     color: #1890ff;

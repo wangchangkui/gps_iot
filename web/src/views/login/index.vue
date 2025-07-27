@@ -156,6 +156,8 @@
         
         <div class="login-footer">
           <span>还没有账号? <a href="#" @click.prevent="goToRegister">立即注册</a></span>
+          <span class="footer-divider">|</span>
+          <span><a href="#" @click.prevent="goToHome">返回首页</a></span>
         </div>
         
         <div class="login-copyright">
@@ -309,6 +311,11 @@ const refreshQRCode = () => {
 // 跳转到注册页面
 const goToRegister = () => {
   router.push('/register')
+}
+
+// 跳转到首页
+const goToHome = () => {
+  router.push('/')
 }
 </script>
 
@@ -576,6 +583,14 @@ const goToRegister = () => {
   text-align: center;
   font-size: 14px;
   color: #606266;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  
+  .footer-divider {
+    margin: 0 10px;
+    color: #dcdfe6;
+  }
   
   a {
     color: #1890ff;
