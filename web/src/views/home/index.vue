@@ -102,8 +102,6 @@
         </div>
       </div>
 
-
-
       <!-- 弹出信息面板 -->
       <div v-if="popupInfo.visible" class="popup-overlay" @click="closePopup"
         style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:2000;">
@@ -120,7 +118,7 @@
           <el-card class="box-card">
             <template #header>
               <span>{{ popupInfo.data.name }}</span>
-              <el-button size="small " style="float: right; padding: 3px 0" type="text"
+              <el-button size="small" style="float: right; padding: 3px 0" type="primary"
                 @click="closePopup">关闭</el-button>
             </template>
             <div class="popup-body">
@@ -182,6 +180,8 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { get_direction } from '../../utils/api/gd/gd_api'
+import type { Tmcs } from '../../utils/api/gd/gd_tmcs'
 
 import ElMessage from 'element-plus/es/components/message/index'
 const Cesium = (window as any).Cesium
@@ -243,7 +243,7 @@ const devices = ref([
     id: '1',
     name: '鸡腿',
     position: {
-      lng: 104.108377,
+      lng: 104.063641,
       lat: 30.467283,
       height: 0
     }
@@ -400,17 +400,246 @@ const closePopup = () => {
   popupInfo.value.visible = false
 }
 
+
+// 路况实体集合
+const trafficEntities = ref<Array<any>>([])
+
+// 上次路由请求的缓存
+const lastRouteRequest = ref<{start_point: string, end_point: string, startPoint: {lng: number, lat: number}, endPoint: {lng: number, lat: number}} | null>(null)
+
+// 解析polyline字符串为Cesium坐标数组
+const parsePolyline = (polyline: string): any[] => {
+  const points = polyline.split(';')
+  const positions: any[] = []
+  
+  points.forEach(point => {
+    const [lng, lat] = point.split(',').map(Number)
+    if (!isNaN(lng) && !isNaN(lat)) {
+      positions.push(Cesium.Cartesian3.fromDegrees(lng, lat, 10)) // 高度从5米改为10米，增加可见性
+    }
+  })
+  
+  return positions
+}
+
+// 清除先前的路况线
+const clearTrafficEntities = () => {
+  if (viewerRef.value?.cesiumObject) {
+    const viewer = viewerRef.value.cesiumObject
+    trafficEntities.value.forEach(entity => {
+      viewer.entities.remove(entity)
+    })
+    trafficEntities.value = []
+  }
+}
+
+// 绘制交通路况
+const drawTrafficConditions = (tmcsData: Tmcs[], startPoint: { lng: number, lat: number }, endPoint: { lng: number, lat: number }) => {
+  if (!viewerRef.value?.cesiumObject) return
+  
+  // 清除旧的路况线
+  clearTrafficEntities()
+  
+  const viewer = viewerRef.value.cesiumObject
+
+  // 收集所有路段点，不再按状态分组
+  const allPositions: any[] = []
+  
+  // 按顺序收集所有路段点
+  tmcsData.forEach((tmc) => {
+    try {
+      // 解析当前路段的坐标
+      const segmentPositions = parsePolyline(tmc.tmcPolyline)
+      if (segmentPositions.length >= 2) {
+        // 如果不是第一段，则去掉重复点
+        if (allPositions.length > 0) {
+          // 添加除第一个点外的所有点（避免重复）
+          allPositions.push(...segmentPositions.slice(1))
+        } else {
+          // 第一段直接添加所有点
+          allPositions.push(...segmentPositions)
+        }
+      }
+    } catch (error) {
+      console.error('解析路段失败:', error)
+    }
+  })
+  
+  // 如果有足够的点，创建单一连续路线
+  if (allPositions.length >= 2) {
+    
+    // 创建单一连续路线，使用统一颜色和更明显的样式
+    const routeEntity = viewer.entities.add({
+      name: '路线',
+      polyline: {
+        positions: allPositions,
+        width: 15, // 增加线宽，提高可见性
+        material: new Cesium.PolylineGlowMaterialProperty({
+          glowPower: 0.25,
+          color: new Cesium.Color(0.0, 0.5, 1.0, 1.0) // 更亮的蓝色
+        }),
+        clampToGround: false, // 不贴地，确保在任何地形上都可见
+        arcType: Cesium.ArcType.GEODESIC, // 使用大圆弧线，更平滑
+        granularity: Math.PI / 1800, // 增加分辨率
+        zIndex: 100 // 确保线条在最上层
+      }
+    })
+    
+    
+    trafficEntities.value.push(routeEntity)
+    
+    // 添加额外的实线，确保可见性
+    const solidLineEntity = viewer.entities.add({
+      name: '实线路线',
+      polyline: {
+        positions: allPositions,
+        width: 8, // 实线稍窄
+        material: new Cesium.ColorMaterialProperty(
+          new Cesium.Color(0.0, 0.3, 1.0, 1.0)
+        ),
+        clampToGround: false,
+        arcType: Cesium.ArcType.GEODESIC,
+        granularity: Math.PI / 1800,
+        zIndex: 99
+      }
+    })
+    
+    trafficEntities.value.push(solidLineEntity)
+  } else {
+    console.warn('没有足够的点来创建路线');
+  }
+  
+
+
+  
+  // 如果有路况线，则调整视角以查看整个路况，平滑过渡
+  if (trafficEntities.value.length > 0) {
+    // 提供更多调试信息
+    console.log('正在调整视角, 实体数量:', trafficEntities.value.length);
+    
+    // 确保视角完全包含所有实体
+    viewer.flyTo(trafficEntities.value, {
+      duration: 2.0,
+      offset: new Cesium.HeadingPitchRange(0, Cesium.Math.toRadians(-60), 0), // 更倾斜的视角
+      maximumHeight: 5000 // 限制最大高度
+    });
+    
+    // 添加一个延迟后的备用缩放，以防第一次没有正确定位
+    setTimeout(() => {
+      viewer.zoomTo(trafficEntities.value, new Cesium.HeadingPitchRange(0, Cesium.Math.toRadians(-60), 0));
+    }, 3000);
+  }
+}
+
+// 将Tmcs数据转换为GeoJSON格式
+const convertToGeoJSON = (tmcsData: Tmcs[]) => {
+  // 创建GeoJSON对象
+  const geoJSON = {
+    type: "FeatureCollection",
+    features: [] as any[]
+  };
+
+  // 处理每个路段
+  tmcsData.forEach((tmc, index) => {
+    try {
+      const coordinates: number[][] = [];
+      
+      // 解析路段坐标点
+      const points = tmc.tmcPolyline.split(';');
+      points.forEach(point => {
+        const [lng, lat] = point.split(',').map(Number);
+        if (!isNaN(lng) && !isNaN(lat)) {
+          coordinates.push([lng, lat]);
+        }
+      });
+      
+      if (coordinates.length >= 2) {
+        // 创建GeoJSON LineString特征
+        const feature = {
+          type: "Feature",
+          properties: {
+            id: index,
+            status: tmc.tmcStatus,
+            distance: tmc.tmcDistance
+          },
+          geometry: {
+            type: "LineString",
+            coordinates: coordinates
+          }
+        };
+        
+        geoJSON.features.push(feature);
+      }
+    } catch (error) {
+      console.error('解析路段失败:', error);
+    }
+  });
+  
+  return geoJSON;
+};
+
+// 请求路径规划数据
+const requestRouteData = (start_point: string, end_point: string) => {
+  console.log('请求路径规划:', { start_point, end_point })
+  
+  // 解析起点终点坐标
+  const [startLng, startLat] = start_point.split(',').map(Number)
+  const [endLng, endLat] = end_point.split(',').map(Number)
+  
+  // 保存本次请求
+  lastRouteRequest.value = {
+    start_point,
+    end_point,
+    startPoint: { lng: startLng, lat: startLat },
+    endPoint: { lng: endLng, lat: endLat }
+  }
+  
+  // 调用高德地图api接口获取地址
+  get_direction(start_point, end_point).then((res) => {
+    if (res && res.data) {
+      // 转换为GeoJSON格式并打印
+      const geoJSON = convertToGeoJSON(res.data);
+      console.log('路线GeoJSON数据:', JSON.stringify(geoJSON, null, 2));
+      
+      // 原始tmcPolyline数据
+      console.log('原始路段数据:');
+      res.data.forEach((tmc, index) => {
+        console.log(`路段${index + 1} - 状态: ${tmc.tmcStatus}, 距离: ${tmc.tmcDistance}`);
+        console.log(`路段${index + 1} - 坐标: ${tmc.tmcPolyline}`);
+      });
+      
+      // 继续绘制路线
+      drawTrafficConditions(res.data, { lng: startLng, lat: startLat }, { lng: endLng, lat: endLat })
+    } else {
+      ElMessage.warning('获取的路径规划数据为空')
+    }
+  }).catch((err) => {
+    console.error('路径规划错误详情:', err)
+    if (err && err.code !== undefined) {
+      ElMessage.error(`获取路径规划失败: ${err.message || '未知错误'}`)
+    } else {
+      ElMessage.error('获取路径规划失败: 网络或服务器错误')
+    }
+  })
+}
+
 // 导航到指定位置
 const navigateToLocation = (lng: number, lat: number) => {
-  // 调用高德地图api接口 获取地址
-  // todo 1.获取当前用户的位置 ，如果用户位置定位为空 则获取当前设备的位置，如果再次为空 则弹出提示无法获取用户的位置
-  const position =  userLocation.value.position
-  console.log(position)
+  // 获取当前用户的位置
+  const position = userLocation.value.position
   // 保留6位小数
   const user_lng = position.lng.toFixed(6)
   const user_lat = position.lat.toFixed(6)
 
+  const start_point = user_lng + ',' + user_lat
+  const end_point = lng + ',' + lat
+  
+  
+  
+  requestRouteData(start_point, end_point)
 
+  // 关闭面板
+  popupInfo.value.visible = false
 }
 
 // 获取用户GPS位置
@@ -745,6 +974,56 @@ onMounted(() => {
       opacity: 1;
       transform: translateY(0) scale(1);
     }
+  }
+}
+
+.status-unknown {
+  background-color: #999;
+  color: white;
+  
+  &.el-checkbox {
+    --el-checkbox-checked-bg-color: #999;
+    --el-checkbox-checked-input-border-color: #999;
+  }
+}
+
+.status-smooth {
+  background-color: #67C23A;
+  color: white;
+  
+  &.el-checkbox {
+    --el-checkbox-checked-bg-color: #67C23A;
+    --el-checkbox-checked-input-border-color: #67C23A;
+  }
+}
+
+.status-slow {
+  background-color: #E6A23C;
+  color: white;
+  
+  &.el-checkbox {
+    --el-checkbox-checked-bg-color: #E6A23C;
+    --el-checkbox-checked-input-border-color: #E6A23C;
+  }
+}
+
+.status-congested {
+  background-color: #F56C6C;
+  color: white;
+  
+  &.el-checkbox {
+    --el-checkbox-checked-bg-color: #F56C6C;
+    --el-checkbox-checked-input-border-color: #F56C6C;
+  }
+}
+
+.status-heavily-congested {
+  background-color: #8B0000;
+  color: white;
+  
+  &.el-checkbox {
+    --el-checkbox-checked-bg-color: #8B0000;
+    --el-checkbox-checked-input-border-color: #8B0000;
   }
 }
 </style>

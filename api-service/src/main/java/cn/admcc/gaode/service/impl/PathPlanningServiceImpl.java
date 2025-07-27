@@ -38,8 +38,8 @@ public class PathPlanningServiceImpl implements PathPlanningServiceI {
     public List<TmcsVo> pathPlanning(String startPoint, String endPoint) {
 
         PathPlanningRequest pathPlanningRequest = new PathPlanningRequest(gdConfig.getApiToken(), startPoint, endPoint);
-        // 默认采用0号方案，具体可以参考高德API接口
-        pathPlanningRequest.setStrategy(0);
+        // 默认采用2号方案，具体可以参考高德API接口
+        pathPlanningRequest.setStrategy(2);
         pathPlanningRequest.setShowFields("tmcs");
 
         ObjectMapper snakeCaseOm = JacksonUtils.getSnakeCaseOm();

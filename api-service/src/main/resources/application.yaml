@@ -2,3 +2,6 @@
 spring:
   profiles:
     active: '@build.profile.id@'
+
+cors:
+  enabled: true
