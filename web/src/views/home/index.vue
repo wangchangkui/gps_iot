@@ -29,31 +29,44 @@
 
     <!-- 地图展示区 -->
     <main class="main-content">
-      <vc-viewer ref="viewerRef" :animation="false" :timeline="false" :navigation="true" :home-button="true"
-        :fullscreen-button="false" :base-layer-picker="false" :geocoder="true" :scene-mode-picker="true"
-        :navigation-help-button="false" :info-box="false" :selection-indicator="false" :show-credit="false"
-        :scene3d-only="false" :should-animate="false" @ready="onViewerReady">
-        <!-- 地图图层 -->
-        <!-- 取消天地图默认的 1w次请求的限制 -->
-        <!-- <vc-layer-imagery>
-          <vc-imagery-provider-tianditu
-            :token="tiandituToken"
-            :map-style="'cia_w'"
-          />
-        </vc-layer-imagery> -->
+      <vc-viewer ref="viewerRef" 
+      :animation="false" 
+      :timeline="false" 
+      :navigation="false" 
+      :home-button="false"
+      :fullscreen-button="false" 
+      :base-layer-picker="false" 
+      :geocoder="false" 
+      :scene-mode-picker="false"
+      :navigation-help-button="false" 
+      :info-box="false" 
+      :selection-indicator="false" 
+      :show-credit="false"
+      :scene3d-only="false" 
+      :should-animate="false"
+       @ready="onViewerReady">
+        
+        <!-- 根据选择的底图类型显示不同图层 -->
+        <template v-if="mapType === 'tianditu'">
+          <!-- 天地图矢量底图图层 -->
+          <vc-layer-imagery>
+            <vc-imagery-provider-wmts :url="getVecWmtsUrl()" :layer="'vec'" wmts-style="default" tileMatrixSetID="w"
+              :tileMatrixLabels="wmtsMatrixLabels" />
+          </vc-layer-imagery>
 
-        <!-- 矢量底图图层 -->
-        <vc-layer-imagery>
-          <vc-imagery-provider-wmts :url="getVecWmtsUrl()" :layer="'vec'" wmts-style="default" tileMatrixSetID="w"
-            :tileMatrixLabels="wmtsMatrixLabels" />
-        </vc-layer-imagery>
+          <!-- 天地图矢量注记图层 -->
+          <vc-layer-imagery>
+            <vc-imagery-provider-wmts :url="getCvaWmtsUrl()" :layer="'cva'" wmts-style="default" tileMatrixSetID="w"
+              :tileMatrixLabels="wmtsMatrixLabels" />
+          </vc-layer-imagery>
+        </template>
 
-        <!-- 矢量注记图层 -->
-        <vc-layer-imagery>
-          <vc-imagery-provider-wmts :url="getCvaWmtsUrl()" :layer="'cva'" wmts-style="default" tileMatrixSetID="w"
-            :tileMatrixLabels="wmtsMatrixLabels" />
-        </vc-layer-imagery>
-
+        <template v-else-if="mapType === 'gaode'">
+          <!-- 高德地图图层 - 使用OpenStreetMap作为替代 -->
+          <vc-layer-imagery>
+            <vc-imagery-provider-urltemplate :url="getGaoDeUrl()" :maximum-level="18" :minimum-level="1" />
+          </vc-layer-imagery>
+        </template>
 
         <!-- 设备位置 暂时关闭掉用户的标签 -->
         <vc-entity v-for="device in devices" :key="device.id"
@@ -100,6 +113,14 @@
           <span class="label">纬度:</span>
           <span class="value">{{ coordinates.lat }}</span>
         </div>
+      </div>
+
+      <!-- 图层切换控件 -->
+      <div class="map-layers-control">
+        <el-radio-group v-model="mapType" size="small" @change="handleMapTypeChange">
+          <el-radio-button label="tianditu">天地图</el-radio-button>
+          <el-radio-button label="gaode">高德地图</el-radio-button>
+        </el-radio-group>
       </div>
 
       <!-- 弹出信息面板 -->
@@ -181,16 +202,14 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { get_direction } from '../../utils/api/gd/gd_api'
-import type { Tmcs } from '../../utils/api/gd/gd_tmcs'
 
 import ElMessage from 'element-plus/es/components/message/index'
+// 移除错误的导入
 const Cesium = (window as any).Cesium
 defineExpose({ Cesium })
 
 const router = useRouter()
 const viewerRef = ref()
-const tiandituToken = import.meta.env.VITE_TIANDITU_TOKEN || ''
-
 
 
 // 用户状态
@@ -250,18 +269,51 @@ const devices = ref([
   }
 ])
 
+// 地图类型
+const mapType = ref('gaode') // 修改默认值为'gaode'
 
+// 天地图token
+const tiandituToken = import.meta.env.VITE_TIANDITU_TOKEN || ''
+
+// 获取天地图矢量底图URL
+const getVecWmtsUrl = () => {
+  // 构建url
+  let baseUrl = "https://tianditu-vec-w.admcc.cn/vec_w/wmts?tk=" + tiandituToken
+  return baseUrl
+}
+
+// 获取天地图矢量注记URL
 const getCvaWmtsUrl = () => {
   // 构建url
   let baseUrl = "https://tianditu-cva-w.admcc.cn/cva_w/wmts?tk=" + tiandituToken
   return baseUrl
 }
 
+const getGaoDeUrl = () => {
+  return "https://wprd04.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={x}&y={y}&z={z}"
+}
 
-const getVecWmtsUrl = () => {
-  // 构建url
-  let baseUrl = "https://tianditu-vec-w.admcc.cn/vec_w/wmts?tk=" + tiandituToken
-  return baseUrl
+// 处理地图类型切换
+const handleMapTypeChange = (value: string) => {
+  mapType.value = value
+  // 清除路线，避免切换图层时路线显示问题
+  clearTrafficEntities()
+  
+  // 如果有上次的路由请求，重新绘制路线
+  if (lastRouteRequest.value) {
+    const { start_point, end_point, startPoint, endPoint } = lastRouteRequest.value
+    // 延迟一下，等待图层加载完成
+    setTimeout(() => {
+      get_direction(start_point, end_point).then((res) => {
+        if (res && res.data) {
+          const geoJSON = convertToGeoJSON(res.data);
+          drawTrafficConditions(res.data, startPoint, endPoint)
+        }
+      }).catch(err => {
+        console.error('重新加载路线失败:', err)
+      })
+    }, 500)
+  }
 }
 
 const onViewerReady = (cesiumInstance: any) => {
@@ -434,7 +486,7 @@ const clearTrafficEntities = () => {
 }
 
 // 绘制交通路况
-const drawTrafficConditions = (tmcsData: Tmcs[], startPoint: { lng: number, lat: number }, endPoint: { lng: number, lat: number }) => {
+const drawTrafficConditions = (tmcsData: string[], startPoint: { lng: number, lat: number }, endPoint: { lng: number, lat: number }) => {
   if (!viewerRef.value?.cesiumObject) return
   
   // 清除旧的路况线
@@ -449,7 +501,7 @@ const drawTrafficConditions = (tmcsData: Tmcs[], startPoint: { lng: number, lat:
   tmcsData.forEach((tmc) => {
     try {
       // 解析当前路段的坐标
-      const segmentPositions = parsePolyline(tmc.tmcPolyline)
+      const segmentPositions = parsePolyline(tmc)
       if (segmentPositions.length >= 2) {
         // 如果不是第一段，则去掉重复点
         if (allPositions.length > 0) {
@@ -532,7 +584,7 @@ const drawTrafficConditions = (tmcsData: Tmcs[], startPoint: { lng: number, lat:
 }
 
 // 将Tmcs数据转换为GeoJSON格式
-const convertToGeoJSON = (tmcsData: Tmcs[]) => {
+const convertToGeoJSON = (tmcsData: string[]) => {
   // 创建GeoJSON对象
   const geoJSON = {
     type: "FeatureCollection",
@@ -545,7 +597,7 @@ const convertToGeoJSON = (tmcsData: Tmcs[]) => {
       const coordinates: number[][] = [];
       
       // 解析路段坐标点
-      const points = tmc.tmcPolyline.split(';');
+      const points = tmc.split(';');
       points.forEach(point => {
         const [lng, lat] = point.split(',').map(Number);
         if (!isNaN(lng) && !isNaN(lat)) {
@@ -558,9 +610,7 @@ const convertToGeoJSON = (tmcsData: Tmcs[]) => {
         const feature = {
           type: "Feature",
           properties: {
-            id: index,
-            status: tmc.tmcStatus,
-            distance: tmc.tmcDistance
+            id: index
           },
           geometry: {
             type: "LineString",
@@ -601,13 +651,8 @@ const requestRouteData = (start_point: string, end_point: string) => {
       const geoJSON = convertToGeoJSON(res.data);
       console.log('路线GeoJSON数据:', JSON.stringify(geoJSON, null, 2));
       
-      // 原始tmcPolyline数据
-      console.log('原始路段数据:');
-      res.data.forEach((tmc, index) => {
-        console.log(`路段${index + 1} - 状态: ${tmc.tmcStatus}, 距离: ${tmc.tmcDistance}`);
-        console.log(`路段${index + 1} - 坐标: ${tmc.tmcPolyline}`);
-      });
-      
+
+
       // 继续绘制路线
       drawTrafficConditions(res.data, { lng: startLng, lat: startLat }, { lng: endLng, lat: endLat })
     } else {
@@ -1025,5 +1070,16 @@ onMounted(() => {
     --el-checkbox-checked-bg-color: #8B0000;
     --el-checkbox-checked-input-border-color: #8B0000;
   }
+}
+
+.map-layers-control {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  z-index: 1000;
+  background: rgba(255, 255, 255, 0.8);
+  padding: 8px;
+  border-radius: 4px;
+  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
 }
 </style>

@@ -15,11 +15,12 @@ public interface PathPlanningServiceI {
 
     /**
      * 路径规划
+     *
      * @param startPoint 起始目标
-     * @param endPoint 终点目标
+     * @param endPoint   终点目标
      * @return 路径
      */
-    List<TmcsVo> pathPlanning(String startPoint, String endPoint);
+    List<String> pathPlanning(String startPoint, String endPoint);
 
 
 

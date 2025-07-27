@@ -30,10 +30,10 @@ public class PathPlanningController {
      * 路径规划
      * @param start 起始点位置
      * @param end 结束点位
-     * @return TmcsVo
+     * @return roadLine 线路数据
      */
     @GetMapping("/path/planning/{start}/{end}")
-    public R<List<TmcsVo>> pathPlanning(@PathVariable("start") String start,@PathVariable("end") String end){
+    public R<List<String>> pathPlanning(@PathVariable("start") String start,@PathVariable("end") String end){
         return R.success(pathPlanningServiceI.pathPlanning(start,end));
     }
 
