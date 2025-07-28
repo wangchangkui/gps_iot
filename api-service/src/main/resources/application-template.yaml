@@ -14,6 +14,9 @@ server:
   servlet:
     context-path: /api
 
+storage:
+  localStorage: ${USER_SAVE:/src}
+
 thread:
   core: 5
   max: 10
