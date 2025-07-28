@@ -1,6 +1,7 @@
 package cn.admcc.exception;
 
 import cn.admcc.gaode.exception.GdException;
+import cn.admcc.system.login.exception.SystemException;
 import cn.admcc.util.R;
 
 import jakarta.servlet.http.HttpServletResponse;
@@ -35,6 +36,19 @@ public class GlobalExceptionHandler {
         log.error("高德服务存在异常", ex);
         setResponseStatus();
         return R.failed("高德服务异常！请联系管理员处理！"+ex.getMessage());
+    }
+
+
+    /**
+     * 系统服务模块
+     *
+     * @param ex GdException GD
+     * @return ResponseResult
+     */
+    @ExceptionHandler(value = SystemException.class)
+    public R<String> validationException(SystemException ex) {
+        setResponseStatus();
+        return R.failed(ex.getMessage());
     }
 
 

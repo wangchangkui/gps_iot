@@ -3,9 +3,7 @@ package cn.admcc.system.login.controller;
 import cn.admcc.entity.CaptchaObject;
 import cn.admcc.system.login.service.LoginServiceI;
 import cn.admcc.util.R;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * @author coder wang
@@ -33,5 +31,17 @@ public class LoginController {
     @GetMapping("/captcha")
     public R<CaptchaObject> getCaptcha(){
         return R.success(loginServiceI.getCaptcha());
+    }
+
+
+    /**
+     * 往邮箱内发送验证码
+     * @param email 验证码
+     * @return String
+     */
+    @PostMapping("/register/email/{email}")
+    public R<String> sendRegisterEmail(@PathVariable("email") String email){
+        loginServiceI.sendRegisterEmail(email);
+        return R.success();
     }
 }

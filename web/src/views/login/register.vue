@@ -56,7 +56,6 @@
             <el-radio-group v-model="form.gender" class="gender-group">
               <el-radio value="male">男</el-radio>
               <el-radio value="female">女</el-radio>
-              <el-radio value="other">其他</el-radio>
             </el-radio-group>
           </el-form-item>
           
@@ -103,6 +102,19 @@
             </el-input>
           </el-form-item>
           
+          <!-- 邮箱 -->
+          <el-form-item label="邮箱" prop="email">
+            <el-input 
+              v-model="form.email" 
+              placeholder="请输入邮箱" 
+              size="large"
+            >
+              <template #prefix>
+                <i class="el-icon-message"></i>
+              </template>
+            </el-input>
+          </el-form-item>
+
           <!-- 手机号 -->
           <el-form-item label="手机号" prop="phone">
             <el-input 
@@ -115,17 +127,17 @@
               </template>
             </el-input>
           </el-form-item>
-          
-          <!-- 手机验证码 -->
-          <el-form-item label="手机验证码" prop="phoneCode">
+
+          <!-- 邮箱验证码 -->
+          <el-form-item label="邮箱验证码" prop="emailCode">
             <div class="verification-code-container">
               <el-input 
-                v-model="form.phoneCode" 
-                placeholder="请输入手机验证码" 
+                v-model="form.emailCode" 
+                placeholder="请输入邮箱验证码" 
                 size="large"
               >
                 <template #prefix>
-                  <i class="el-icon-message"></i>
+                  <i class="el-icon-key"></i>
                 </template>
               </el-input>
               <el-button 
@@ -153,7 +165,7 @@
                 </template>
               </el-input>
               <div class="captcha-image" @click="refreshCaptcha">
-                <img :src="captchaUrl" alt="验证码" />
+                <img :src="'data:image/png;base64,'+captchaUrl" alt="验证码" />
               </div>
             </div>
           </el-form-item>
@@ -223,8 +235,9 @@ const form = reactive({
   username: '',
   password: '',
   confirmPassword: '',
+  email: '',
   phone: '',
-  phoneCode: '',
+  emailCode: '',
   captcha: '',
   captchaCode: '',
   agreement: false
@@ -259,6 +272,17 @@ const validatePass2 = (rule: any, value: string, callback: any) => {
     callback(new Error('请再次输入密码'))
   } else if (value !== form.password) {
     callback(new Error('两次输入密码不一致!'))
+  } else {
+    callback()
+  }
+}
+
+// 邮箱验证
+const validateEmail = (rule: any, value: string, callback: any) => {
+  if (value === '') {
+    callback(new Error('请输入邮箱'))
+  } else if (!/^([a-zA-Z0-9_.-])+@([a-zA-Z0-9_-])+((\.[a-zA-Z0-9_-]+)+)$/.test(value)) {
+    callback(new Error('请输入正确的邮箱'))
   } else {
     callback()
   }
@@ -304,11 +328,14 @@ const rules = {
   confirmPassword: [
     { validator: validatePass2, trigger: 'blur' }
   ],
+  email: [
+    { validator: validateEmail, trigger: 'blur' }
+  ],
   phone: [
     { validator: validatePhone, trigger: 'blur' }
   ],
-  phoneCode: [
-    { required: true, message: '请输入手机验证码', trigger: 'blur' },
+  emailCode: [
+    { required: true, message: '请输入邮箱验证码', trigger: 'blur' },
     { pattern: /^\d{6}$/, message: '验证码为6位数字', trigger: 'blur' }
   ],
   captcha: [
@@ -320,28 +347,24 @@ const rules = {
   ]
 }
 
-// 获取手机验证码
+// 获取邮箱验证码
 const getVerificationCode = () => {
-  // 验证手机号
-  if (!/^1[3-9]\d{9}$/.test(form.phone)) {
-    ElMessage.error('请输入正确的手机号')
+  // 验证邮箱
+  if (!/^([a-zA-Z0-9_.-])+@([a-zA-Z0-9_-])+((\.[a-zA-Z0-9_-]+)+)$/.test(form.email)) {
+    ElMessage.error('请输入正确的邮箱')
     return
   }
-  
   // 验证图片验证码
   if (!form.captcha) {
     ElMessage.error('请先输入图片验证码')
     return
   }
-  
   // 开始倒计时
   codeButtonDisabled.value = true
   codeButtonText.value = `${countdown.value}秒后重新获取`
-  
   const timer = setInterval(() => {
     countdown.value--
     codeButtonText.value = `${countdown.value}秒后重新获取`
-    
     if (countdown.value <= 0) {
       clearInterval(timer)
       codeButtonDisabled.value = false
@@ -349,9 +372,8 @@ const getVerificationCode = () => {
       countdown.value = 60
     }
   }, 1000)
-  
-  // TODO: 调用发送验证码的API
-  ElMessage.success('验证码已发送')
+  // TODO: 调用发送邮箱验证码的API
+  ElMessage.success('验证码已发送到邮箱')
 }
 
 // 刷新图片验证码

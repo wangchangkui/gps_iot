@@ -18,5 +18,16 @@ public interface LoginServiceI {
     CaptchaObject getCaptcha();
 
 
+    /**
+     * 发送注册验证码
+     * @param email 验证码
+     */
+    void sendRegisterEmail(String email);
 
+
+    /**
+     * 移除所有的验证码
+     * @param email 验证码
+     */
+    void removeAllEmailCode(String email);
 }

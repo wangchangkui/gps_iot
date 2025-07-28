@@ -141,6 +141,7 @@
                     <include>application.yaml</include>
                     <include>**/mapper/**/*.xml</include>
                     <include>**/static/**/*</include>
+                    <include>**/html/**/*</include>
                     <include>application-${build.profile.id}.yaml</include>
                 </includes>
             </resource>

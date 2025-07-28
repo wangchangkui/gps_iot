@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>新邮件信息</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+        .email-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+        }
+        .header img {
+            max-width: 150px;
+        }
+        .content {
+            padding: 20px 0;
+        }
+        .button {
+            display: inline-block;
+            padding: 12px 24px;
+            background-color: #4CAF50;
+            color: white !important;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+        .footer {
+            text-align: center;
+            color: #777;
+            font-size: 12px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+    </style>
+</head>
+<body>
+<div class="email-container">
+    <div class="header">
+        <img src="cid:logo" alt="Company Logo"> <!-- 嵌入图片 -->
+        <h1 th:text="${subject}">验证码通知</h1>
+    </div>
+
+    <div class="content">
+        <p>尊敬的 <span th:text="${username}" style="color: #3498db; font-weight: bold;">用户</span>，您好：</p>
+        <p>您的验证码是：</p>
+
+        <div style="background: #f8f9fa; padding: 15px; text-align: center; margin: 20px 0;
+                        border-radius: 5px; font-size: 24px; font-weight: bold; letter-spacing: 5px;">
+            <span th:text="${verificationCode}">{code}</span>
+        </div>
+
+        <p>该验证码将在 <span style="color: #e74c3c; font-weight: bold;" th:text="${expireMinutes}">6</span> 分钟后失效。</p>
+
+
+    </div>
+
+    <div class="footer">
+        <p>此为系统邮件，请勿直接回复</p>
+        <p>© Admcc.cn. 保留所有权利</p>
+    </div>
+</div>
+</body>
+</html>
