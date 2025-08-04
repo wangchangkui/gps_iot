@@ -16,6 +16,8 @@ server:
 
 storage:
   localStorage: ${USER_SAVE:/src}
+  type: Local
+
 
 thread:
   core: 5

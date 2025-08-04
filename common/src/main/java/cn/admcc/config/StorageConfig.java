@@ -16,5 +16,13 @@ import org.springframework.context.annotation.Configuration;
 public class StorageConfig {
 
 
+    /**
+     * 本地存储的位置
+     */
     private String localStorage;
+
+    /**
+     * 默认使用的存储方案
+     */
+    private String type;
 }
