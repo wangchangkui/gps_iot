@@ -3,5 +3,12 @@ spring:
   profiles:
     active: '@build.profile.id@'
 
+
+# 数据加密
+security:
+  publicKeyPath: ${PUBLIC_KEY_PATH:E:\code_project\gps_iost\api-service\src\main\resources\public_key.pem}
+  privateKeyPath: ${PRIVATE_PATH:E:\code_project\gps_iost\api-service\src\main\resources\private_key.pem}
+
+
 cors:
   enabled: true

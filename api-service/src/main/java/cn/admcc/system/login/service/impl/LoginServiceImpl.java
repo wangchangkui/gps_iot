@@ -2,13 +2,18 @@ package cn.admcc.system.login.service.impl;
 
 import cn.admcc.config.EmailConfig;
 import cn.admcc.entity.CaptchaObject;
+import cn.admcc.system.login.entity.SysUser;
+import cn.admcc.system.login.entity.dto.UserRegisterDto;
 import cn.admcc.system.login.exception.SystemException;
 import cn.admcc.system.login.service.LoginServiceI;
+import cn.admcc.system.login.service.SysUserServiceI;
 import cn.admcc.util.EmailUtil;
 import cn.admcc.util.RedisUtil;
+import cn.admcc.util.RsaUtil;
 import cn.admcc.util.SysCaptchaUtil;
 import cn.hutool.core.util.RandomUtil;
 import cn.hutool.core.util.StrUtil;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
@@ -17,6 +22,7 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.concurrent.TimeUnit;
 
@@ -28,6 +34,7 @@ import java.util.concurrent.TimeUnit;
  */
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class LoginServiceImpl implements LoginServiceI {
 
     private final SysCaptchaUtil captchaUtil;
@@ -65,15 +72,9 @@ public class LoginServiceImpl implements LoginServiceI {
 
     private final EmailUtil emailUtil;
 
+    private final RsaUtil rsaUtil;
 
-
-    public LoginServiceImpl(SysCaptchaUtil captchaUtil, RedisUtil<String> redisUtil, ResourceLoader resourceLoader, EmailConfig emailConfig, EmailUtil emailUtil) {
-        this.captchaUtil = captchaUtil;
-        this.redisUtil = redisUtil;
-        this.resourceLoader = resourceLoader;
-        this.emailConfig = emailConfig;
-        this.emailUtil = emailUtil;
-    }
+    private final SysUserServiceI sysUserService;
 
 
     @Override
@@ -105,7 +106,60 @@ public class LoginServiceImpl implements LoginServiceI {
 
     @Override
     public void removeAllEmailCode(String email) {
+        redisUtil.delete(EMAIL_CODE_KEY+email);
+        redisUtil.delete(EMAIL_COOLDOWN_KEY+email);
+    }
 
+
+
+    @Override
+    public void registerUser(UserRegisterDto userRegisterDto) {
+        // 校验验证码是否正确 如果验证码不存在或者不匹配 则结束
+        String captchaCode = userRegisterDto.getCaptchaCode();
+        String code = redisUtil.get(captchaCode);
+
+        if(StrUtil.isEmpty(code)||!code.equals(userRegisterDto.getCaptcha())){
+            throw new SystemException("验证码不正确，请重新获取");
+        }
+        // 删除验证码
+        redisUtil.delete(captchaCode);
+
+        // 校验邮箱验证码
+        String email = userRegisterDto.getEmail();
+        if(StrUtil.isEmpty(email)){
+            throw new SystemException("邮箱不能为空");
+        }
+        String emailCode = userRegisterDto.getEmailCode();
+        if(StrUtil.isEmpty(emailCode)){
+          throw new SystemException("请输入邮箱验证码");
+        }
+        String mailCode = redisUtil.get(EMAIL_CODE_KEY + email);
+
+        // 如果邮箱验证码是空 或者 不匹配则结束 移除所有的邮箱信息
+        if(StrUtil.isEmpty(mailCode) || !mailCode.equals(emailCode)){
+            removeAllEmailCode(email);
+            throw new SystemException("验证码错误");
+        }
+
+        // 注册用户
+        SysUser sysUser = new SysUser();
+        sysUser.setUserName(userRegisterDto.getAccount());
+        sysUser.setNickName(userRegisterDto.getUsername());
+        sysUser.setEmail(email);
+        String encryptPassword;
+        try {
+            encryptPassword = rsaUtil.encrypt(userRegisterDto.getPassword());
+        } catch (Exception e) {
+            log.error("加密密码失败",e);
+            return;
+        }
+        sysUser.setPassword(encryptPassword);
+        // 添加默认的头像
+        sysUser.setAvatarUrl("https://admcc.cn/marker.png");
+        sysUser.setSex(userRegisterDto.getGender());
+        sysUser.setPhoneNumber(userRegisterDto.getPhone());
+        sysUser.setLastLogin(LocalDateTime.now());
+        sysUserService.addUser(sysUser);
     }
 
 

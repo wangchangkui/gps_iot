@@ -1,6 +1,7 @@
 package cn.admcc.system.login.service;
 
 import cn.admcc.entity.CaptchaObject;
+import cn.admcc.system.login.entity.dto.UserRegisterDto;
 
 /**
  * @author coder wang
@@ -30,4 +31,10 @@ public interface LoginServiceI {
      * @param email 验证码
      */
     void removeAllEmailCode(String email);
+
+    /**
+     * 注册用户
+     * @param userRegisterDto 用户信息
+     */
+    void registerUser(UserRegisterDto userRegisterDto);
 }

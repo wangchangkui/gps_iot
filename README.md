@@ -29,6 +29,25 @@
     wx-app      ---- 微信小程序
 
 
+## 创建私钥与公钥
+    创建私钥和公钥用于加密数据，这个需要存放到api-service服务的resource目录下，重新打包并部署
+    同时我也建议放到指定的目录，但是别暴露文件
+
+### 生成2048位的RSA私钥 (PKCS#8格式)
+```shell
+  openssl genpkey -algorithm RSA -out private_key.pem -pkeyopt rsa_keygen_bits:2048
+```
+
+
+### 从私钥导出公钥
+
+
+```shell
+  openssl rsa -pubout -in private_key.pem -out public_key.pem
+```
+
+
+
 ## Docker 快速部署
 
 ### 构建服务
@@ -62,7 +81,7 @@
 
     DX-GP10-NMEA0183通讯协议
     
-## 官方网站
+## 体验网站
 
     https://admcc.cn
 

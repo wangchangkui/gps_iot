@@ -54,8 +54,8 @@
           <!-- 性别 -->
           <el-form-item label="性别" prop="gender">
             <el-radio-group v-model="form.gender" class="gender-group">
-              <el-radio value="male">男</el-radio>
-              <el-radio value="female">女</el-radio>
+              <el-radio value="1">男</el-radio>
+              <el-radio value="0">女</el-radio>
             </el-radio-group>
           </el-form-item>
           
@@ -102,6 +102,21 @@
             </el-input>
           </el-form-item>
           
+
+          <!-- 手机号 -->
+          <el-form-item label="手机号" prop="phone">
+            <el-input 
+              v-model="form.phone" 
+              placeholder="请输入手机号" 
+              size="large"
+            >
+              <template #prefix>
+                <i class="el-icon-mobile-phone"></i>
+              </template>
+            </el-input>
+          </el-form-item>
+
+
           <!-- 邮箱 -->
           <el-form-item label="邮箱" prop="email">
             <el-input 
@@ -115,17 +130,25 @@
             </el-input>
           </el-form-item>
 
-          <!-- 手机号 -->
-          <el-form-item label="手机号" prop="phone">
-            <el-input 
-              v-model="form.phone" 
-              placeholder="请输入手机号" 
-              size="large"
-            >
-              <template #prefix>
-                <i class="el-icon-mobile-phone"></i>
-              </template>
-            </el-input>
+
+
+                 
+          <!-- 图片验证码 -->
+          <el-form-item label="图片验证码" prop="captcha">
+            <div class="verification-code-container">
+              <el-input 
+                v-model="form.captcha" 
+                placeholder="请输入图片验证码" 
+                size="large"
+              >
+                <template #prefix>
+                  <i class="el-icon-picture"></i>
+                </template>
+              </el-input>
+              <div class="captcha-image" @click="refreshCaptcha">
+                <img :src="'data:image/png;base64,'+captchaUrl" alt="验证码" />
+              </div>
+            </div>
           </el-form-item>
 
           <!-- 邮箱验证码 -->
@@ -151,24 +174,7 @@
               </el-button>
             </div>
           </el-form-item>
-          
-          <!-- 图片验证码 -->
-          <el-form-item label="图片验证码" prop="captcha">
-            <div class="verification-code-container">
-              <el-input 
-                v-model="form.captcha" 
-                placeholder="请输入图片验证码" 
-                size="large"
-              >
-                <template #prefix>
-                  <i class="el-icon-picture"></i>
-                </template>
-              </el-input>
-              <div class="captcha-image" @click="refreshCaptcha">
-                <img :src="'data:image/png;base64,'+captchaUrl" alt="验证码" />
-              </div>
-            </div>
-          </el-form-item>
+   
           
           <!-- 用户协议 -->
           <el-form-item prop="agreement">
@@ -210,7 +216,7 @@ import { useRouter } from 'vue-router'
 import type { FormInstance, FormRules } from 'element-plus'
 import ElMessage from 'element-plus/es/components/message/index'
 
-import { get_captcha } from '../../utils/api/user/login_user_api'
+import { get_captcha,send_email } from '../../utils/api/user/login_user_api'
 
 const router = useRouter()
 const formRef = ref<FormInstance>()
@@ -372,8 +378,20 @@ const getVerificationCode = () => {
       countdown.value = 60
     }
   }, 1000)
-  // TODO: 调用发送邮箱验证码的API
-  ElMessage.success('验证码已发送到邮箱')
+
+  send_email(form.email).then(res=>{
+
+    if(res.code === 10000){
+      ElMessage.success('验证码已发送到邮箱')
+    }else{
+      ElMessage.error(res.message)
+    }
+
+  }).catch(err=>{
+    ElMessage.error('发送验证码失败')
+  })
+
+
 }
 
 // 刷新图片验证码

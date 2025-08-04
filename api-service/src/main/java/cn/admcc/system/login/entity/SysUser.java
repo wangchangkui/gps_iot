@@ -1,4 +1,4 @@
-package cn.admcc.device.entity;
+package cn.admcc.system.login.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
 import lombok.Data;
@@ -76,12 +76,12 @@ public class SysUser {
     /**
      * 创建时间
      */
-    @TableField(value = "created_time",insertStrategy = FieldStrategy.ALWAYS)
+    @TableField(value = "created_time",fill = FieldFill.INSERT)
     private LocalDateTime createdTime;
 
     /**
      * 更新时间
      */
-    @TableField(value = "updated_time",insertStrategy = FieldStrategy.ALWAYS)
+    @TableField(value = "updated_time",fill = FieldFill.INSERT_UPDATE)
     private LocalDateTime updatedTime;
 }

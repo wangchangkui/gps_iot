@@ -21,10 +21,23 @@
         <netty.version>4.2.2.Final</netty.version>
         <mqtt-clent.version>1.2.5</mqtt-clent.version>
         <gt.version>31.0</gt.version>
+        <bcprov-jdk15.version>1.70</bcprov-jdk15.version>
+
     </properties>
 
     <dependencyManagement>
         <dependencies>
+
+            <dependency>
+                <groupId>org.bouncycastle</groupId>
+                <artifactId>bcprov-jdk15on</artifactId>
+                <version>${bcprov-jdk15.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.bouncycastle</groupId>
+                <artifactId>bcpkix-jdk15on</artifactId>
+                <version>${bcprov-jdk15.version}</version>
+            </dependency>
 
             <dependency>
                 <groupId>org.geotools</groupId>
