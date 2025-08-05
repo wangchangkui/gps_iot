@@ -1,6 +1,7 @@
 package cn.admcc.system.login.service;
 
 import cn.admcc.system.login.entity.SysUser;
+import cn.admcc.system.login.entity.dto.UserUploadDto;
 import cn.admcc.system.login.exception.SystemException;
 import com.baomidou.mybatisplus.extension.service.IService;
 
@@ -32,7 +33,7 @@ public interface SysUserServiceI extends IService<SysUser> {
      * 获取该邮箱的用户
      *
      * @param mail 用户邮箱
-     * @return
+     * @return SysUser
      */
     SysUser getUserByEmail(String mail);
 
@@ -65,4 +66,10 @@ public interface SysUserServiceI extends IService<SysUser> {
      */
     void updateUser(SysUser sysUser) throws SystemException;
 
+    /**
+     * 更新用户基本信息 用户名称 性别
+     * 该接口无法修改用户的邮箱 和 手机号
+     * @param userUploadDto 用户数据
+     */
+    void updateUserBaseInfo(UserUploadDto userUploadDto);
 }

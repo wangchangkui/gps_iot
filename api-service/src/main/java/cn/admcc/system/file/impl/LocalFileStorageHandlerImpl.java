@@ -55,7 +55,7 @@ public class LocalFileStorageHandlerImpl implements FileStorageHandlerI<String> 
         if (Optional.ofNullable(fileStorageRecords).isEmpty()) {
             throw new FileSystemException("文件不存在");
         }
-        return Paths.get(fileProperty.getLocalStorage(), fileStorageRecords.getFilePath()).toFile();
+        return Paths.get(fileProperty.getSrc(), fileStorageRecords.getFilePath()).toFile();
     }
 
     @Override
@@ -63,7 +63,7 @@ public class LocalFileStorageHandlerImpl implements FileStorageHandlerI<String> 
         // 这里的saveObject 是一个存储地址
         String relationPath = saveObject.get();
         log.info("文件存储路径:{}", relationPath);
-        String filePath = Paths.get(fileProperty.getLocalStorage(), relationPath).toString();
+        String filePath = Paths.get(fileProperty.getSrc(), relationPath).toString();
         // 如果文件夹不存在则创建文件夹
         Path path = Paths.get(filePath);
         if (!path.toFile().exists()) {
@@ -113,7 +113,7 @@ public class LocalFileStorageHandlerImpl implements FileStorageHandlerI<String> 
         if (Optional.ofNullable(fileStorageRecords).isEmpty()) {
             throw new FileSystemException("文件不存在");
         }
-        File file = Paths.get(fileProperty.getLocalStorage(), fileStorageRecords.getFilePath()).toFile();
+        File file = Paths.get(fileProperty.getSrc(), fileStorageRecords.getFilePath()).toFile();
         download(fileStorageRecords.getFileBaseName() + fileStorageRecords.getFileType(), file, false);
     }
 
@@ -202,7 +202,7 @@ public class LocalFileStorageHandlerImpl implements FileStorageHandlerI<String> 
             return;
         }
         for (FileStorageRecords fileStorageRecord : fileStorageRecords) {
-            File file = Paths.get(fileProperty.getLocalStorage(), fileStorageRecord.getFilePath()).toFile();
+            File file = Paths.get(fileProperty.getSrc(), fileStorageRecord.getFilePath()).toFile();
             FileUtil.del(file);
         }
         fileStorageRecordsMapper.deleteByIds(ids);
@@ -216,7 +216,7 @@ public class LocalFileStorageHandlerImpl implements FileStorageHandlerI<String> 
         if (Optional.ofNullable(fileStorageRecords).isEmpty()) {
             return;
         }
-        File file = Paths.get(fileProperty.getLocalStorage(), fileStorageRecords.getFilePath()).toFile();
+        File file = Paths.get(fileProperty.getSrc(), fileStorageRecords.getFilePath()).toFile();
         FileUtil.del(file);
         fileStorageRecordsMapper.deleteById(fileId);
     }
@@ -228,6 +228,6 @@ public class LocalFileStorageHandlerImpl implements FileStorageHandlerI<String> 
 
     @Override
     public String getRootPath() {
-        return fileProperty.getLocalStorage();
+        return fileProperty.getSrc();
     }
 }

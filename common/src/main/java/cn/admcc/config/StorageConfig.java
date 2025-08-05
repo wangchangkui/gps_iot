@@ -17,9 +17,9 @@ public class StorageConfig {
 
 
     /**
-     * 本地存储的位置
+     * 本地存储或桶的位置
      */
-    private String localStorage;
+    private String src;
 
     /**
      * 默认使用的存储方案

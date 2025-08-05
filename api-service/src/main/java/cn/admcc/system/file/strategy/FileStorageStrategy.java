@@ -24,7 +24,7 @@ import java.util.Map;
 public class FileStorageStrategy implements ApplicationContextAware {
 
 
-    private final  Map<String, FileStorageHandlerI<?>> fileStorageHandlerMap = new HashMap<>(8);
+    private final  Map<String, FileStorageHandlerI<Object>> fileStorageHandlerMap = new HashMap<>(8);
 
     private   StorageConfig storageConfig;
 
@@ -37,12 +37,12 @@ public class FileStorageStrategy implements ApplicationContextAware {
 
     }
 
-    public FileStorageHandlerI<?> getFileStorageHandler(String type){
+    public FileStorageHandlerI<Object> getFileStorageHandler(String type){
         return fileStorageHandlerMap.get(type);
     }
 
 
-    public FileStorageHandlerI<?> getDefaultFileStorageHandler(){
+    public FileStorageHandlerI<Object> getDefaultFileStorageHandler(){
         return fileStorageHandlerMap.get(storageConfig.getType());
     }
 

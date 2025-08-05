@@ -15,7 +15,7 @@ server:
     context-path: /api
 
 storage:
-  localStorage: ${USER_SAVE:/src}
+  src: ${USER_SAVE:/src}
   type: Local
 
 

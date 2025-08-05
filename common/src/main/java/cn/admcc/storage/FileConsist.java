@@ -9,4 +9,14 @@ package cn.admcc.storage;
 public class FileConsist {
 
 
+    /**
+     * 系统缓存
+     */
+    public final static String TEMP = "/temp";
+
+    /**
+     * 用户数据
+     */
+    public final static String USER = "/user";
+
 }

@@ -27,7 +27,7 @@ public interface FileStorageHandlerI<T> {
      * 存储一个文件
      * @param inputStream 文件流
      * @param fileName 文件名称
-     * @param saveObject 存储对象
+     * @param saveObject 存储对象 如果是桶 请传入名字，如果是本地，则传入本地文件的名字
      * @return 存储结果的文件id
      * @throws IOException io异常
      */
