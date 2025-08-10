@@ -123,10 +123,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserDao, SysUser> impleme
             throw new SystemException("请必须传入用户的账号");
         }
 
-        SysUser user = this.getOne(new LambdaQueryWrapper<SysUser>().eq(SysUser::getUserName, userUploadDto.getAccount()));
-        if(user == null){
-            throw new SystemException("用户不存在");
-        }
+        SysUser user = getByAccount(userUploadDto.getAccount());
         // 跟新头像
         MultipartFile avatar = userUploadDto.getAvatar();
         if(avatar != null){
@@ -147,6 +144,15 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserDao, SysUser> impleme
         this.updateById(user);
     }
 
+    @Override
+    public SysUser getByAccount(String account) {
+        SysUser user = this.getOne(new LambdaQueryWrapper<SysUser>().eq(SysUser::getUserName, account));
+        if(user == null){
+            throw new SystemException("用户不存在");
+        }
+        return user;
+    }
+
 
     @Transactional(rollbackFor = Exception.class)
     public String uploadAvatar(MultipartFile avatar,String userAccount) {
@@ -158,7 +164,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserDao, SysUser> impleme
 
         String savePath = Paths.get(storageConfig.getSrc(), FileConsist.USER, userAccount).toString();
         try(InputStream is = avatar.getInputStream()){
-          defaultFileStorageHandler.saveFile(is, fileName + suffix, () ->savePath);
+          defaultFileStorageHandler.saveFile(is, fileName +"."+ suffix, () ->savePath);
         } catch (IOException e) {
             throw new SystemException("上传用户头像失败",e);
         }

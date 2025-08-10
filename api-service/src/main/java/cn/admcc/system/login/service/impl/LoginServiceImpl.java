@@ -3,6 +3,7 @@ package cn.admcc.system.login.service.impl;
 import cn.admcc.config.EmailConfig;
 import cn.admcc.entity.CaptchaObject;
 import cn.admcc.system.login.entity.SysUser;
+import cn.admcc.system.login.entity.dto.UserEmailPhoneDto;
 import cn.admcc.system.login.entity.dto.UserRegisterDto;
 import cn.admcc.system.login.exception.SystemException;
 import cn.admcc.system.login.service.LoginServiceI;
@@ -75,6 +76,7 @@ public class LoginServiceImpl implements LoginServiceI {
     private final RsaUtil rsaUtil;
 
     private final SysUserServiceI sysUserService;
+    private final SysUserServiceI sysUserServiceI;
 
 
     @Override
@@ -130,16 +132,7 @@ public class LoginServiceImpl implements LoginServiceI {
             throw new SystemException("邮箱不能为空");
         }
         String emailCode = userRegisterDto.getEmailCode();
-        if(StrUtil.isEmpty(emailCode)){
-          throw new SystemException("请输入邮箱验证码");
-        }
-        String mailCode = redisUtil.get(EMAIL_CODE_KEY + email);
-
-        // 如果邮箱验证码是空 或者 不匹配则结束 移除所有的邮箱信息
-        if(StrUtil.isEmpty(mailCode) || !mailCode.equals(emailCode)){
-            removeAllEmailCode(email);
-            throw new SystemException("验证码错误");
-        }
+        checkEmail(email,emailCode);
 
         // 注册用户
         SysUser sysUser = new SysUser();
@@ -155,11 +148,44 @@ public class LoginServiceImpl implements LoginServiceI {
         }
         sysUser.setPassword(encryptPassword);
         // 添加默认的头像
-        sysUser.setAvatarUrl("https://admcc.cn/marker.png");
+        sysUser.setAvatarUrl("/marker.png");
         sysUser.setSex(userRegisterDto.getGender());
         sysUser.setPhoneNumber(userRegisterDto.getPhone());
         sysUser.setLastLogin(LocalDateTime.now());
         sysUserService.addUser(sysUser);
+    }
+
+    @Override
+    public void updateUserEmailAndPhone(UserEmailPhoneDto userUploadDto) {
+        if(StrUtil.isEmpty(userUploadDto.getAccount())){
+            throw new SystemException("必须传入账号");
+        }
+        // 获取当前用户的信息
+        SysUser user = sysUserServiceI.getByAccount(userUploadDto.getAccount());
+        // 获取验证码
+        checkEmail(user.getEmail(),userUploadDto.getEmailCode());
+        // 跟新用户的手机号或邮箱
+        if(StrUtil.isNotEmpty(userUploadDto.getNewEmail())){
+            user.setEmail(userUploadDto.getNewEmail());
+        }
+        if(StrUtil.isNotEmpty(userUploadDto.getNewPhone())){
+            user.setPhoneNumber(userUploadDto.getNewPhone());
+        }
+        sysUserService.updateById(user);
+    }
+
+
+    public void checkEmail(String email,String emailCode){
+        if(StrUtil.isEmpty(emailCode)){
+            throw new SystemException("请输入邮箱验证码");
+        }
+        String mailCode = redisUtil.get(EMAIL_CODE_KEY + email);
+
+        // 如果邮箱验证码是空 或者 不匹配则结束 移除所有的邮箱信息
+        if(StrUtil.isEmpty(mailCode) || !mailCode.equals(emailCode)){
+            removeAllEmailCode(email);
+            throw new SystemException("验证码错误");
+        }
     }
 
 

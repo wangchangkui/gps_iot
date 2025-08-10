@@ -3,6 +3,7 @@ package cn.admcc.system.file.strategy;
 
 import cn.admcc.config.StorageConfig;
 import cn.admcc.storage.FileStorageHandlerI;
+import cn.hutool.extra.spring.SpringUtil;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -43,6 +44,13 @@ public class FileStorageStrategy implements ApplicationContextAware {
 
 
     public FileStorageHandlerI<Object> getDefaultFileStorageHandler(){
+        if(fileStorageHandlerMap.isEmpty()){
+            throw new RuntimeException("找不到默认的存储器，请检查配置文件storage.type");
+        }
+        if(storageConfig == null){
+            storageConfig = SpringUtil.getBean(StorageConfig.class);
+        }
+
         return fileStorageHandlerMap.get(storageConfig.getType());
     }
 

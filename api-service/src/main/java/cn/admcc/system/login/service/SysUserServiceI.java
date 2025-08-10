@@ -72,4 +72,11 @@ public interface SysUserServiceI extends IService<SysUser> {
      * @param userUploadDto 用户数据
      */
     void updateUserBaseInfo(UserUploadDto userUploadDto);
+
+    /**
+     * 根据账号获取用户信息
+     * @param account 账号
+     * @return SysUser
+     */
+    SysUser getByAccount(String account);
 }

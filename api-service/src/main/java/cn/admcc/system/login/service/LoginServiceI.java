@@ -1,6 +1,7 @@
 package cn.admcc.system.login.service;
 
 import cn.admcc.entity.CaptchaObject;
+import cn.admcc.system.login.entity.dto.UserEmailPhoneDto;
 import cn.admcc.system.login.entity.dto.UserRegisterDto;
 
 /**
@@ -37,4 +38,10 @@ public interface LoginServiceI {
      * @param userRegisterDto 用户信息
      */
     void registerUser(UserRegisterDto userRegisterDto);
+
+    /**
+     * 更新用户的手机号或邮箱
+     * @param userUploadDto 新的手机号或邮箱
+     */
+    void updateUserEmailAndPhone(UserEmailPhoneDto userUploadDto);
 }
