@@ -3,7 +3,6 @@ package cn.admcc.system.login.service.impl;
 import cn.admcc.config.StorageConfig;
 import cn.admcc.storage.FileConsist;
 import cn.admcc.storage.FileStorageHandlerI;
-import cn.admcc.system.file.entity.FileStorageRecords;
 import cn.admcc.system.file.strategy.FileStorageStrategy;
 import cn.admcc.system.login.dao.SysUserDao;
 import cn.admcc.system.login.entity.SysUser;
@@ -23,7 +22,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.Optional;
@@ -52,8 +50,8 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserDao, SysUser> impleme
             this.save(sysUser);
         } catch (Exception e) {
             // 数据库设置了唯一建，失败的原因只能是冲突或数据库结构变化
-            log.error("注册用户失败了,违反了唯一定理");
-            throw new SystemException("无法注册用户");
+            log.error("注册用户失败了,违反了唯一定理",e);
+            throw new SystemException("无法注册用户，手机号或邮箱已经被使用");
         }
     }
 
@@ -130,8 +128,8 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserDao, SysUser> impleme
             uploadAvatar(avatar,userUploadDto.getAccount());
         }
         // 更新用户名
-        if(!StrUtil.isEmpty(userUploadDto.getUsername())){
-            user.setNickName(userUploadDto.getUsername());
+        if(!StrUtil.isEmpty(userUploadDto.getNickName())){
+            user.setNickName(userUploadDto.getNickName());
         }
 
         // 更新性别

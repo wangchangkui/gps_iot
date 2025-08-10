@@ -22,7 +22,7 @@
           </div>
         </div>
       </div>
-      
+
       <!-- 右侧注册表单区域 -->
       <div class="register-form-container">
         <div class="register-form-header">
@@ -30,27 +30,17 @@
           <h2>账号注册</h2>
           <p class="welcome-text">欢迎加入ADMCC物联网定位系统</p>
         </div>
-        
-        <el-form 
-          :model="form" 
-          :rules="rules" 
-          ref="formRef" 
-          class="register-form"
-          label-position="top"
-        >
+
+        <el-form :model="form" :rules="rules" ref="formRef" class="register-form" label-position="top">
           <!-- 用户名称 -->
           <el-form-item label="用户名称" prop="nickname">
-            <el-input 
-              v-model="form.nickname" 
-              placeholder="请输入您的姓名" 
-              size="large"
-            >
+            <el-input v-model="form.nickname" placeholder="请输入您的姓名" size="large">
               <template #prefix>
                 <i class="el-icon-user"></i>
               </template>
             </el-input>
           </el-form-item>
-          
+
           <!-- 性别 -->
           <el-form-item label="性别" prop="gender">
             <el-radio-group v-model="form.gender" class="gender-group">
@@ -58,72 +48,40 @@
               <el-radio value="0">女</el-radio>
             </el-radio-group>
           </el-form-item>
-          
-          <!-- 账号 -->
-          <el-form-item label="登录账号" prop="username">
-            <el-input 
-              v-model="form.username" 
-              placeholder="请输入登录账号" 
-              size="large"
-            >
-              <template #prefix>
-                <i class="el-icon-user"></i>
-              </template>
-            </el-input>
-          </el-form-item>
-          
-          <!-- 密码 -->
-          <el-form-item label="密码" prop="password">
-            <el-input 
-              v-model="form.password" 
-              type="password" 
-              placeholder="请输入密码" 
-              size="large"
-              show-password
-            >
-              <template #prefix>
-                <i class="el-icon-lock"></i>
-              </template>
-            </el-input>
-          </el-form-item>
-          
-          <!-- 确认密码 -->
-          <el-form-item label="确认密码" prop="confirmPassword">
-            <el-input 
-              v-model="form.confirmPassword" 
-              type="password" 
-              placeholder="请确认密码" 
-              size="large"
-              show-password
-            >
-              <template #prefix>
-                <i class="el-icon-lock"></i>
-              </template>
-            </el-input>
-          </el-form-item>
-          
-
           <!-- 手机号 -->
           <el-form-item label="手机号" prop="phone">
-            <el-input 
-              v-model="form.phone" 
-              placeholder="请输入手机号" 
-              size="large"
-            >
+            <el-input v-model="form.phone" placeholder="请输入手机号" size="large">
               <template #prefix>
                 <i class="el-icon-mobile-phone"></i>
               </template>
             </el-input>
           </el-form-item>
 
+          <!-- 密码 -->
+          <el-form-item label="密码" prop="password">
+            <el-input v-model="form.password" type="password" placeholder="请输入密码" size="large" show-password>
+              <template #prefix>
+                <i class="el-icon-lock"></i>
+              </template>
+            </el-input>
+          </el-form-item>
+
+          <!-- 确认密码 -->
+          <el-form-item label="确认密码" prop="confirmPassword">
+            <el-input v-model="form.confirmPassword" type="password" placeholder="请确认密码" size="large" show-password>
+              <template #prefix>
+                <i class="el-icon-lock"></i>
+              </template>
+            </el-input>
+          </el-form-item>
+
+
+
+
 
           <!-- 邮箱 -->
           <el-form-item label="邮箱" prop="email">
-            <el-input 
-              v-model="form.email" 
-              placeholder="请输入邮箱" 
-              size="large"
-            >
+            <el-input v-model="form.email" placeholder="请输入邮箱" size="large">
               <template #prefix>
                 <i class="el-icon-message"></i>
               </template>
@@ -132,21 +90,17 @@
 
 
 
-                 
+
           <!-- 图片验证码 -->
           <el-form-item label="图片验证码" prop="captcha">
             <div class="verification-code-container">
-              <el-input 
-                v-model="form.captcha" 
-                placeholder="请输入图片验证码" 
-                size="large"
-              >
+              <el-input v-model="form.captcha" placeholder="请输入图片验证码" size="large">
                 <template #prefix>
                   <i class="el-icon-picture"></i>
                 </template>
               </el-input>
               <div class="captcha-image" @click="refreshCaptcha">
-                <img :src="'data:image/png;base64,'+captchaUrl" alt="验证码" />
+                <img :src="'data:image/png;base64,' + captchaUrl" alt="验证码" />
               </div>
             </div>
           </el-form-item>
@@ -154,54 +108,40 @@
           <!-- 邮箱验证码 -->
           <el-form-item label="邮箱验证码" prop="emailCode">
             <div class="verification-code-container">
-              <el-input 
-                v-model="form.emailCode" 
-                placeholder="请输入邮箱验证码" 
-                size="large"
-              >
+              <el-input v-model="form.emailCode" placeholder="请输入邮箱验证码" size="large">
                 <template #prefix>
                   <i class="el-icon-key"></i>
                 </template>
               </el-input>
-              <el-button 
-                type="primary" 
-                class="get-code-button" 
-                size="large"
-                :disabled="codeButtonDisabled"
-                @click="getVerificationCode"
-              >
+              <el-button type="primary" class="get-code-button" size="large" :disabled="codeButtonDisabled"
+                @click="getVerificationCode">
                 {{ codeButtonText }}
               </el-button>
             </div>
           </el-form-item>
-   
-          
+
+
           <!-- 用户协议 -->
           <el-form-item prop="agreement">
             <el-checkbox v-model="form.agreement">
-              我已阅读并同意 <a href="#" @click.prevent="showAgreement">《用户协议》</a> 和 <a href="#" @click.prevent="showPrivacy">《隐私政策》</a>
+              我已阅读并同意 <a href="#" @click.prevent="showAgreement">《用户协议》</a> 和 <a href="#"
+                @click.prevent="showPrivacy">《隐私政策》</a>
             </el-checkbox>
           </el-form-item>
-          
+
           <el-form-item class="register-actions">
-            <el-button 
-              type="primary" 
-              class="register-button" 
-              size="large" 
-              @click="handleRegister"
-              :loading="loading"
-            >
+            <el-button type="primary" class="register-button" size="large" @click="handleRegister" :loading="loading">
               立即注册
             </el-button>
           </el-form-item>
-          
+
           <div class="register-footer">
             <span>已有账号? <a href="#" @click.prevent="goToLogin">返回登录</a></span>
             <span class="footer-divider">|</span>
             <span><a href="#" @click.prevent="goToHome">返回首页</a></span>
           </div>
         </el-form>
-        
+
         <div class="register-copyright">
           © 2025 ADMCC.cn. All rights reserved.
         </div>
@@ -216,7 +156,8 @@ import { useRouter } from 'vue-router'
 import type { FormInstance, FormRules } from 'element-plus'
 import ElMessage from 'element-plus/es/components/message/index'
 
-import { get_captcha,send_email } from '../../utils/api/user/login_user_api'
+import { get_captcha, send_email, register_user,check_email,check_phone } from '../../utils/api/user/login_user_api'
+import { UserRegister } from '../../utils/api/user/user_register'
 
 const router = useRouter()
 const formRef = ref<FormInstance>()
@@ -237,7 +178,7 @@ const captchaUrl = ref('')
 // 表单数据
 const form = reactive({
   nickname: '',
-  gender: 'male', // 默认选择男性
+  gender: '',
   username: '',
   password: '',
   confirmPassword: '',
@@ -290,7 +231,7 @@ const validateEmail = (rule: any, value: string, callback: any) => {
   } else if (!/^([a-zA-Z0-9_.-])+@([a-zA-Z0-9_-])+((\.[a-zA-Z0-9_-]+)+)$/.test(value)) {
     callback(new Error('请输入正确的邮箱'))
   } else {
-    callback()
+    checkEmailRegistered(value, callback)
   }
 }
 
@@ -301,9 +242,49 @@ const validatePhone = (rule: any, value: string, callback: any) => {
   } else if (!/^1[3-9]\d{9}$/.test(value)) {
     callback(new Error('请输入正确的手机号'))
   } else {
+    checkPhoneRegistered(value, callback)
+  }
+}
+
+
+// 检查邮箱是否已被注册
+const checkEmailRegistered = async (email: string, callback: any) => {
+  try {
+    const res = await check_email(email)
+    if (res.code === 10000) {
+      if (!res.data) {
+        callback(new Error('该邮箱已被注册'))
+      } else {
+        callback()
+      }
+    } else {
+      callback()
+    }
+  } catch (error) {
+    // API调用失败时，不阻止用户继续操作
     callback()
   }
 }
+
+// 检查手机号是否已被注册
+const checkPhoneRegistered = async (phone: string, callback: any) => {
+  try {
+    const res = await check_phone(phone)
+    if (res.code === 10000) {
+      if (!res.data) {
+        callback(new Error('该手机号已被注册'))
+      } else {
+        callback()
+      }
+    } else {
+      callback()
+    }
+  } catch (error) {
+    // API调用失败时，不阻止用户继续操作
+    callback()
+  }
+}
+
 
 // 协议验证
 const validateAgreement = (rule: any, value: boolean, callback: any) => {
@@ -379,15 +360,15 @@ const getVerificationCode = () => {
     }
   }, 1000)
 
-  send_email(form.email).then(res=>{
+  send_email(form.email).then(res => {
 
-    if(res.code === 10000){
+    if (res.code === 10000) {
       ElMessage.success('验证码已发送到邮箱')
-    }else{
+    } else {
       ElMessage.error(res.message)
     }
 
-  }).catch(err=>{
+  }).catch(err => {
     ElMessage.error('发送验证码失败')
   })
 
@@ -413,23 +394,39 @@ const showPrivacy = () => {
 
 // 注册提交
 const handleRegister = async () => {
+
+  // 手机号就是登录账号
+  form.username = form.phone;
+
+  console.log(form)
+
+
   if (!formRef.value) return
-  
   loading.value = true
-  
   try {
     await formRef.value.validate((valid) => {
       if (valid) {
-        // TODO: 实现注册逻辑
-        setTimeout(() => {
-          ElMessage.success('注册成功，即将跳转到登录页')
-          setTimeout(() => {
-            router.push('/login')
-          }, 1500)
-        }, 1000) // 模拟注册延迟
-      } else {
-        loading.value = false
+        const new_user = new UserRegister(form.nickname, form.password, form.email, form.phone, form.captcha, form.captchaCode, form.gender, form.emailCode, form.username);
+        register_user(new_user).then(success => {
+          console.log(success)
+          if (success.code === 10000) {
+            ElMessage.success('注册成功，即将跳转到登录页')
+            setTimeout(() => {
+              router.push('/login')
+            }, 1500)
+          } else {
+            ElMessage.error(success.message)
+          }
+        }).catch(ex => {
+          ElMessage.error('注册失败', ex)
+        })
       }
+
+      // 清除按钮状态
+      loading.value = false
+      // 刷新验证码
+      getCaptcha()
+
     })
   } catch (error) {
     loading.value = false
@@ -483,7 +480,7 @@ onMounted(() => {
   padding: 40px;
   position: relative;
   overflow: hidden;
-  
+
   &::before {
     content: '';
     position: absolute;
@@ -491,40 +488,40 @@ onMounted(() => {
     left: -50%;
     width: 200%;
     height: 200%;
-    background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 60%);
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0) 60%);
     z-index: 1;
   }
-  
+
   .brand-content {
     position: relative;
     z-index: 2;
   }
-  
+
   .brand-title {
     font-size: 36px;
     font-weight: 700;
     margin-bottom: 10px;
   }
-  
+
   .brand-desc {
     font-size: 16px;
     opacity: 0.8;
     margin-bottom: 40px;
   }
-  
+
   .brand-features {
     margin-top: 40px;
-    
+
     .feature-item {
       display: flex;
       align-items: center;
       margin-bottom: 20px;
-      
+
       i {
         font-size: 24px;
         margin-right: 12px;
       }
-      
+
       span {
         font-size: 16px;
       }
@@ -545,19 +542,19 @@ onMounted(() => {
 .register-form-header {
   text-align: center;
   margin-bottom: 15px;
-  
+
   .register-logo {
     width: 50px;
     height: 50px;
     margin-bottom: 10px;
   }
-  
+
   h2 {
     font-size: 24px;
     color: #303133;
     margin-bottom: 5px;
   }
-  
+
   .welcome-text {
     color: #909399;
     font-size: 14px;
@@ -566,27 +563,28 @@ onMounted(() => {
 
 .register-form {
   flex: 1;
-  
+
   :deep(.el-form-item) {
     margin-bottom: 15px;
   }
-  
+
   :deep(.el-form-item__label) {
     padding-bottom: 5px;
     font-weight: 500;
     line-height: 1;
   }
-  
+
   :deep(.el-input__wrapper) {
     padding: 0 15px;
     height: 45px;
     box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1) inset;
-    
-    &:hover, &.is-focus {
+
+    &:hover,
+    &.is-focus {
       box-shadow: 0 0 0 1px #1890ff inset;
     }
   }
-  
+
   :deep(.el-input__prefix) {
     font-size: 18px;
   }
@@ -596,11 +594,11 @@ onMounted(() => {
 .verification-code-container {
   display: flex;
   align-items: center;
-  
+
   .el-input {
     flex: 2;
   }
-  
+
   .get-code-button {
     flex: 1;
     margin-left: 10px;
@@ -609,7 +607,7 @@ onMounted(() => {
     padding: 0 8px;
     font-size: 14px;
   }
-  
+
   .captcha-image {
     flex: 1;
     height: 45px;
@@ -618,7 +616,7 @@ onMounted(() => {
     border-radius: 4px;
     overflow: hidden;
     cursor: pointer;
-    
+
     img {
       width: 100%;
       height: 100%;
@@ -638,7 +636,7 @@ onMounted(() => {
   border-radius: 4px;
   background: linear-gradient(to right, #1890ff, #096dd9);
   border: none;
-  
+
   &:hover {
     background: linear-gradient(to right, #40a9ff, #1890ff);
   }
@@ -652,16 +650,16 @@ onMounted(() => {
   display: flex;
   justify-content: center;
   align-items: center;
-  
+
   .footer-divider {
     margin: 0 10px;
     color: #dcdfe6;
   }
-  
+
   a {
     color: #1890ff;
     text-decoration: none;
-    
+
     &:hover {
       text-decoration: underline;
     }
@@ -678,13 +676,13 @@ onMounted(() => {
 .gender-group {
   display: flex;
   justify-content: flex-start;
-  
+
   :deep(.el-radio) {
     margin-right: 30px;
-    
+
     &:last-child {
       margin-right: 0;
     }
   }
 }
-</style> 
+</style>

@@ -1,10 +1,14 @@
 package cn.admcc.system.login.controller;
 
 import cn.admcc.entity.CaptchaObject;
+import cn.admcc.system.login.entity.SysUser;
 import cn.admcc.system.login.entity.dto.UserRegisterDto;
 import cn.admcc.system.login.service.LoginServiceI;
+import cn.admcc.system.login.service.SysUserServiceI;
 import cn.admcc.util.R;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Optional;
 
 /**
  * @author coder wang
@@ -18,11 +22,12 @@ public class LoginController {
 
 
     private final LoginServiceI loginServiceI;
+    private final SysUserServiceI sysUserServiceI;
 
 
-
-    public LoginController(LoginServiceI loginServiceI) {
+    public LoginController(LoginServiceI loginServiceI, SysUserServiceI sysUserServiceI) {
         this.loginServiceI = loginServiceI;
+        this.sysUserServiceI = sysUserServiceI;
     }
 
 
@@ -56,5 +61,29 @@ public class LoginController {
     public R<String> registerUser(@RequestBody UserRegisterDto userRegisterDto){
         loginServiceI.registerUser(userRegisterDto);
         return R.success();
+    }
+
+
+    /**
+     * 判断邮箱是否被注册
+     * @param mail 邮箱
+     * @return Boolean
+     */
+    @GetMapping("/register/mail/{mail}")
+    public R<Boolean> checkEmailContains(@PathVariable String mail){
+        SysUser userByEmail = sysUserServiceI.getUserByEmail(mail);
+        return R.successByData(Optional.ofNullable(userByEmail).isEmpty());
+    }
+
+
+    /**
+     * 判断电话是否已经存在
+     * @param phone 电话
+     * @return Boolean
+     */
+    @GetMapping("/register/phone/{phone}")
+    public R<Boolean> checkPhoneContains(@PathVariable String phone){
+        SysUser user = sysUserServiceI.getUserByPhone(phone);
+        return R.successByData(Optional.ofNullable(user).isEmpty());
     }
 }

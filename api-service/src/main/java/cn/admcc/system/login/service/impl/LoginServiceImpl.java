@@ -137,7 +137,7 @@ public class LoginServiceImpl implements LoginServiceI {
         // 注册用户
         SysUser sysUser = new SysUser();
         sysUser.setUserName(userRegisterDto.getAccount());
-        sysUser.setNickName(userRegisterDto.getUsername());
+        sysUser.setNickName(userRegisterDto.getNickName());
         sysUser.setEmail(email);
         String encryptPassword;
         try {
@@ -184,7 +184,7 @@ public class LoginServiceImpl implements LoginServiceI {
         // 如果邮箱验证码是空 或者 不匹配则结束 移除所有的邮箱信息
         if(StrUtil.isEmpty(mailCode) || !mailCode.equals(emailCode)){
             removeAllEmailCode(email);
-            throw new SystemException("验证码错误");
+            throw new SystemException("邮箱验证码错误，请重新获取");
         }
     }
 

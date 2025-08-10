@@ -14,7 +14,7 @@ public class UserRegisterDto {
     /**
      * 用户名称
      */
-    private  String username;
+    private  String nickName;
 
     /**
      * 登录账号

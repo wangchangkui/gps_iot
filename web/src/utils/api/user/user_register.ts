@@ -2,7 +2,7 @@
  * @Author: coder_wang 17360402335@163.com
  * @Date: 2025-07-28 16:44:57
  * @LastEditors: coder_wang 17360402335@163.com
- * @LastEditTime: 2025-07-29 17:19:04
+ * @LastEditTime: 2025-08-10 14:06:16
  * @FilePath: \web\src\utils\api\user\user.ts
  * @Description: 
  */
@@ -52,7 +52,7 @@ export class UserRegister{
     /**
      * 性别 1 男 0 女
      */
-    gender: number;
+    gender: string;
 
 
     constructor(
@@ -62,7 +62,7 @@ export class UserRegister{
         phone: string,  
         captcha: string, 
         captchaCode: string, 
-        gender: number,
+        gender: string,
         emailCode:string,
         account: string
     ) {

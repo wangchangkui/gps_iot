@@ -2,12 +2,13 @@
  * @Author: coder_wang 17360402335@163.com
  * @Date: 2025-07-19 15:51:58
  * @LastEditors: coder_wang 17360402335@163.com
- * @LastEditTime: 2025-07-24 16:26:34
+ * @LastEditTime: 2025-08-10 14:24:29
  * @FilePath: \web\src\utils\api\request.ts
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
 
 import axios, { type InternalAxiosRequestConfig, type AxiosResponse } from 'axios'
+import ElMessage from 'element-plus/es/components/message/index'
 
 // 创建 axios 实例
 const service = axios.create({
@@ -50,12 +51,15 @@ service.interceptors.response.use(
       // 服务器返回错误状态码
       console.error('HTTP状态:', error.response.status)
       console.error('错误数据:', error.response.data)
+      ElMessage.error(error.response.data)
     } else if (error.request) {
       // 请求已发送但未收到响应
       console.error('未收到响应:', error.request)
+      ElMessage.error(error.request)
     } else {
       // 请求配置出错
       console.error('请求错误:', error.message)
+      ElMessage.error(error.message)
     }
     
     // ElMessage.error(error.message || '网络错误')
