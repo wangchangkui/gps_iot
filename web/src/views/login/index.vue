@@ -43,9 +43,9 @@
           <div 
             class="login-tab-item" 
             :class="{ active: loginType === 'phone' }" 
-            @click="loginType = 'phone'"
+            @click="loginType = 'email'"
           >
-            手机验证码
+            邮箱登录
           </div>
           <div 
             class="login-tab-item" 

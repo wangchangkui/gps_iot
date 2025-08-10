@@ -22,11 +22,17 @@
         <mqtt-clent.version>1.2.5</mqtt-clent.version>
         <gt.version>31.0</gt.version>
         <bcprov-jdk15.version>1.70</bcprov-jdk15.version>
-
+        <sa-token.version>1.44.0</sa-token.version>
     </properties>
 
     <dependencyManagement>
         <dependencies>
+
+            <dependency>
+                <groupId>cn.dev33</groupId>
+                <artifactId>sa-token-spring-boot3-starter</artifactId>
+                <version>${sa-token.version}</version>
+            </dependency>
 
             <dependency>
                 <groupId>org.bouncycastle</groupId>
