@@ -1,8 +1,8 @@
-package cn.admcc.system.login.service;
+package cn.admcc.system.base.service;
 
-import cn.admcc.system.login.entity.SysUser;
-import cn.admcc.system.login.entity.dto.UserUploadDto;
-import cn.admcc.system.login.exception.SystemException;
+import cn.admcc.system.base.entity.SysUser;
+import cn.admcc.system.base.entity.dto.UserUploadDto;
+import cn.admcc.system.base.exception.SystemException;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 /**

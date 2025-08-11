@@ -1,14 +1,14 @@
-package cn.admcc.system.login.service.impl;
+package cn.admcc.system.base.service.impl;
 
 import cn.admcc.config.StorageConfig;
 import cn.admcc.storage.FileConsist;
 import cn.admcc.storage.FileStorageHandlerI;
 import cn.admcc.system.file.strategy.FileStorageStrategy;
-import cn.admcc.system.login.dao.SysUserDao;
-import cn.admcc.system.login.entity.SysUser;
-import cn.admcc.system.login.entity.dto.UserUploadDto;
-import cn.admcc.system.login.exception.SystemException;
-import cn.admcc.system.login.service.SysUserServiceI;
+import cn.admcc.system.base.dao.SysUserDao;
+import cn.admcc.system.base.entity.SysUser;
+import cn.admcc.system.base.entity.dto.UserUploadDto;
+import cn.admcc.system.base.exception.SystemException;
+import cn.admcc.system.base.service.SysUserServiceI;
 import cn.hutool.core.io.file.FileNameUtil;
 import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.StrUtil;

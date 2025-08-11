@@ -1,7 +1,7 @@
 package cn.admcc.exception;
 
 import cn.admcc.gaode.exception.GdException;
-import cn.admcc.system.login.exception.SystemException;
+import cn.admcc.system.base.exception.SystemException;
 import cn.admcc.util.R;
 
 import jakarta.servlet.http.HttpServletResponse;

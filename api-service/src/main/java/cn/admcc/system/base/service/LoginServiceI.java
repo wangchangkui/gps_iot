@@ -1,8 +1,8 @@
-package cn.admcc.system.login.service;
+package cn.admcc.system.base.service;
 
 import cn.admcc.entity.CaptchaObject;
-import cn.admcc.system.login.entity.dto.UserEmailPhoneDto;
-import cn.admcc.system.login.entity.dto.UserRegisterDto;
+import cn.admcc.system.base.entity.dto.UserEmailPhoneDto;
+import cn.admcc.system.base.entity.dto.UserRegisterDto;
 
 /**
  * @author coder wang

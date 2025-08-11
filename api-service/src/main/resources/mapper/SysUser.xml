@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.admcc.system.base.dao.SysUserDao">
+
+    <!-- 用户基础信息映射 -->
+    <resultMap id="UserBaseMap" type="cn.admcc.system.base.entity.SysUser">
+        <id column="id" property="id"/>
+        <result column="user_name" property="userName"/>
+        <result column="email" property="email"/>
+        <result column="nick_name" property="nickName"/>
+        <result column="phone_number" property="phoneNumber"/>
+        <result column="sex" property="sex"/>
+        <result column="avatar_url" property="avatarUrl"/>
+        <result column="is_active" property="isActive"/>
+        <result column="last_login" property="lastLogin"/>
+        <result column="created_time" property="createdTime"/>
+        <result column="updated_time" property="updatedTime"/>
+    </resultMap>
+
+    <!-- 权限信息映射 -->
+    <resultMap id="PermissionMap" type="cn.admcc.system.base.entity.SysPermissions">
+        <id column="permission_id" property="permissionId"/>
+        <result column="perm_key" property="permKey"/>
+        <result column="perm_name" property="permName"/>
+        <result column="parent_id" property="parentId" />
+        <result column="perm_type" property="permType"/>
+        <result column="component_path" property="componentPath"/>
+        <result column="sort_order" property="sortOrder"/>
+        <result column="is_hidden" property="isHidden"/>
+    </resultMap>
+
+    <!-- 角色信息映射（包含权限集合） -->
+    <resultMap id="RoleWithPermissionsMap" type="cn.admcc.system.base.entity.SysRole">
+        <id column="role_id" property="id"/>
+        <result column="role_name" property="roleName"/>
+        <collection property="permissions" resultMap="PermissionMap"/>
+    </resultMap>
+
+    <!-- 完整用户信息映射（包含角色集合） -->
+    <resultMap id="UserWithRolesAndPermissionsMap" type="cn.admcc.system.base.entity.SysUser" extends="UserBaseMap">
+        <collection property="sysRoles" resultMap="RoleWithPermissionsMap"/>
+    </resultMap>
+
+    <!-- 获取用户信息及其角色权限的SQL -->
+    <select id="getUserInfoAndRulers" resultMap="UserWithRolesAndPermissionsMap">
+        WITH user_data AS (
+        SELECT
+        u.id,
+        u.user_name,
+        u.email,
+        u.nick_name,
+        u.phone_number,
+        u.sex,
+        u.avatar_url,
+        u.is_active,
+        u.last_login,
+        u.created_time,
+        u.updated_time
+        FROM public.sys_users u
+        WHERE u.user_name = #{account}
+        )
+        SELECT
+        ud.*,
+        r.id AS role_id,
+        r.role_name,
+        p.permission_id,
+        p.perm_key,
+        p.parent_id,
+        p.perm_name,
+        p.perm_type,
+        p.component_path,
+        p.sort_order,
+        p.is_hidden
+        FROM user_data ud
+        LEFT JOIN public.sys_user_role ur ON ur.sys_user_id = ud.id
+        LEFT JOIN public.sys_role r ON r.id = ur.sys_role_id
+        LEFT JOIN public.sys_role_permission rp ON rp.role_id = r.id
+        LEFT JOIN public.sys_permissions p ON p.permission_id = rp.permission_id
+        ORDER BY r.id, p.sort_order
+    </select>
+
+</mapper>

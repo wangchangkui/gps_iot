@@ -1,10 +1,9 @@
-package cn.admcc.system.login.controller;
+package cn.admcc.system.base.controller;
 
-import cn.admcc.system.login.entity.dto.UserEmailPhoneDto;
-import cn.admcc.system.login.entity.dto.UserRegisterDto;
-import cn.admcc.system.login.entity.dto.UserUploadDto;
-import cn.admcc.system.login.service.LoginServiceI;
-import cn.admcc.system.login.service.SysUserServiceI;
+import cn.admcc.system.base.entity.dto.UserEmailPhoneDto;
+import cn.admcc.system.base.entity.dto.UserUploadDto;
+import cn.admcc.system.base.service.LoginServiceI;
+import cn.admcc.system.base.service.SysUserServiceI;
 import cn.admcc.util.R;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;

@@ -1,10 +1,10 @@
-package cn.admcc.system.login.controller;
+package cn.admcc.system.base.controller;
 
 import cn.admcc.entity.CaptchaObject;
-import cn.admcc.system.login.entity.SysUser;
-import cn.admcc.system.login.entity.dto.UserRegisterDto;
-import cn.admcc.system.login.service.LoginServiceI;
-import cn.admcc.system.login.service.SysUserServiceI;
+import cn.admcc.system.base.entity.SysUser;
+import cn.admcc.system.base.entity.dto.UserRegisterDto;
+import cn.admcc.system.base.service.LoginServiceI;
+import cn.admcc.system.base.service.SysUserServiceI;
 import cn.admcc.util.R;
 import org.springframework.web.bind.annotation.*;
 

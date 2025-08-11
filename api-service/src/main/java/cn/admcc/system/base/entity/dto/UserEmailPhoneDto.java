@@ -1,4 +1,4 @@
-package cn.admcc.system.login.entity.dto;
+package cn.admcc.system.base.entity.dto;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;

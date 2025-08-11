@@ -1,4 +1,4 @@
-package cn.admcc.system.login.exception;
+package cn.admcc.system.base.exception;
 
 /**
  * @author coder wang

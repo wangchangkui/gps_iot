@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.admcc.system.base.dao.SysPermissionsDao">
+
+    <select id="getUserAllPermissions" resultType="cn.admcc.system.base.entity.SysPermissions">
+
+        WITH RECURSIVE user_perms AS (
+            -- 直接分配的权限
+            SELECT p.*
+            FROM sys_permissions p
+                     JOIN sys_role_permission rp ON p.permission_id = rp.permission_id
+                     JOIN sys_user_role ur ON ur.sys_role_id = rp.role_id
+            WHERE ur.sys_user_id = #{userId}
+
+            UNION
+
+            -- 递归获取所有子权限
+            SELECT child.*
+            FROM sys_permissions child
+                     JOIN user_perms parent ON child.parent_id = parent.permission_id
+            WHERE child.is_hidden = false  -- 排除隐藏权限
+        )
+        SELECT * FROM user_perms
+        ORDER BY parent_id NULLS FIRST, sort_order
+    </select>
+</mapper>

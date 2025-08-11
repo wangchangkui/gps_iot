@@ -1,9 +1,10 @@
-package cn.admcc.system.login.entity;
+package cn.admcc.system.base.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
 import lombok.Data;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * 系统用户表实体类
@@ -84,4 +85,10 @@ public class SysUser {
      */
     @TableField(value = "updated_time",fill = FieldFill.INSERT_UPDATE)
     private LocalDateTime updatedTime;
+
+    /**
+     * 用户拥有的角色
+     */
+    @TableField(exist = false)
+    private List<SysRole> sysRoles;
 }
