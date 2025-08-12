@@ -13,6 +13,8 @@ import cn.admcc.system.base.entity.dto.UserRegisterDto;
 public interface LoginServiceI {
 
 
+
+
     /**
      * 获取验证码
      * @return CaptchaObject

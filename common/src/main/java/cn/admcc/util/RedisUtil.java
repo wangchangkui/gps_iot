@@ -253,4 +253,18 @@ public class RedisUtil<V> {
         return redisTemplate.opsForValue().multiGet(keys);
     }
 
+
+    /**
+     * 设置list
+     * @param key key
+     * @param value 值
+     */
+    public void setList(String key,Collection<V> value,Long time, TimeUnit timeUnit){
+        redisTemplate.opsForList().rightPushAll(key, value);
+        this.expire(key,time,timeUnit);
+
+    }
+
+
+
 }

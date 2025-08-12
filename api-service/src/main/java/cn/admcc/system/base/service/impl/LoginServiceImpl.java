@@ -76,6 +76,7 @@ public class LoginServiceImpl implements LoginServiceI {
     private final RsaUtil rsaUtil;
 
     private final SysUserServiceI sysUserService;
+
     private final SysUserServiceI sysUserServiceI;
 
 

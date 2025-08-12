@@ -1,12 +1,11 @@
-package cn.admcc;
+package cn.admcc.system.base.service.impl;
 
 import cn.admcc.system.base.dao.SysPermissionsDao;
-import cn.admcc.system.base.dao.SysUserDao;
 import cn.admcc.system.base.entity.SysPermissions;
-import cn.admcc.system.base.entity.SysUser;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
+import cn.admcc.system.base.service.SysPermissionServiceI;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
 
 import java.util.*;
 
@@ -14,26 +13,25 @@ import java.util.*;
  * @author coder wang
  * @version 1.0.0
  * @description
- * @createTime 16:43
+ * @createTime 09:14
  */
-@SpringBootTest(classes = ApplicationMain.class)
-public class ApplicationMainTest {
+@Service
+@Slf4j
+public class SysPermissionServiceImpl extends ServiceImpl<SysPermissionsDao,SysPermissions> implements SysPermissionServiceI {
 
 
-    @Autowired
-    private SysUserDao sysUserDao;
 
 
-    @Autowired
-    private SysPermissionsDao sysPermissionsDao;
+    private final SysPermissionsDao sysPermissionsDao;
 
-    @Test
-    void test(){
-        SysUser admin = sysUserDao.getUserInfoAndRulers("admin");
-        List<SysPermissions> userAllPermissions = sysPermissionsDao.getUserAllPermissions(admin.getId());
-        List<SysPermissions> sysPermissions = buildPermissionTree(userAllPermissions);
-        System.out.println(sysPermissions);
+    public SysPermissionServiceImpl(SysPermissionsDao sysPermissionsDao) {
+        this.sysPermissionsDao = sysPermissionsDao;
+    }
 
+    @Override
+    public List<SysPermissions> getUserAllPermissions(Long userId) {
+        List<SysPermissions> userAllPermissions = sysPermissionsDao.getUserAllPermissions(userId);
+        return buildPermissionTree(userAllPermissions);
     }
 
 
@@ -49,7 +47,8 @@ public class ApplicationMainTest {
 
         // 第一遍遍历：初始化所有节点
         for (SysPermissions perm : permissions) {
-            perm.setChildren(new ArrayList<>()); // 初始化子节点列表
+            // 初始化子节点列表
+            perm.setChildren(new ArrayList<>());
             permissionMap.put(perm.getPermissionId(), perm);
         }
 
@@ -72,4 +71,6 @@ public class ApplicationMainTest {
         rootNodes.sort(Comparator.comparingInt(SysPermissions::getSortOrder));
         return rootNodes;
     }
+
+
 }
