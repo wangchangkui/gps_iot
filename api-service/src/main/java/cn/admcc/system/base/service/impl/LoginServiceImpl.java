@@ -3,11 +3,13 @@ package cn.admcc.system.base.service.impl;
 import cn.admcc.config.EmailConfig;
 import cn.admcc.entity.CaptchaObject;
 import cn.admcc.system.base.entity.SysUser;
+import cn.admcc.system.base.entity.dto.LoginUserDto;
 import cn.admcc.system.base.entity.dto.UserEmailPhoneDto;
 import cn.admcc.system.base.entity.dto.UserRegisterDto;
 import cn.admcc.system.base.exception.SystemException;
 import cn.admcc.system.base.service.LoginServiceI;
 import cn.admcc.system.base.service.SysUserServiceI;
+import cn.admcc.system.base.service.strategy.LoginStrategy;
 import cn.admcc.util.EmailUtil;
 import cn.admcc.util.RedisUtil;
 import cn.admcc.util.RsaUtil;
@@ -58,12 +60,12 @@ public class LoginServiceImpl implements LoginServiceI {
     /**
      * 邮箱的冷却key
      */
-    private static final String EMAIL_COOLDOWN_KEY = "email:cooldown:";
+    public static final String EMAIL_COOLDOWN_KEY = "email:cooldown:";
 
     /**
      * 邮箱验证码的key
      */
-    private static final String EMAIL_CODE_KEY = "email:code:";
+    public static final String EMAIL_CODE_KEY = "email:code:";
 
 
 
@@ -79,6 +81,19 @@ public class LoginServiceImpl implements LoginServiceI {
 
     private final SysUserServiceI sysUserServiceI;
 
+    private final LoginStrategy loginStrategy;
+
+
+    @Override
+    public Object login(LoginUserDto loginUserDto) {
+        return loginStrategy.login(loginUserDto);
+    }
+
+    @Override
+    public void sendUserEmail(String account) {
+        SysUser byAccount = sysUserServiceI.getByAccount(account);
+        this.sendRegisterEmail(byAccount.getEmail());
+    }
 
     @Override
     public CaptchaObject getCaptcha() {
@@ -100,7 +115,7 @@ public class LoginServiceImpl implements LoginServiceI {
         // 获取当前目录下的邮件模板
         String emailContent = writeCodeToTemplate(captcha);
         // 发送邮件
-        emailUtil.sendEmail(emailContent,email,"Admcc 注册");
+        emailUtil.sendEmail(emailContent,email,"Admcc");
         // 设置过期时间
         redisUtil.set(EMAIL_COOLDOWN_KEY+email,email,COOLDOWN_PERIOD,TimeUnit.SECONDS);
         // 设置key

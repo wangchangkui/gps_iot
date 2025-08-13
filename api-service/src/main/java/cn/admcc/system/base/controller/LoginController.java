@@ -2,6 +2,7 @@ package cn.admcc.system.base.controller;
 
 import cn.admcc.entity.CaptchaObject;
 import cn.admcc.system.base.entity.SysUser;
+import cn.admcc.system.base.entity.dto.LoginUserDto;
 import cn.admcc.system.base.entity.dto.UserRegisterDto;
 import cn.admcc.system.base.service.LoginServiceI;
 import cn.admcc.system.base.service.SysUserServiceI;
@@ -28,6 +29,18 @@ public class LoginController {
     public LoginController(LoginServiceI loginServiceI, SysUserServiceI sysUserServiceI) {
         this.loginServiceI = loginServiceI;
         this.sysUserServiceI = sysUserServiceI;
+    }
+
+    /**
+     * 登录
+     * token 在响应头内
+     * @param loginUserDto 请求参数
+     * @return R
+     */
+    @PostMapping("/loginSystem")
+    public R<String> login(@RequestBody LoginUserDto loginUserDto){
+        loginServiceI.login(loginUserDto);
+        return R.success();
     }
 
 

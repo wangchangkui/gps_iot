@@ -1,6 +1,7 @@
 package cn.admcc.system.base.service;
 
 import cn.admcc.entity.CaptchaObject;
+import cn.admcc.system.base.entity.dto.LoginUserDto;
 import cn.admcc.system.base.entity.dto.UserEmailPhoneDto;
 import cn.admcc.system.base.entity.dto.UserRegisterDto;
 
@@ -13,6 +14,19 @@ import cn.admcc.system.base.entity.dto.UserRegisterDto;
 public interface LoginServiceI {
 
 
+    /**
+     * 登录入口
+     * @param loginUserDto 登录参数
+     * @return Object
+     */
+    Object login(LoginUserDto loginUserDto);
+
+
+    /**
+     * 给账号默认邮箱发送验证码
+     * @param account 账号
+     */
+    void sendUserEmail(String account);
 
 
     /**

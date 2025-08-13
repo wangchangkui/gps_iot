@@ -3,12 +3,14 @@ package cn.admcc.system.base.service.strategy;
 import cn.admcc.system.base.entity.SysPermissions;
 import cn.admcc.system.base.entity.SysUser;
 import cn.admcc.system.base.entity.dto.LoginUserDto;
+import cn.admcc.system.base.exception.SystemException;
 import cn.admcc.system.base.service.SysPermissionServiceI;
+import cn.admcc.system.base.service.SysUserServiceI;
 import cn.admcc.util.JacksonUtils;
 import cn.admcc.util.RedisUtil;
+import cn.hutool.core.util.StrUtil;
 import lombok.Getter;
 import lombok.Setter;
-import org.hsqldb.rights.User;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
@@ -32,9 +34,15 @@ public abstract class AbstractLoginHandler implements LoginHandler {
     @Setter(onMethod_ = {@Autowired})
     protected SysPermissionServiceI permissionServiceI;
 
+    @Setter(onMethod_ = {@Autowired})
+    protected   SysUserServiceI sysUserServiceI;
+
 
 
     public Object loginUser(LoginUserDto loginUserDto){
+
+        // 检查验证码
+        checkCapture(loginUserDto);
 
         // 执行登录
         SysUser user = this.login(loginUserDto);
@@ -46,6 +54,34 @@ public abstract class AbstractLoginHandler implements LoginHandler {
 
         return user;
     }
+
+
+
+    public void checkCapture(LoginUserDto loginUserDto){
+        String capture = loginUserDto.getCapture();
+        Long captureId = loginUserDto.getCaptureId();
+        if (StrUtil.isEmpty(capture)) {
+            throw new SystemException("验证码不能为空");
+        }
+
+        if(captureId == null){
+            throw new SystemException("验证码id不能为空");
+        }
+
+        String captureContent = getRedisUtil().get(captureId.toString());
+        // 删除验证码
+        redisUtil.delete(captureId.toString());
+        if(!captureContent.equals(capture)){
+            throw new SystemException("无效验证码");
+        }
+
+    }
+
+    /**
+     * 登录的类型
+     * @return 类型
+     */
+    public abstract String getType();
 
 
 
