@@ -537,6 +537,38 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   overflow-y: auto;
+  
+  // 自定义滚动条样式 - 默认隐藏，滚动时显示
+  &::-webkit-scrollbar {
+    width: 6px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: transparent;
+    border-radius: 3px;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background: rgba(193, 193, 193, 0.6);
+    border-radius: 3px;
+    transition: background 0.3s ease;
+    
+    &:hover {
+      background: rgba(168, 168, 168, 0.8);
+    }
+  }
+  
+  // 鼠标悬停时显示滚动条
+  &:hover::-webkit-scrollbar {
+    opacity: 1;
+  }
+  
+  // 滚动时显示滚动条
+  &:hover::-webkit-scrollbar-thumb {
+    background: rgba(193, 193, 193, 0.8);
+  }
 }
 
 .register-form-header {

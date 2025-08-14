@@ -2,14 +2,15 @@
  * @Author: coder_wang 17360402335@163.com
  * @Date: 2025-07-27 19:25:31
  * @LastEditors: coder_wang 17360402335@163.com
- * @LastEditTime: 2025-08-10 14:50:49
+ * @LastEditTime: 2025-08-14 16:30:06
  * @FilePath: \web\src\utils\api\user\login_user_api.ts
- * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
+ * @Description: 
  */
 import request from "../request"
 
 import type { ApiResponse } from "../Response"
 import type { Captcha } from "./captcha"
+import type { LoginUser, LoginUserResponse } from "./login_user"
 import { UserRegister } from './user_register'
 
 
@@ -73,4 +74,30 @@ export const check_phone = (phone:string) =>{
         url: 'api/login/register/phone/'+phone,
         method: 'get',
     }) as Promise<ApiResponse<boolean>>
+}
+
+
+/**
+ * 系统登录
+ * @param loginUser 登录参数
+ * @returns 
+ */
+export const login = (loginUser:LoginUser) =>{
+    return request({
+        url: 'api/login/loginSystem',
+        method: 'post',
+        data: loginUser,
+    }) as Promise<ApiResponse<LoginUserResponse>>
+}
+
+/**
+ * 给指定账号发送邮箱验证码
+ * @param account 账号
+ * @returns 
+ */
+export const  send_login_email = (account:string) =>{
+    return request({
+        url: 'api/login/login/sendEmail/'+account,
+        method: 'post',
+    }) as Promise<ApiResponse<any>>
 }

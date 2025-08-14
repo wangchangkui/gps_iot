@@ -3,6 +3,7 @@ package cn.admcc.system.base.service.strategy;
 import cn.admcc.config.StorageConfig;
 import cn.admcc.storage.FileStorageHandlerI;
 import cn.admcc.system.base.entity.dto.LoginUserDto;
+import cn.admcc.system.base.exception.SystemException;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -32,6 +33,9 @@ public class LoginStrategy  implements ApplicationContextAware {
 
     public Object login(LoginUserDto loginUserDto){
         AbstractLoginHandler abstractLoginHandler = this.strategyMap.get(loginUserDto.getType());
+        if(abstractLoginHandler == null){
+            throw new SystemException("无效的登录方式");
+        }
         return abstractLoginHandler.loginUser(loginUserDto);
     }
 }

@@ -38,8 +38,18 @@ public class LoginController {
      * @return R
      */
     @PostMapping("/loginSystem")
-    public R<String> login(@RequestBody LoginUserDto loginUserDto){
-        loginServiceI.login(loginUserDto);
+    public R<Object> login(@RequestBody LoginUserDto loginUserDto){
+        return R.success(loginServiceI.login(loginUserDto));
+    }
+
+    /**
+     * 账号邮箱登陆时需要发送的验证码
+     * @param userAccount 账号
+     * @return success
+     */
+    @PostMapping("/login/sendEmail/{userAccount}")
+    public R<String> loginSendEmail(@PathVariable String userAccount){
+        loginServiceI.sendUserEmail(userAccount);
         return R.success();
     }
 

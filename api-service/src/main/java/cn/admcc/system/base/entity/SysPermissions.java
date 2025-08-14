@@ -84,12 +84,6 @@ public class SysPermissions {
 
 
     /**
-     * 权限层级（根节点为1）
-     */
-    @TableField(exist = false)
-    private Integer level;
-
-    /**
      * 子权限列表
      */
     @TableField(exist = false)

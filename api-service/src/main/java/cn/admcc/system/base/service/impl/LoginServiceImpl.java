@@ -21,7 +21,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Service;
-
+import cn.admcc.system.util.RedisConsist;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -45,27 +45,7 @@ public class LoginServiceImpl implements LoginServiceI {
     private final RedisUtil<String> redisUtil;
 
 
-    /**
-     * 冷却时间60秒 60秒内同一个邮箱不允许重复提交
-     */
-    private static final int COOLDOWN_PERIOD = 60;
 
-
-    /**
-     * 验证码有效期6分钟
-     */
-    private static final int VALIDATE_PERIOD = 300;
-
-
-    /**
-     * 邮箱的冷却key
-     */
-    public static final String EMAIL_COOLDOWN_KEY = "email:cooldown:";
-
-    /**
-     * 邮箱验证码的key
-     */
-    public static final String EMAIL_CODE_KEY = "email:code:";
 
 
 
@@ -104,12 +84,12 @@ public class LoginServiceImpl implements LoginServiceI {
     @Override
     public void sendRegisterEmail(String email) {
         // 60s内不允许重复获取验证码
-        if (redisUtil.hasKey(EMAIL_COOLDOWN_KEY+email)) {
+        if (redisUtil.hasKey(RedisConsist.EMAIL_COOLDOWN_KEY+email)) {
             throw new SystemException("重复提交，请1分钟后再试");
         }
 
         // 删除以前的信息
-        redisUtil.delete(EMAIL_CODE_KEY+email);
+        redisUtil.delete(RedisConsist.EMAIL_CODE_KEY+email);
         // 获取一个6位数的验证码
         String captcha = RandomUtil.randomNumbers(6);
         // 获取当前目录下的邮件模板
@@ -117,15 +97,15 @@ public class LoginServiceImpl implements LoginServiceI {
         // 发送邮件
         emailUtil.sendEmail(emailContent,email,"Admcc");
         // 设置过期时间
-        redisUtil.set(EMAIL_COOLDOWN_KEY+email,email,COOLDOWN_PERIOD,TimeUnit.SECONDS);
+        redisUtil.set(RedisConsist.EMAIL_COOLDOWN_KEY+email,email,RedisConsist.COOLDOWN_PERIOD,TimeUnit.SECONDS);
         // 设置key
-        redisUtil.set(EMAIL_CODE_KEY+email,captcha,VALIDATE_PERIOD,TimeUnit.SECONDS);
+        redisUtil.set(RedisConsist.EMAIL_CODE_KEY+email,captcha,RedisConsist.VALIDATE_PERIOD,TimeUnit.SECONDS);
     }
 
     @Override
     public void removeAllEmailCode(String email) {
-        redisUtil.delete(EMAIL_CODE_KEY+email);
-        redisUtil.delete(EMAIL_COOLDOWN_KEY+email);
+        redisUtil.delete(RedisConsist.EMAIL_CODE_KEY+email);
+        redisUtil.delete(RedisConsist.EMAIL_COOLDOWN_KEY+email);
     }
 
 
@@ -195,7 +175,7 @@ public class LoginServiceImpl implements LoginServiceI {
         if(StrUtil.isEmpty(emailCode)){
             throw new SystemException("请输入邮箱验证码");
         }
-        String mailCode = redisUtil.get(EMAIL_CODE_KEY + email);
+        String mailCode = redisUtil.get(RedisConsist.EMAIL_CODE_KEY + email);
 
         // 如果邮箱验证码是空 或者 不匹配则结束 移除所有的邮箱信息
         if(StrUtil.isEmpty(mailCode) || !mailCode.equals(emailCode)){

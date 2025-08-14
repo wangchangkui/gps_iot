@@ -3,11 +3,14 @@ package cn.admcc.system.base.service.strategy;
 import cn.admcc.system.base.entity.SysPermissions;
 import cn.admcc.system.base.entity.SysUser;
 import cn.admcc.system.base.entity.dto.LoginUserDto;
+import cn.admcc.system.base.entity.vo.LoginUserVo;
 import cn.admcc.system.base.exception.SystemException;
 import cn.admcc.system.base.service.SysPermissionServiceI;
 import cn.admcc.system.base.service.SysUserServiceI;
+import cn.admcc.system.util.RedisConsist;
 import cn.admcc.util.JacksonUtils;
 import cn.admcc.util.RedisUtil;
+import cn.dev33.satoken.stp.StpUtil;
 import cn.hutool.core.util.StrUtil;
 import lombok.Getter;
 import lombok.Setter;
@@ -50,9 +53,21 @@ public abstract class AbstractLoginHandler implements LoginHandler {
         // 设置权限
         List<SysPermissions> userAllPermissions = permissionServiceI.getUserAllPermissions(user.getId());
         List<String> permission = userAllPermissions.stream().map(JacksonUtils::toJSONString).toList();
-        redisUtil.setList(user.getId().toString(),permission,6L,TimeUnit.HOURS);
 
-        return user;
+        // 删除之前的权限集合
+        redisUtil.delete(RedisConsist.PERMISSION_KEY+ user.getId());
+
+        // 设置新的权限
+        redisUtil.setList(RedisConsist.PERMISSION_KEY+user.getId(),permission,6L,TimeUnit.HOURS);
+
+        // 返回登录权限以及token
+        String loginToken = StpUtil.getTokenValue();
+        LoginUserVo loginUserVo = new LoginUserVo();
+        loginUserVo.setLoginToken(loginToken);
+        loginUserVo.setUserAllPermissions(userAllPermissions);
+
+
+        return loginUserVo;
     }
 
 
@@ -69,6 +84,9 @@ public abstract class AbstractLoginHandler implements LoginHandler {
         }
 
         String captureContent = getRedisUtil().get(captureId.toString());
+        if(StrUtil.isEmpty(captureContent)){
+            throw new SystemException("验证码已过期");
+        }
         // 删除验证码
         redisUtil.delete(captureId.toString());
         if(!captureContent.equals(capture)){
