@@ -22,6 +22,8 @@ import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Service;
 import cn.admcc.system.util.RedisConsist;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -111,6 +113,7 @@ public class LoginServiceImpl implements LoginServiceI {
 
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void registerUser(UserRegisterDto userRegisterDto) {
         // 校验验证码是否正确 如果验证码不存在或者不匹配 则结束
         String captchaCode = userRegisterDto.getCaptchaCode();

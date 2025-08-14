@@ -3,6 +3,8 @@ package cn.admcc.system.base.service.impl;
 import cn.admcc.config.StorageConfig;
 import cn.admcc.storage.FileConsist;
 import cn.admcc.storage.FileStorageHandlerI;
+import cn.admcc.system.base.entity.SysUserRole;
+import cn.admcc.system.base.service.SysUserRoleDaoServiceI;
 import cn.admcc.system.file.strategy.FileStorageStrategy;
 import cn.admcc.system.base.dao.SysUserDao;
 import cn.admcc.system.base.entity.SysUser;
@@ -41,8 +43,11 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserDao, SysUser> impleme
 
     private final StorageConfig storageConfig;
 
+    private final SysUserRoleDaoServiceI sysUserRoleDaoServiceI;
+
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void addUser(SysUser sysUser) {
         sysUser.setId(IdUtil.getSnowflakeNextId());
         sysUser.setLastLogin(LocalDateTime.now());
@@ -53,6 +58,14 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserDao, SysUser> impleme
             log.error("注册用户失败了,违反了唯一定理",e);
             throw new SystemException("无法注册用户，手机号或邮箱已经被使用");
         }
+
+        // 添加角色
+        SysUserRole sysUserRole = new SysUserRole();
+        sysUserRole.setRoleId(3L);
+        sysUserRole.setId(IdUtil.getSnowflakeNextId());
+        sysUserRole.setUserId(sysUser.getId());
+        sysUserRole.setCreatedTime(LocalDateTime.now());
+        sysUserRoleDaoServiceI.save(sysUserRole);
     }
 
     @Override

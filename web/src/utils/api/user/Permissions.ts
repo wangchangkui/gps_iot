@@ -60,7 +60,7 @@ export class Permissions{
      
         updatedTime:string="";
   
- ;
+
   
       /**
        * 子权限列表
