@@ -77,6 +77,12 @@ const routes: Array<RouteRecordRaw> = [
         name: 'Analysis',
         component: () => import('../views/analysis/index.vue'),
         meta: { title: '数据分析', icon: 'DataLine' }
+      },
+      {
+        path: '/manage/menu-test',
+        name: 'MenuTest',
+        component: () => import('../views/menu-test/index.vue'),
+        meta: { title: '菜单测试', icon: 'Tools' }
       }
     ]
   }

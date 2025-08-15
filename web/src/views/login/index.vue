@@ -242,6 +242,10 @@ const handleLogin = async () => {
           localStorage.setItem('permissions', JSON.stringify(res.data.userAllPermissions))
           localStorage.setItem('nickName', res.data.nickName)
           localStorage.setItem('avatar', res.data.avatar)
+          
+          // 打印权限数据用于调试
+          console.log('登录成功，权限数据:', res.data.userAllPermissions)
+          
           ElMessage.success('登录成功')
           loading.value = false
           router.push('/manage')

@@ -14,30 +14,8 @@
           <img src="../assets/logo.svg" alt="Logo" class="logo" v-if="!isCollapse">
           <img src="../assets/logo.svg" alt="Logo" class="logo-small" v-else>
         </div>
-        <el-menu-item index="/manage/dashboard">
-          <el-icon><Odometer /></el-icon>
-          <span>控制台</span>
-        </el-menu-item>
-        <el-menu-item index="/manage/map">
-          <el-icon><Location /></el-icon>
-          <span>地图监控</span>
-        </el-menu-item>
-        <el-menu-item index="/manage/devices">
-          <el-icon><Monitor /></el-icon>
-          <span>设备管理</span>
-        </el-menu-item>
-        <el-menu-item index="/manage/device-control">
-          <el-icon><SetUp /></el-icon>
-          <span>设备控制</span>
-        </el-menu-item>
-        <el-menu-item index="/manage/users">
-          <el-icon><User /></el-icon>
-          <span>用户管理</span>
-        </el-menu-item>
-        <el-menu-item index="/manage/analysis">
-          <el-icon><DataLine /></el-icon>
-          <span>数据分析</span>
-        </el-menu-item>
+        <!-- 动态菜单 -->
+        <MenuTree :menu-items="menuItems" />
       </el-menu>
     </el-aside>
     <el-container class="main-container">
@@ -76,29 +54,57 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
 import {
-  Odometer,
-  Location,
-  Monitor,
-  SetUp,
-  User,
-  DataLine,
   Fold,
   Expand,
   ArrowDown
 } from '@element-plus/icons-vue'
 import { loginOut } from '../utils/api/user/login_out_util'
+import MenuTree from '../components/MenuTree.vue'
+import { buildMenuFromPermissions, filterHiddenMenus, type MenuItem } from '../utils/menu/menuBuilder'
+import { defaultMenuItems } from '../utils/menu/defaultMenu'
+import { Permissions } from '../utils/api/user/Permissions'
 
 const route = useRoute()
 
 const isCollapse = ref(false)
-
+const menuItems = ref<MenuItem[]>([])
 
 const nickName=ref(localStorage.getItem('nickName') || '')
 const avatar=ref(localStorage.getItem('avatar') || '')
+
+// 初始化菜单
+const initMenu = () => {
+  try {
+    const permissionsStr = localStorage.getItem('permissions')
+    if (permissionsStr) {
+      const permissions: Permissions[] = JSON.parse(permissionsStr)
+      
+      console.log('正在加载权限数据，权限项数:', permissions.length)
+
+      const menuTree = buildMenuFromPermissions(permissions)
+      const visibleMenu = filterHiddenMenus(menuTree)
+      
+      // 如果权限菜单为空，使用默认菜单
+      if (visibleMenu.length === 0) {
+        console.log('权限菜单为空，使用默认菜单')
+        menuItems.value = defaultMenuItems
+      } else {
+        menuItems.value = visibleMenu
+        console.log('菜单初始化成功:', visibleMenu)
+      }
+    } else {
+      console.log('未找到权限数据，使用默认菜单')
+      menuItems.value = defaultMenuItems
+    }
+  } catch (error) {
+    console.error('菜单初始化失败:', error)
+    menuItems.value = defaultMenuItems
+  }
+}
 
 
 
@@ -110,6 +116,11 @@ const handleLogout = async () => {
   
   loginOut()
 }
+
+// 组件挂载时初始化菜单
+onMounted(() => {
+  initMenu()
+})
 </script>
 
 <style scoped lang="scss">
