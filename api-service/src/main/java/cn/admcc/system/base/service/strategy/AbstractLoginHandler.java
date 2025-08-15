@@ -7,7 +7,7 @@ import cn.admcc.system.base.entity.vo.LoginUserVo;
 import cn.admcc.system.base.exception.SystemException;
 import cn.admcc.system.base.service.SysPermissionServiceI;
 import cn.admcc.system.base.service.SysUserServiceI;
-import cn.admcc.system.util.RedisConsist;
+import cn.admcc.util.RedisConsist;
 import cn.admcc.util.JacksonUtils;
 import cn.admcc.util.RedisUtil;
 import cn.dev33.satoken.stp.StpUtil;

@@ -8,8 +8,8 @@ import cn.admcc.system.base.service.strategy.LoginHandler;
 import cn.hutool.core.util.StrUtil;
 import org.springframework.stereotype.Component;
 
-import static cn.admcc.system.util.RedisConsist.EMAIL_CODE_KEY;
-import static cn.admcc.system.util.RedisConsist.EMAIL_COOLDOWN_KEY;
+import static cn.admcc.util.RedisConsist.EMAIL_CODE_KEY;
+import static cn.admcc.util.RedisConsist.EMAIL_COOLDOWN_KEY;
 
 
 /**

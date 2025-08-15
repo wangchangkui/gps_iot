@@ -1,4 +1,4 @@
-package cn.admcc.exception;
+package cn.admcc.config;
 
 import cn.admcc.gaode.exception.GdException;
 import cn.admcc.system.base.exception.NoAuthException;

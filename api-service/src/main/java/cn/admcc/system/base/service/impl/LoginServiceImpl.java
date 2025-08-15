@@ -24,7 +24,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Service;
-import cn.admcc.system.util.RedisConsist;
+import cn.admcc.util.RedisConsist;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;

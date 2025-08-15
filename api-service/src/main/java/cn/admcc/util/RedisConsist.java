@@ -1,4 +1,4 @@
-package cn.admcc.system.util;
+package cn.admcc.util;
 
 /**
  * @author coder wang
