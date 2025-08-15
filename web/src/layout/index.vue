@@ -54,7 +54,8 @@
         <div class="header-right">
           <el-dropdown>
             <span class="el-dropdown-link">
-              管理员
+              <img :src="avatar" crossorigin="anonymous" alt="avatar" class="avatar">
+              <span>{{ nickName }}</span>
               <el-icon class="el-icon--right"><arrow-down /></el-icon>
             </span>
             <template #dropdown>
@@ -94,6 +95,12 @@ import { loginOut } from '../utils/api/user/login_out_util'
 const route = useRoute()
 
 const isCollapse = ref(false)
+
+
+const nickName=ref(localStorage.getItem('nickName') || '')
+const avatar=ref(localStorage.getItem('avatar') || '')
+
+
 
 const toggleCollapse = () => {
   isCollapse.value = !isCollapse.value
@@ -214,6 +221,20 @@ const handleLogout = async () => {
           display: flex;
           align-items: center;
           color: #606266;
+          gap: 8px;
+          
+          .avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #e4e7ed;
+            transition: border-color 0.3s;
+          }
+          
+          &:hover .avatar {
+            border-color: #409EFF;
+          }
           
           .el-icon {
             margin-left: 8px;

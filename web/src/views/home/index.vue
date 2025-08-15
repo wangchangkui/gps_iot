@@ -11,7 +11,14 @@
       <div class="nav-right">
         <template v-if="isLoggedIn">
           <el-dropdown>
-            <el-avatar :src="userInfo.avatar" />
+            <div class="user-avatar-container">
+              <img 
+                :src="userInfo.avatar || '/default-avatar.png'" 
+                alt="用户头像"
+                class="user-avatar"
+                @error="handleAvatarError"
+              />
+            </div>
             <template #dropdown>
               <el-dropdown-menu>
                 <el-dropdown-item @click="goToConsole">进入控制台</el-dropdown-item>
@@ -764,6 +771,13 @@ const handleLogout = () => {
   isLoggedIn.value = false
 }
 
+// 头像加载错误处理
+const handleAvatarError = (event: Event) => {
+  const target = event.target as HTMLImageElement
+  target.src = '/marker.png' // 使用现有的标记图片作为默认头像
+  console.log('头像加载失败，使用默认头像')
+}
+
 onMounted(() => {
   // 获取存储在系统的token 如果token 不为空，则表示已经登录
   const token = localStorage.getItem('authentication')
@@ -774,6 +788,9 @@ onMounted(() => {
   const loginAvatart = localStorage.getItem('avatar')
   if (loginAvatart) {
     userInfo.value.avatar = loginAvatart
+    console.log('加载头像URL:', loginAvatart) // 调试信息
+  } else {
+    console.log('未找到头像URL') // 调试信息
   }
 })
 </script>
@@ -819,6 +836,32 @@ onMounted(() => {
     display: flex;
     gap: 10px;
     align-items: center;
+
+    .user-avatar-container {
+      cursor: pointer;
+      padding: 2px;
+      border-radius: 50%;
+      transition: all 0.3s ease;
+
+      &:hover {
+        transform: scale(1.05);
+        box-shadow: 0 4px 12px rgba(64, 158, 255, 0.3);
+      }
+
+      .user-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid #e4e7ed;
+        transition: border-color 0.3s ease;
+        display: block;
+
+        &:hover {
+          border-color: #409EFF;
+        }
+      }
+    }
   }
 }
 
