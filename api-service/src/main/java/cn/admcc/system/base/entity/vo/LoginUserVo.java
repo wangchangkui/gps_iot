@@ -19,6 +19,16 @@ public class LoginUserVo {
      */
     private String loginToken;
 
+    /**
+     * 显示名称
+     */
+    private String nickName;
+
+    /**
+     * 显示头像
+     */
+    private String avatar;
+
 
     /**
      * 获取到的用户权限

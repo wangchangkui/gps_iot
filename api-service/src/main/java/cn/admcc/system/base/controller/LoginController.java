@@ -42,6 +42,17 @@ public class LoginController {
         return R.success(loginServiceI.login(loginUserDto));
     }
 
+
+    /**
+     * 退出登录
+     * @return success
+     */
+    @PostMapping("/loginOut")
+    public R<String> loginOut(){
+        loginServiceI.loginOut();
+        return R.success();
+    }
+
     /**
      * 账号邮箱登陆时需要发送的验证码
      * @param userAccount 账号

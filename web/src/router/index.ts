@@ -8,6 +8,7 @@
  */
 import { createRouter, createWebHistory } from 'vue-router'
 import type { RouteRecordRaw } from 'vue-router'
+import { isNoPermissionUrl, getCleanPath } from '../utils/api/filter/urlMatcher'
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -84,6 +85,32 @@ const routes: Array<RouteRecordRaw> = [
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes
+})
+
+// 全局前置守卫
+router.beforeEach((to, from, next) => {
+  // 获取当前路径
+  const currentPath = to.path
+  const cleanPath = getCleanPath(currentPath)
+  
+  // 检查当前路径是否在免登录列表中
+  if (isNoPermissionUrl(cleanPath)) {
+    // 免登录路径，直接放行
+    next()
+    return
+  }
+  
+  // 检查是否有登录token
+  const token = localStorage.getItem('authentication')
+  
+  if (!token) {
+    // 没有token，跳转到登录页
+    next('/login')
+    return
+  }
+  
+  // 有token，放行
+  next()
 })
 
 export default router

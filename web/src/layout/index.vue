@@ -77,6 +77,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+
 import {
   Odometer,
   Location,
@@ -88,17 +89,19 @@ import {
   Expand,
   ArrowDown
 } from '@element-plus/icons-vue'
+import { loginOut } from '../utils/api/user/login_out_util'
 
 const route = useRoute()
-const router = useRouter()
+
 const isCollapse = ref(false)
 
 const toggleCollapse = () => {
   isCollapse.value = !isCollapse.value
 }
 
-const handleLogout = () => {
-  router.push('/login')
+const handleLogout = async () => {
+  
+  loginOut()
 }
 </script>
 

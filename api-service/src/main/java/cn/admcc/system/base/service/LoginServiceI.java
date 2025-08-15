@@ -60,4 +60,9 @@ public interface LoginServiceI {
      * @param userUploadDto 新的手机号或邮箱
      */
     void updateUserEmailAndPhone(UserEmailPhoneDto userUploadDto);
+
+    /**
+     * 退出登录
+     */
+    void loginOut();
 }

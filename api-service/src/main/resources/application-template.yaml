@@ -11,6 +11,12 @@ server:
   redis:
     host: ${REDIS_HOST:IP}
     port: ${REDIS_PORT:PORT}
+  mqtt:
+    host: ${MQTT_HOST:tcp://127.0.0.1:1883}
+    user-name: ${MQTT_USERNAME:admin}
+    password: ${MQTT_PASSWORD:admin@123.}
+    client-id: ${MQTT_CLIENT_ID:backend-server}
+    topic: ${MQTT_TOPIC:esp32/data}
   servlet:
     context-path: /api
 
@@ -90,14 +96,14 @@ tcp:
 
 ## mq配置
 mqtt:
-  host: tcp://your-mqtt-server:1883
-  user-name: admin
-  password: admin@123.
-  client-id: backend-server
-  topic: esp32/data
+  host:  ${server.mqtt.host}
+  user-name: ${server.mqtt.user-name}
+  password: ${server.mqtt.password}
+  client-id: ${server.mqtt.client-id}
+  topic: ${server.mqtt.topic}
   keepAlive: 30
 
 ## 高德的配置
 gd:
-  api-token: 940ce1ea6a9b829869d8a515eed2de33
+  api-token: 940ce1ea6a9b829869dca515eed2de33
   baseUrl: https://restapi.amap.com

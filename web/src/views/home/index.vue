@@ -204,6 +204,7 @@ import { useRouter, useRoute } from 'vue-router'
 import { get_direction } from '../../utils/api/gd/gd_api'
 
 import ElMessage from 'element-plus/es/components/message/index'
+import { loginOut } from '../../utils/api/user/login_out_util'
 // 移除错误的导入
 const Cesium = (window as any).Cesium
 defineExpose({ Cesium })
@@ -757,12 +758,23 @@ const goToLogin = () => router.push('/login')
 const goToRegister = () => router.push('/register')
 const goToConsole = () => router.push('/manage/dashboard')
 const handleLogout = () => {
+  
+  loginOut()
+  ElMessage.success('退出成功')
   isLoggedIn.value = false
-  // TODO: 实现登出逻辑
 }
 
 onMounted(() => {
-  // TODO: 从后端获取设备列表
+  // 获取存储在系统的token 如果token 不为空，则表示已经登录
+  const token = localStorage.getItem('authentication')
+  if (token) {
+    isLoggedIn.value = true
+  }
+  // 加载头像
+  const loginAvatart = localStorage.getItem('avatar')
+  if (loginAvatart) {
+    userInfo.value.avatar = loginAvatart
+  }
 })
 </script>
 

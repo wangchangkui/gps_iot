@@ -111,9 +111,16 @@
                 <build.profile.id>dev</build.profile.id>
             </properties>
             <activation>
-                <!--  解决运行报错org.yaml.snakeyaml.scanner.ScannerException: while scanning for the next token -->
+
                 <activeByDefault>true</activeByDefault>
             </activation>
+        </profile>
+        <!--本地环境 -->
+        <profile>
+            <id>release</id>
+            <properties>
+                <build.profile.id>release</build.profile.id>
+            </properties>
         </profile>
     </profiles>
 

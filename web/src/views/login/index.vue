@@ -240,6 +240,8 @@ const handleLogin = async () => {
         if (res.code === 10000) {
           localStorage.setItem('authentication', res.data.loginToken)
           localStorage.setItem('permissions', JSON.stringify(res.data.userAllPermissions))
+          localStorage.setItem('nickName', res.data.nickName)
+          localStorage.setItem('avatar', res.data.avatar)
           ElMessage.success('登录成功')
           loading.value = false
           router.push('/manage')
@@ -271,13 +273,14 @@ const handleEmailLogin = async () => {
   try {
     await emailFormRef.value.validate(async (valid, fields) => {
       if (valid) {
-        // TODO: 实现邮箱验证码登录逻辑
-        console.log('邮箱登录表单数据:', emailForm)
+
         let loginUser = new LoginUser(emailForm.username, "",loginForm.captchaCode, loginForm.captcha,emailForm.code, 'email')
         const res = await login(loginUser)
         if (res.code === 10000) {
           localStorage.setItem('authentication', res.data.loginToken)
           localStorage.setItem('permissions', JSON.stringify(res.data.userAllPermissions))
+          localStorage.setItem('nickName', res.data.nickName)
+          localStorage.setItem('avatar', res.data.avatar)
           ElMessage.success('登录成功')
           loading.value = false
           router.push('/manage')

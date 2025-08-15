@@ -6,6 +6,7 @@ import cn.admcc.system.base.entity.SysUser;
 import cn.admcc.system.base.entity.dto.LoginUserDto;
 import cn.admcc.system.base.entity.dto.UserEmailPhoneDto;
 import cn.admcc.system.base.entity.dto.UserRegisterDto;
+import cn.admcc.system.base.exception.NoAuthException;
 import cn.admcc.system.base.exception.SystemException;
 import cn.admcc.system.base.service.LoginServiceI;
 import cn.admcc.system.base.service.SysUserServiceI;
@@ -14,6 +15,8 @@ import cn.admcc.util.EmailUtil;
 import cn.admcc.util.RedisUtil;
 import cn.admcc.util.RsaUtil;
 import cn.admcc.util.SysCaptchaUtil;
+import cn.dev33.satoken.exception.NotLoginException;
+import cn.dev33.satoken.stp.StpUtil;
 import cn.hutool.core.util.RandomUtil;
 import cn.hutool.core.util.StrUtil;
 import lombok.RequiredArgsConstructor;
@@ -29,6 +32,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.HashMap;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -171,6 +175,22 @@ public class LoginServiceImpl implements LoginServiceI {
             user.setPhoneNumber(userUploadDto.getNewPhone());
         }
         sysUserService.updateById(user);
+    }
+
+    @Override
+    public void loginOut() {
+
+        Object userId;
+        try {
+            userId = StpUtil.getLoginId();
+        } catch (NotLoginException e) {
+            throw new NoAuthException("未登录");
+        }
+        Optional.ofNullable(userId).ifPresent(user -> {
+            StpUtil.logout();
+            // 删除用户权限
+            redisUtil.delete(RedisConsist.PERMISSION_KEY+user);
+        });
     }
 
 

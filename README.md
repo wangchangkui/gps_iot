@@ -51,10 +51,10 @@
 ## Docker 快速部署
 
 ### 构建服务
-> 提前把jar包以及Dockerfile文件放在一起
+> 提前把jar包以及Dockerfile文件放在一起 
 
 ```bash
-     docker build -t gps-iot:latest .
+     docker build -t gps-iot:v1.0 .
 ```
 
 
@@ -67,13 +67,20 @@
           -v /opt/gps-iot:/src   \
           -e DB_HOST=172.18.0.18 \
           -e DB_PORT=15432 \
-          -e DB_DATABASE=gps-iot \
+          -e DB_DATABASE=gps_iot \
           -e DB_USER=postgres \
           -e DB_PASSWORD=pg@admcc.cn   \
           -e REDIS_HOST=172.18.0.16   \
           -e REDIS_PORT=16379  \
+          -e REDIS_PASSWORD= \
+          -e PUBLIC_KEY_PATH=/src/key/public_key.pem \
+          -e PRIVATE_PATH=/src/key/private_key.pem \
+          -e MQTT_HOST=tcp://172.18.16.220:1883 \
+          -e MQTT_USERNAME=admin \
+          -e MQTT_PASSWORD=admin@123. \
+          -e MQTT_CLIENT_ID=backend-server01 \
           --name gps-iot   \
-          -t gps-iot:latest
+          -t gps-iot:v1.0
 ```
 
 

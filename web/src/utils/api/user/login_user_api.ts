@@ -2,7 +2,7 @@
  * @Author: coder_wang 17360402335@163.com
  * @Date: 2025-07-27 19:25:31
  * @LastEditors: coder_wang 17360402335@163.com
- * @LastEditTime: 2025-08-14 16:30:06
+ * @LastEditTime: 2025-08-15 10:08:20
  * @FilePath: \web\src\utils\api\user\login_user_api.ts
  * @Description: 
  */
@@ -98,6 +98,18 @@ export const login = (loginUser:LoginUser) =>{
 export const  send_login_email = (account:string) =>{
     return request({
         url: 'api/login/login/sendEmail/'+account,
+        method: 'post',
+    }) as Promise<ApiResponse<any>>
+}
+
+
+/**
+ * 退出系统 通过系统的header 默认携带的token
+ * @returns 退出系统
+ */
+export const logout = () =>{
+    return request({
+        url: 'api/login/loginOut',
         method: 'post',
     }) as Promise<ApiResponse<any>>
 }

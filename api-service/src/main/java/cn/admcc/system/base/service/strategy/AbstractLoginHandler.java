@@ -64,6 +64,8 @@ public abstract class AbstractLoginHandler implements LoginHandler {
         String loginToken = StpUtil.getTokenValue();
         LoginUserVo loginUserVo = new LoginUserVo();
         loginUserVo.setLoginToken(loginToken);
+        loginUserVo.setAvatar(user.getAvatarUrl());
+        loginUserVo.setNickName(user.getNickName());
         loginUserVo.setUserAllPermissions(userAllPermissions);
 
 

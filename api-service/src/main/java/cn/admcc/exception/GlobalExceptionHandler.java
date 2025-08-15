@@ -1,6 +1,7 @@
 package cn.admcc.exception;
 
 import cn.admcc.gaode.exception.GdException;
+import cn.admcc.system.base.exception.NoAuthException;
 import cn.admcc.system.base.exception.SystemException;
 import cn.admcc.util.R;
 
@@ -34,7 +35,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(value = GdException.class)
     public R<String> validationException(GdException ex) {
         log.error("高德服务存在异常", ex);
-        setResponseStatus();
+        setResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR);
         return R.failed("高德服务异常！请联系管理员处理！"+ex.getMessage());
     }
 
@@ -47,21 +48,26 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(value = SystemException.class)
     public R<String> validationException(SystemException ex) {
-        setResponseStatus();
+        setResponseStatus(HttpStatus.BAD_REQUEST);
         return R.failed(ex.getMessage());
     }
 
+    @ExceptionHandler(value = NoAuthException.class)
+    public R<String> validationException(NoAuthException ex) {
+        setResponseStatus(HttpStatus.UNAUTHORIZED);
+        return R.failed(ex.getMessage());
+    }
 
     /**
      * 设置全局错误码
      */
-    private void setResponseStatus() {
+    private void setResponseStatus(HttpStatus httpStatus) {
         RequestAttributes attributes = RequestContextHolder.getRequestAttributes();
         ServletRequestAttributes at = (ServletRequestAttributes) attributes;
         if (at != null) {
             HttpServletResponse resp = at.getResponse();
             if (resp != null){
-                resp.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+                resp.setStatus(httpStatus.value());
             }
         }
     }
