@@ -22,4 +22,22 @@ public interface SysPermissionServiceI extends IService<SysPermissions> {
     List<SysPermissions> getUserAllPermissions(Long userId);
 
 
+    /**
+     * 获取所有的权限
+     * @return 权限树
+     */
+    List<SysPermissions> getAllPermission();
+
+
+    /**
+     * 添加权限
+     * @param sysPermissions 权限
+     */
+    void add(SysPermissions sysPermissions);
+
+    /**
+     * 删除权限
+     * @param permissionId 权限id
+     */
+    void deletePermission(Long permissionId);
 }

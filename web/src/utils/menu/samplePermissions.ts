@@ -1,3 +1,11 @@
+/*
+ * @Author: coder_wang 17360402335@163.com
+ * @Date: 2025-08-15 17:48:15
+ * @LastEditors: coder_wang 17360402335@163.com
+ * @LastEditTime: 2025-08-21 20:34:48
+ * @FilePath: \web\src\utils\menu\samplePermissions.ts
+ * @Description: 这是默认设置,请设置`customMade`, 
+ */
 import { Permissions } from '../api/user/Permissions'
 
 /**
@@ -75,87 +83,5 @@ export const samplePermissions: Permissions[] = [
     ]
   },
   
-  // 设备管理 - 顶级菜单（包含子菜单）
-  {
-    permissionId: 'device_mgmt',
-    permKey: 'menu:device',
-    permName: '设备管理',
-    permType: 'MENU',
-    parentId: '',
-    componentPath: '',
-    sortOrder: 2,
-    isHidden: false,
-    createdTime: '',
-    updatedTime: '',
-    children: [
-      {
-        permissionId: 'device_list',
-        permKey: 'menu:device:list',
-        permName: '设备列表',
-        permType: 'MENU',
-        parentId: 'device_mgmt',
-        componentPath: '/manage/devices',
-        sortOrder: 1,
-        isHidden: false,
-        createdTime: '',
-        updatedTime: '',
-        children: []
-      },
-      {
-        permissionId: 'device_control',
-        permKey: 'menu:device:control',
-        permName: '设备控制',
-        permType: 'MENU',
-        parentId: 'device_mgmt',
-        componentPath: '/manage/device-control',
-        sortOrder: 2,
-        isHidden: false,
-        createdTime: '',
-        updatedTime: '',
-        children: []
-      }
-    ]
-  },
-  
-  // 监控分析 - 顶级菜单（包含子菜单）
-  {
-    permissionId: 'monitor_analysis',
-    permKey: 'menu:monitor',
-    permName: '监控分析',
-    permType: 'MENU',
-    parentId: '',
-    componentPath: '',
-    sortOrder: 3,
-    isHidden: false,
-    createdTime: '',
-    updatedTime: '',
-    children: [
-      {
-        permissionId: 'map_monitor',
-        permKey: 'menu:monitor:map',
-        permName: '地图监控',
-        permType: 'MENU',
-        parentId: 'monitor_analysis',
-        componentPath: '/manage/map',
-        sortOrder: 1,
-        isHidden: false,
-        createdTime: '',
-        updatedTime: '',
-        children: []
-      },
-      {
-        permissionId: 'data_analysis',
-        permKey: 'menu:monitor:analysis',
-        permName: '数据分析',
-        permType: 'MENU',
-        parentId: 'monitor_analysis',
-        componentPath: '/manage/analysis',
-        sortOrder: 2,
-        isHidden: false,
-        createdTime: '',
-        updatedTime: '',
-        children: []
-      }
-    ]
-  }
+
 ]

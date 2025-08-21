@@ -2,14 +2,14 @@
  * @Author: coder_wang 17360402335@163.com
  * @Date: 2025-07-19 15:51:58
  * @LastEditors: coder_wang 17360402335@163.com
- * @LastEditTime: 2025-08-15 10:26:36
+ * @LastEditTime: 2025-08-21 21:21:01
  * @FilePath: \web\src\utils\api\request.ts
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
 
 import axios, { type InternalAxiosRequestConfig, type AxiosResponse } from 'axios'
 import ElMessage from 'element-plus/es/components/message/index'
-import { useRouter } from 'vue-router'
+
 import { isNoPermissionUrl, getCleanPath } from './filter/urlMatcher'
 
 // 创建 axios 实例

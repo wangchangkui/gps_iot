@@ -1,13 +1,13 @@
 package cn.admcc.util;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.redis.core.BoundValueOperations;
-import org.springframework.data.redis.core.RedisCallback;
-import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.*;
+import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.data.redis.core.script.RedisScript;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
@@ -220,12 +220,13 @@ public class RedisUtil<V> {
     }
 
     /**
-     *  执行Script
+     * 执行Script
+     *
      * @param script 脚本
-     * @param keys key
-     * @param args 参数
+     * @param keys   key
+     * @param args   参数
+     * @param <T>    结果类型
      * @return 执行后的结果
-     * @param <T> 结果类型
      */
     public <T> T execute(RedisScript<T> script, List<String> keys, Object... args) {
         return redisTemplate.execute(script, keys, args);
@@ -256,15 +257,83 @@ public class RedisUtil<V> {
 
     /**
      * 设置list
-     * @param key key
+     *
+     * @param key   key
      * @param value 值
      */
-    public void setList(String key,Collection<V> value,Long time, TimeUnit timeUnit){
+    public void setList(String key, Collection<V> value, Long time, TimeUnit timeUnit) {
         redisTemplate.opsForList().rightPushAll(key, value);
-        this.expire(key,time,timeUnit);
+        this.expire(key, time, timeUnit);
 
     }
 
+
+    /**
+     * 使用新的SCAN API扫描key
+     */
+    public Set<String> scanKeys(String pattern) {
+        return scanKeys(pattern, 1000);
+    }
+
+    /**
+     * 带批量的SCAN操作（使用新API）
+     */
+    public Set<String> scanKeys(String pattern, int batchSize) {
+        Set<String> keys = new HashSet<>();
+
+        // 使用新的KeyScanOptions
+        ScanOptions scanOptions = ScanOptions.scanOptions()
+                .match(pattern)
+                .count(batchSize)
+                .build();
+
+        // 使用opsForKeys()进行扫描
+
+        try (Cursor<String> cursor = redisTemplate.scan(scanOptions)) {
+            while (cursor.hasNext()) {
+                keys.add(cursor.next());
+            }
+        }
+
+        return keys;
+    }
+
+    /**
+     * 批量删除匹配符模式
+     * @param pattern 匹配 例如 uer:*
+     * @param batchSize 每批次删除多少条
+     * @return 总计删除
+     */
+    public long deleteByPatternBatch(String pattern, int batchSize) {
+        ScanOptions scanOptions = ScanOptions.scanOptions()
+                .match(pattern)
+                .count(batchSize)
+                .build();
+
+        long totalDeleted = 0;
+
+        try (Cursor<String> cursor = redisTemplate.scan(scanOptions)) {
+            List<String> batch = new ArrayList<>(batchSize);
+
+            while (cursor.hasNext()) {
+                batch.add(cursor.next());
+
+                if (batch.size() >= batchSize) {
+                    redisTemplate.delete(batch);
+                    totalDeleted += batch.size();
+                    batch.clear();
+                }
+            }
+
+            // 删除最后一批
+            if (!batch.isEmpty()) {
+                redisTemplate.delete(batch);
+                totalDeleted += batch.size();
+            }
+        }
+
+        return totalDeleted;
+    }
 
 
 }

@@ -2,7 +2,12 @@ package cn.admcc.system.base.service.impl;
 
 import cn.admcc.system.base.dao.SysPermissionsDao;
 import cn.admcc.system.base.entity.SysPermissions;
+import cn.admcc.system.base.exception.SystemException;
 import cn.admcc.system.base.service.SysPermissionServiceI;
+import cn.admcc.util.RedisConsist;
+import cn.admcc.util.RedisUtil;
+import cn.hutool.core.util.IdUtil;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -24,14 +29,47 @@ public class SysPermissionServiceImpl extends ServiceImpl<SysPermissionsDao,SysP
 
     private final SysPermissionsDao sysPermissionsDao;
 
-    public SysPermissionServiceImpl(SysPermissionsDao sysPermissionsDao) {
+    private final RedisUtil<String> redisUtil;
+
+    public SysPermissionServiceImpl(SysPermissionsDao sysPermissionsDao, RedisUtil<String> redisUtil) {
         this.sysPermissionsDao = sysPermissionsDao;
+        this.redisUtil = redisUtil;
     }
 
     @Override
     public List<SysPermissions> getUserAllPermissions(Long userId) {
         List<SysPermissions> userAllPermissions = sysPermissionsDao.getUserAllPermissions(userId);
         return buildPermissionTree(userAllPermissions);
+    }
+
+    @Override
+    public List<SysPermissions> getAllPermission() {
+        List<SysPermissions> list = this.list();
+        return buildPermissionTree(list);
+    }
+
+    @Override
+    public void add(SysPermissions sysPermissions) {
+        SysPermissions one = this.getOne(new LambdaQueryWrapper<SysPermissions>().eq(SysPermissions::getPermKey, sysPermissions.getPermKey()));
+        if(one != null){
+            throw new SystemException("已存在权限key");
+        }
+        sysPermissions.setPermissionId(IdUtil.getSnowflakeNextId());
+        this.save(sysPermissions);
+    }
+
+    @Override
+    public void deletePermission(Long permissionId) {
+        SysPermissions permissions = getById(permissionId);
+        Optional.ofNullable(permissions).ifPresent(t->{
+            if(t.getAllowDelete().equals(0)){
+                this.removeById(permissionId);
+                long count = redisUtil.deleteByPatternBatch(RedisConsist.PERMISSION_KEY + "*",1000);
+                log.info("移除权限数量：{}",count);
+            }else {
+                throw new SystemException("系统菜单或接口 无法删除");
+            }
+        });
     }
 
 

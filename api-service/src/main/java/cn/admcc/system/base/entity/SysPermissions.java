@@ -82,6 +82,12 @@ public class SysPermissions {
     @TableField(value = "updated_time", fill = FieldFill.INSERT_UPDATE)
     private LocalDateTime updatedTime;
 
+    /**
+     * 允许被删除吗？ 0 允许 1 不允许
+     */
+    @TableField("allow_delete")
+    private Integer allowDelete;
+
 
     /**
      * 子权限列表
