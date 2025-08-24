@@ -25,4 +25,24 @@
         SELECT * FROM user_perms
         ORDER BY parent_id NULLS FIRST, sort_order
     </select>
+    <select id="getAllPermissionIds" resultType="cn.admcc.system.base.entity.SysPermissions">
+        WITH RECURSIVE permission_tree AS (
+
+            SELECT permission_id, parent_id, perm_name
+            FROM sys_permissions
+            WHERE permission_id = #{permissionId}
+
+            UNION ALL
+
+
+            SELECT child.permission_id, child.parent_id, child.perm_name
+            FROM sys_permissions child
+                     INNER JOIN permission_tree parent ON child.parent_id = parent.permission_id
+            where allow_delete = 0 -- 0 允许删除
+        )
+        SELECT permission_id, perm_name
+        FROM permission_tree
+        WHERE permission_id != #{permissionId}
+        ORDER BY permission_id;
+    </select>
 </mapper>

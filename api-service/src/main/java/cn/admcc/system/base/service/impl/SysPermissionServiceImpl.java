@@ -6,12 +6,15 @@ import cn.admcc.system.base.exception.SystemException;
 import cn.admcc.system.base.service.SysPermissionServiceI;
 import cn.admcc.util.RedisConsist;
 import cn.admcc.util.RedisUtil;
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.IdUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.*;
 
 /**
@@ -59,17 +62,57 @@ public class SysPermissionServiceImpl extends ServiceImpl<SysPermissionsDao,SysP
     }
 
     @Override
-    public void deletePermission(Long permissionId) {
+    public boolean deletePermission(Long permissionId) {
         SysPermissions permissions = getById(permissionId);
         Optional.ofNullable(permissions).ifPresent(t->{
             if(t.getAllowDelete().equals(0)){
-                this.removeById(permissionId);
-                long count = redisUtil.deleteByPatternBatch(RedisConsist.PERMISSION_KEY + "*",1000);
-                log.info("移除权限数量：{}",count);
+                // 移除角色的信息
+                List<SysPermissions> allPermissionIds = sysPermissionsDao.getAllPermissionIds(permissionId);
+                if(CollUtil.isNotEmpty(allPermissionIds)){
+                    this.removeById(permissionId);
+                    // 删除子集 只允许删除噢
+                    List<Long> deleteIds = allPermissionIds.stream().map(SysPermissions::getPermissionId).toList();
+                    this.removeByIds(deleteIds);
+                    long count = redisUtil.deleteByPatternBatch(RedisConsist.PERMISSION_KEY + "*",1000);
+                    log.info("移除权限数量：{}",count);
+                }
             }else {
                 throw new SystemException("系统菜单或接口 无法删除");
             }
         });
+
+        return true;
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public boolean edit(SysPermissions sysPermissions) {
+        Long permissionId = sysPermissions.getPermissionId();
+        if (permissionId == null){
+            throw new SystemException("请传入权限id");
+        }
+        SysPermissions permissions = getById(permissionId);
+        Optional.ofNullable(permissions).ifPresent(t->{
+            if(permissions.getAllowDelete().equals(1)){
+                throw new SystemException("系统默认菜单功能，不允许修改或删除");
+            }
+            // 更新系统
+            try {
+                // 先删除
+                this.removeById(permissionId);
+                sysPermissions.setCreatedTime(t.getCreatedTime());
+                sysPermissions.setUpdatedTime(LocalDateTime.now());
+                this.save(sysPermissions);
+            } catch (Exception e) {
+                log.error("更新权限失败",e);
+                throw new SystemException("系统菜单或接口无法更新");
+            }
+            // 删除权限
+            long count = redisUtil.deleteByPatternBatch(RedisConsist.PERMISSION_KEY + "*",1000);
+            log.info("移除登录权限数量：{}",count);
+        });
+
+        return true;
     }
 
 

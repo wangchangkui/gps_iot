@@ -2,14 +2,14 @@
  * @Author: coder_wang 17360402335@163.com
  * @Date: 2025-08-21 20:52:35
  * @LastEditors: coder_wang 17360402335@163.com
- * @LastEditTime: 2025-08-21 22:01:41
+ * @LastEditTime: 2025-08-24 15:35:14
  * @FilePath: \web\src\utils\api\menu\menuApi.ts
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
 import request from "../request"
 import type { ApiResponse } from "../Response"
 
-import type { Permissions } from '../user/Permissions'
+import { Permissions } from '../user/Permissions'
 
 /**
  * 菜单管理API接口
@@ -19,10 +19,10 @@ export class MenuApi {
    * 获取菜单树
    */
   static async getMenuTree(): Promise<ApiResponse<Permissions[]>> {
-       return request({
-          url: 'api/permission/list',
-          method: 'get',
-        }) as Promise<ApiResponse<Permissions[]>>
+    return request({
+      url: 'api/permission/list',
+      method: 'get',
+    }) as Promise<ApiResponse<Permissions[]>>
   }
 
   /**
@@ -39,10 +39,11 @@ export class MenuApi {
   /**
    * 更新菜单
    */
-  static async updateMenu(menu: Permissions):  Promise<ApiResponse<string>> {
+  static async updateMenu(menu: Partial<Permissions>): Promise<ApiResponse<string>> {
     return request({
-      url: 'api/permission/edit/${menu.permissionId}',
+      url: 'api/permission/edit',
       method: 'post',
+      data:menu
     }) as Promise<ApiResponse<string>>
 
   }
@@ -50,9 +51,9 @@ export class MenuApi {
   /**
    * 删除菜单
    */
-  static async deleteMenu(permissionId: string): Promise<ApiResponse<string>>  {
+  static async deleteMenu(permissionId: string): Promise<ApiResponse<string>> {
     return request({
-      url: 'api/permission/delete/'+permissionId,
+      url: 'api/permission/delete/' + permissionId,
       method: 'delete',
     }) as Promise<ApiResponse<string>>
 
@@ -61,7 +62,10 @@ export class MenuApi {
   /**
    * 获取菜单详情
    */
-  static async getMenuDetail(permissionId: string): Promise<Permissions> {
-    return request.get(`/api/menu/${permissionId}`)
+  static async getMenuDetail(permissionId: string): Promise<ApiResponse<string>> {
+    return request({
+      url: 'api/permission/detail' + permissionId,
+      method: 'get',
+    }) as Promise<ApiResponse<string>>
   }
 }

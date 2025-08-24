@@ -24,4 +24,12 @@ public interface SysPermissionsDao extends BaseMapper<SysPermissions> {
      */
     List<SysPermissions> getUserAllPermissions(@Param("userId") Long userId);
 
+
+    /**
+     * 获取一个权限下面所有的子权限id和名称
+     * @param permissionId id
+     * @return List
+     */
+    List<SysPermissions> getAllPermissionIds(@Param("permissionId") Long permissionId);
+
 }

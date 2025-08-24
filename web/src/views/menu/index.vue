@@ -82,6 +82,16 @@
             <el-option label="API" value="API" />
           </el-select>
         </el-form-item>
+        <el-form-item label="父级权限" prop="parentId">
+          <el-tree-select v-model="formData.parentId"
+            :data="isEdit ? getAvailableParentTree(formData.permissionId) : menuTree" :props="treeSelectProps"
+            placeholder="请选择父级权限" style="width: 100%" clearable check-strictly :render-after-expand="false" />
+          <div class="form-tip">
+            <el-text type="info" size="small">
+              选择父级权限可以将当前菜单移动到指定目录下，留空则作为根菜单
+            </el-text>
+          </div>
+        </el-form-item>
         <el-form-item label="路径" prop="componentPath">
           <el-input v-model="formData.componentPath" placeholder="菜单时输入路由路径，API时输入接口地址" />
         </el-form-item>
@@ -126,6 +136,13 @@ const treeProps = {
   label: 'permName'
 }
 
+// 树形选择器配置
+const treeSelectProps = {
+  value: 'permissionId',
+  label: 'permName',
+  children: 'children'
+}
+
 // 表单数据
 const formData = reactive({
   permissionId: '',
@@ -149,6 +166,9 @@ const formRules: FormRules = {
   ],
   permType: [
     { required: true, message: '请选择类型', trigger: 'change' }
+  ],
+  parentId: [
+    { required: false, message: '请选择父级权限', trigger: 'change' }
   ],
   sortOrder: [
     { required: true, message: '请输入排序序号', trigger: 'blur' }
@@ -217,6 +237,23 @@ const handleEdit = (node: Permissions) => {
   dialogVisible.value = true
 }
 
+// 获取可选的父级权限树（排除当前编辑的节点及其子节点）
+const getAvailableParentTree = (currentId?: string) => {
+  if (!currentId) return menuTree.value
+
+  const filterTree = (nodes: Permissions[]): Permissions[] => {
+    return nodes.filter(node => {
+      if (node.permissionId === currentId) return false
+      if (node.children && node.children.length > 0) {
+        node.children = filterTree(node.children)
+      }
+      return true
+    })
+  }
+
+  return filterTree(JSON.parse(JSON.stringify(menuTree.value)))
+}
+
 // 删除菜单
 const handleDelete = async (node: Permissions) => {
   ElMessageBox.confirm(
@@ -228,7 +265,7 @@ const handleDelete = async (node: Permissions) => {
       type: 'warning'
     }
   ).then(async () => {
-    const  id = node.permissionId
+    const id = node.permissionId
     const res = await MenuApi.deleteMenu(id)
     if (res.code === 10000) {
       ElMessage.success('删除成功')
@@ -251,15 +288,16 @@ const handleSubmit = async () => {
         throw new Error('表单验证失败')
       }
     })
-
- 
-
     if (isEdit.value) {
-      ElMessage.success('编辑成功')
-    } else {
 
+      const res = await MenuApi.updateMenu(formData)
+      if (res.code === 10000) {
+        ElMessage.success('编辑成功')
+      }
+
+    } else {
       const res = await MenuApi.addMenu(formData)
-      console.log(res)
+
       if (res.code === 10000) {
         ElMessage.success('添加成功')
       }
@@ -379,5 +417,10 @@ const handleDialogClose = () => {
   display: flex;
   justify-content: flex-end;
   gap: 12px;
+}
+
+.form-tip {
+  margin-top: 4px;
+  line-height: 1.4;
 }
 </style>

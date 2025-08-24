@@ -67,5 +67,17 @@ public class PermissionsController {
     }
 
 
+    /**
+     * 添加一个权限
+     * @param sysPermissions 权限
+     * @return 字符串
+     */
+    @PostMapping("/edit")
+    public R<String> editPermission(@RequestBody SysPermissions sysPermissions){
+        sysPermissionServiceI.edit(sysPermissions);
+        return R.success();
+    }
+
+
 
 }

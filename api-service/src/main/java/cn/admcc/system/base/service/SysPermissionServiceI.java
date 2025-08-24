@@ -37,7 +37,17 @@ public interface SysPermissionServiceI extends IService<SysPermissions> {
 
     /**
      * 删除权限
+     *
      * @param permissionId 权限id
+     * @return 是否成功
      */
-    void deletePermission(Long permissionId);
+    boolean deletePermission(Long permissionId);
+
+    /**
+     * 编辑权限
+     *
+     * @param sysPermissions 系统权限
+     * @return 是否成功
+     */
+    boolean edit(SysPermissions sysPermissions);
 }
