@@ -113,12 +113,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted, computed } from 'vue'
+import { ref, reactive, onMounted, onUnmounted, computed } from 'vue'
 import type { FormInstance, FormRules } from 'element-plus'
 import ElMessage from 'element-plus/es/components/message/index'
 import type { Permissions } from '../../utils/api/user/Permissions'
 import { MenuApi } from '../../utils/api/menu/menuApi'
 import ElMessageBox from 'element-plus/es/components/message-box/index'
+import { webSocketManager } from '../../utils/websocket/WebSocketManager'
+import type { MenuChangeMessage } from '../../utils/websocket/types'
 
 // 响应式数据
 const treeRef = ref()
@@ -181,6 +183,12 @@ const dialogTitle = computed(() => isEdit.value ? '编辑菜单' : '添加菜单
 // 初始化数据
 onMounted(() => {
   loadMenuTree()
+  setupWebSocketListeners()
+})
+
+// 清理WebSocket监听器
+onUnmounted(() => {
+  cleanupWebSocketListeners()
 })
 
 // 加载菜单树
@@ -269,8 +277,9 @@ const handleDelete = async (node: Permissions) => {
     const res = await MenuApi.deleteMenu(id)
     if (res.code === 10000) {
       ElMessage.success('删除成功')
+      // 通知其他用户菜单已删除
+      notifyMenuChange('delete', node)
     }
-
 
     loadMenuTree()
   }).catch(() => {
@@ -289,17 +298,18 @@ const handleSubmit = async () => {
       }
     })
     if (isEdit.value) {
-
       const res = await MenuApi.updateMenu(formData)
       if (res.code === 10000) {
         ElMessage.success('编辑成功')
+        // 通知其他用户菜单已更新
+        notifyMenuChange('update', formData)
       }
-
     } else {
       const res = await MenuApi.addMenu(formData)
-
       if (res.code === 10000) {
         ElMessage.success('添加成功')
+        // 通知其他用户菜单已添加
+        notifyMenuChange('add', formData)
       }
     }
 
@@ -331,6 +341,29 @@ const resetForm = () => {
 // 关闭对话框
 const handleDialogClose = () => {
   resetForm()
+}
+
+// 设置WebSocket监听器
+const setupWebSocketListeners = () => {
+  // 监听菜单变更事件
+  window.addEventListener('menu-change', handleMenuChangeEvent as EventListener);
+}
+
+// 清理WebSocket监听器
+const cleanupWebSocketListeners = () => {
+  window.removeEventListener('menu-change', handleMenuChangeEvent as EventListener);
+}
+
+// 处理菜单变更事件
+const handleMenuChangeEvent = (event: Event) => {
+  const customEvent = event as CustomEvent;
+  // 刷新菜单树
+  loadMenuTree();
+}
+
+// 通知菜单变更（在菜单操作成功后调用）
+const notifyMenuChange = (action: 'add' | 'update' | 'delete', menuData?: any) => {
+  console.log("所有的通知消息均有后台发回给前端，前端只接收消息")
 }
 </script>
 

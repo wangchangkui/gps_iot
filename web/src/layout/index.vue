@@ -30,6 +30,7 @@
           </el-breadcrumb>
         </div>
         <div class="header-right">
+          <WebSocketStatus />
           <el-dropdown>
             <span class="el-dropdown-link">
               <img :src="avatar" crossorigin="anonymous" alt="avatar" class="avatar">
@@ -54,7 +55,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
 import {
@@ -64,6 +65,7 @@ import {
 } from '@element-plus/icons-vue'
 import { loginOut } from '../utils/api/user/login_out_util'
 import MenuTree from '../components/MenuTree.vue'
+import WebSocketStatus from '../components/WebSocketStatus.vue'
 import { buildMenuFromPermissions, filterHiddenMenus, type MenuItem } from '../utils/menu/menuBuilder'
 import { defaultMenuItems } from '../utils/menu/defaultMenu'
 import { Permissions } from '../utils/api/user/Permissions'
@@ -83,25 +85,21 @@ const initMenu = () => {
     if (permissionsStr) {
       const permissions: Permissions[] = JSON.parse(permissionsStr)
       
-      console.log('正在加载权限数据，权限项数:', permissions.length)
+
 
       const menuTree = buildMenuFromPermissions(permissions)
       const visibleMenu = filterHiddenMenus(menuTree)
       
       // 如果权限菜单为空，使用默认菜单
       if (visibleMenu.length === 0) {
-        console.log('权限菜单为空，使用默认菜单')
         menuItems.value = defaultMenuItems
       } else {
         menuItems.value = visibleMenu
-        console.log('菜单初始化成功:', visibleMenu)
       }
     } else {
-      console.log('未找到权限数据，使用默认菜单')
       menuItems.value = defaultMenuItems
     }
   } catch (error) {
-    console.error('菜单初始化失败:', error)
     menuItems.value = defaultMenuItems
   }
 }
@@ -117,9 +115,31 @@ const handleLogout = async () => {
   loginOut()
 }
 
+// 处理菜单变更事件（WebSocket消息）
+const handleMenuChangeEvent = () => {
+  console.log('收到菜单变更通知，正在刷新菜单...')
+  initMenu()
+}
+
+// 设置WebSocket监听器
+const setupWebSocketListeners = () => {
+  window.addEventListener('menu-change', handleMenuChangeEvent)
+}
+
+// 清理WebSocket监听器
+const cleanupWebSocketListeners = () => {
+  window.removeEventListener('menu-change', handleMenuChangeEvent)
+}
+
 // 组件挂载时初始化菜单
 onMounted(() => {
   initMenu()
+  setupWebSocketListeners()
+})
+
+// 组件卸载时清理监听器
+onUnmounted(() => {
+  cleanupWebSocketListeners()
 })
 </script>
 
@@ -227,6 +247,10 @@ onMounted(() => {
       }
       
       .header-right {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        
         .el-dropdown-link {
           cursor: pointer;
           display: flex;

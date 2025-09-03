@@ -4,6 +4,8 @@ import cn.admcc.system.base.dao.SysPermissionsDao;
 import cn.admcc.system.base.entity.SysPermissions;
 import cn.admcc.system.base.exception.SystemException;
 import cn.admcc.system.base.service.SysPermissionServiceI;
+import cn.admcc.system.base.websocket.ChatMessage;
+import cn.admcc.system.base.websocket.MessageConstant;
 import cn.admcc.util.RedisConsist;
 import cn.admcc.util.RedisUtil;
 import cn.hutool.core.collection.CollUtil;
@@ -11,6 +13,7 @@ import cn.hutool.core.util.IdUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,10 +35,13 @@ public class SysPermissionServiceImpl extends ServiceImpl<SysPermissionsDao,SysP
 
     private final SysPermissionsDao sysPermissionsDao;
 
+     private final SimpMessagingTemplate messagingTemplate;
+
     private final RedisUtil<String> redisUtil;
 
-    public SysPermissionServiceImpl(SysPermissionsDao sysPermissionsDao, RedisUtil<String> redisUtil) {
+    public SysPermissionServiceImpl(SysPermissionsDao sysPermissionsDao, SimpMessagingTemplate messagingTemplate, RedisUtil<String> redisUtil) {
         this.sysPermissionsDao = sysPermissionsDao;
+        this.messagingTemplate = messagingTemplate;
         this.redisUtil = redisUtil;
     }
 
@@ -59,6 +65,7 @@ public class SysPermissionServiceImpl extends ServiceImpl<SysPermissionsDao,SysP
         }
         sysPermissions.setPermissionId(IdUtil.getSnowflakeNextId());
         this.save(sysPermissions);
+        messagingTemplate.convertAndSend(MessageConstant.MENU_CHANGE,new ChatMessage("新增系统菜单","系统",LocalDateTime.now(),"menu_change"));
     }
 
     @Override
@@ -66,16 +73,21 @@ public class SysPermissionServiceImpl extends ServiceImpl<SysPermissionsDao,SysP
         SysPermissions permissions = getById(permissionId);
         Optional.ofNullable(permissions).ifPresent(t->{
             if(t.getAllowDelete().equals(0)){
+                // todo 更新角色信息
+
+                messagingTemplate.convertAndSend(MessageConstant.MENU_CHANGE,new ChatMessage("删除系统菜单","系统",LocalDateTime.now(),"menu_change"));
+
                 // 移除角色的信息
                 List<SysPermissions> allPermissionIds = sysPermissionsDao.getAllPermissionIds(permissionId);
                 if(CollUtil.isNotEmpty(allPermissionIds)){
-                    this.removeById(permissionId);
                     // 删除子集 只允许删除噢
                     List<Long> deleteIds = allPermissionIds.stream().map(SysPermissions::getPermissionId).toList();
                     this.removeByIds(deleteIds);
                     long count = redisUtil.deleteByPatternBatch(RedisConsist.PERMISSION_KEY + "*",1000);
                     log.info("移除权限数量：{}",count);
                 }
+                // 删除当前角色
+                this.removeById(permissionId);
             }else {
                 throw new SystemException("系统菜单或接口 无法删除");
             }
@@ -96,6 +108,9 @@ public class SysPermissionServiceImpl extends ServiceImpl<SysPermissionsDao,SysP
             if(permissions.getAllowDelete().equals(1)){
                 throw new SystemException("系统默认菜单功能，不允许修改或删除");
             }
+            // todo 更新角色
+
+            messagingTemplate.convertAndSend(MessageConstant.MENU_CHANGE,new ChatMessage("更新系统菜单","系统",LocalDateTime.now(),"menu_change"));
             // 更新系统
             try {
                 // 先删除

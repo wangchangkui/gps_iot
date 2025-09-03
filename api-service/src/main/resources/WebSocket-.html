@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="">
+<head>
+    <title>WebSocket 连接示例</title>
+    <script src="./sockjs.min.js"></script>
+    <script src="./stomp.min.js"></script>
+</head>
+<body>
+    <div id="status">no connect</div>
+    <div id="messages"></div>
+
+    <script>
+        // 完整的 WebSocket URL
+        const websocketUrl = 'http://localhost:8564/api/ws';
+        
+        // 创建 SockJS 连接
+        const socket = new SockJS(websocketUrl);
+        const stompClient = Stomp.over(socket);
+        
+        // 连接选项
+        const connectHeaders = {
+            Authorization: 'Bearer 123456'
+        };
+        
+        // 建立连接
+        stompClient.connect(connectHeaders, 
+            function(frame) {
+                console.log('connect success:', frame);
+                document.getElementById('status').textContent = 'connect success';
+                
+                // 订阅主题
+                stompClient.subscribe('/topic/messages', function(message) {
+                    console.log(message)
+                    const msg = JSON.parse(message.body);
+
+
+                    document.getElementById('messages').innerHTML += 
+                        `<p>${msg.sender}: ${msg.content}</p>`;
+                });
+                
+                // 发送测试消息
+                stompClient.send("/app/chat", {}, JSON.stringify({
+                    content: 'Hello WebSocket!',
+                    type: 'CHAT'
+                }));
+            },
+            function(error) {
+                console.error('connect failed:', error);
+                document.getElementById('status').textContent = 'connect failed';
+            }
+        );
+        
+        // 断开连接函数
+        function disconnect() {
+            if (stompClient !== null) {
+                stompClient.disconnect();
+            }
+            document.getElementById('status').textContent = 'connect loss';
+        }
+    </script>
+</body>
+</html>
