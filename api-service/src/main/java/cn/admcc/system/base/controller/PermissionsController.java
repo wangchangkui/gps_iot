@@ -1,8 +1,11 @@
 package cn.admcc.system.base.controller;
 
 import cn.admcc.system.base.entity.SysPermissions;
+import cn.admcc.system.base.exception.NoAuthException;
 import cn.admcc.system.base.service.SysPermissionServiceI;
 import cn.admcc.util.R;
+import cn.dev33.satoken.exception.NotLoginException;
+import cn.dev33.satoken.stp.StpUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -32,6 +35,21 @@ public class PermissionsController {
         return R.success(sysPermissionServiceI.getAllPermission());
     }
 
+
+    /**
+     * 获取用户的所有权限的集合
+     * @return List
+     */
+    @GetMapping("/user/list")
+    public R<List<SysPermissions>> getUserAllPermission(){
+        long userId;
+        try {
+            userId = Long.parseLong( StpUtil.getLoginId().toString());
+        } catch (NotLoginException e) {
+            throw new NoAuthException("未登录");
+        }
+        return R.success(sysPermissionServiceI.getUserAllPermissions(userId));
+    }
 
     /**
      * 添加一个权限

@@ -73,20 +73,22 @@ public class SysPermissionServiceImpl extends ServiceImpl<SysPermissionsDao,SysP
         SysPermissions permissions = getById(permissionId);
         Optional.ofNullable(permissions).ifPresent(t->{
             if(t.getAllowDelete().equals(0)){
-                // todo 更新角色信息
-
                 messagingTemplate.convertAndSend(MessageConstant.MENU_CHANGE,new ChatMessage("删除系统菜单","系统",LocalDateTime.now(),"menu_change"));
-
-                // 移除角色的信息
+                // 移除所有关联的子集权限
                 List<SysPermissions> allPermissionIds = sysPermissionsDao.getAllPermissionIds(permissionId);
                 if(CollUtil.isNotEmpty(allPermissionIds)){
                     // 删除子集 只允许删除噢
-                    List<Long> deleteIds = allPermissionIds.stream().map(SysPermissions::getPermissionId).toList();
+                    List<Long> deleteIds = new ArrayList<>(allPermissionIds.stream().map(SysPermissions::getPermissionId).toList());
+                    deleteIds.add(permissionId);
                     this.removeByIds(deleteIds);
                     long count = redisUtil.deleteByPatternBatch(RedisConsist.PERMISSION_KEY + "*",1000);
                     log.info("移除权限数量：{}",count);
+
+                    // 移除角色与id的信息
+                    sysPermissionsDao.deleteAllUserRolePermission(deleteIds);
                 }
-                // 删除当前角色
+
+                // 删除当前权限
                 this.removeById(permissionId);
             }else {
                 throw new SystemException("系统菜单或接口 无法删除");

@@ -194,14 +194,19 @@ onUnmounted(() => {
 // 加载菜单树
 const loadMenuTree = async () => {
   try {
-    // 模拟数据，实际应该从API获取
+
     const res = await MenuApi.getMenuTree()
-    menuTree.value = res.data
+    if (res.code === 10000 && res.data) {
+      menuTree.value = res.data;
+    } else {
+      throw new Error(res.message || '获取菜单数据失败');
+    }
   } catch (error) {
+   
     ElMessage({
       type: 'error',
-      message: '加载菜单数据失败'
-    })
+      message: '加载菜单数据失败，请检查网络连接或联系管理员'
+    });
   }
 }
 
@@ -273,17 +278,33 @@ const handleDelete = async (node: Permissions) => {
       type: 'warning'
     }
   ).then(async () => {
-    const id = node.permissionId
-    const res = await MenuApi.deleteMenu(id)
-    if (res.code === 10000) {
-      ElMessage.success('删除成功')
-      // 通知其他用户菜单已删除
-      notifyMenuChange('delete', node)
-    }
+    try {
 
-    loadMenuTree()
+      const id = node.permissionId
+      const res = await MenuApi.deleteMenu(id)
+      
+      if (res.code === 10000) {
+        ElMessage.success('删除成功')
+
+        
+        // 通知其他用户菜单已删除
+        notifyMenuChange('delete', node)
+        
+        // 刷新菜单树
+        await loadMenuTree();
+      } else {
+        throw new Error(res.message || '删除菜单失败');
+      }
+    } catch (error) {
+      console.error('删除菜单失败:', error);
+      ElMessage({
+        type: 'error',
+        message: '删除菜单失败，请重试或联系管理员'
+      });
+    }
   }).catch(() => {
     // 用户取消删除
+    console.log('用户取消删除菜单');
   })
 }
 
@@ -292,34 +313,44 @@ const handleSubmit = async () => {
   if (!formRef.value) return
 
   try {
+    // 表单验证
     await formRef.value.validate((valid, fields) => {
       if (!valid) {
         throw new Error('表单验证失败')
       }
     })
+
+
+    
     if (isEdit.value) {
       const res = await MenuApi.updateMenu(formData)
       if (res.code === 10000) {
         ElMessage.success('编辑成功')
+        console.log('菜单编辑成功，正在刷新数据...');
+        
         // 通知其他用户菜单已更新
         notifyMenuChange('update', formData)
+      } else {
+       ElMessage.error(res.message || '编辑菜单失败');
       }
     } else {
       const res = await MenuApi.addMenu(formData)
       if (res.code === 10000) {
         ElMessage.success('添加成功')
+        console.log('菜单添加成功，正在刷新数据...');
+        
         // 通知其他用户菜单已添加
         notifyMenuChange('add', formData)
+      } else {
+        throw new Error(res.message || '添加菜单失败');
       }
     }
 
     dialogVisible.value = false
-    loadMenuTree()
+    await loadMenuTree()
   } catch (error) {
-    ElMessage({
-      type: 'error',
-      message: '表单验证失败'
-    })
+    console.error('提交菜单失败:', error);
+   
   }
 }
 
@@ -357,13 +388,16 @@ const cleanupWebSocketListeners = () => {
 // 处理菜单变更事件
 const handleMenuChangeEvent = (event: Event) => {
   const customEvent = event as CustomEvent;
+
+  
   // 刷新菜单树
   loadMenuTree();
+
 }
 
 // 通知菜单变更（在菜单操作成功后调用）
 const notifyMenuChange = (action: 'add' | 'update' | 'delete', menuData?: any) => {
-  console.log("所有的通知消息均有后台发回给前端，前端只接收消息")
+
 }
 </script>
 

@@ -1,3 +1,11 @@
+<!--
+ * @Author: coder_wang 17360402335@163.com
+ * @Date: 2025-07-06 11:19:34
+ * @LastEditors: coder_wang 17360402335@163.com
+ * @LastEditTime: 2025-09-11 15:39:22
+ * @FilePath: \web\src\layout\index.vue
+ * @Description: 主布局组件
+-->
 <template>
   <el-container class="layout-container">
     <el-aside :width="isCollapse ? '64px' : '200px'" class="aside">
@@ -57,6 +65,7 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import ElMessage from 'element-plus/es/components/message/index'
 
 import {
   Fold,
@@ -79,28 +88,50 @@ const nickName=ref(localStorage.getItem('nickName') || '')
 const avatar=ref(localStorage.getItem('avatar') || '')
 
 // 初始化菜单
-const initMenu = () => {
+const initMenu = async (forceRefresh: boolean = false) => {
   try {
-    const permissionsStr = localStorage.getItem('permissions')
-    if (permissionsStr) {
-      const permissions: Permissions[] = JSON.parse(permissionsStr)
-      
+    let permissions: Permissions[] = []
+    
+    // 如果需要强制刷新或本地没有权限数据，从服务器获取
+    if (forceRefresh || !localStorage.getItem('permissions')) {
+
+      const { MenuApi } = await import('../utils/api/menu/menuApi');
+      const response = await MenuApi.getUserMenuTree();
 
 
-      const menuTree = buildMenuFromPermissions(permissions)
-      const visibleMenu = filterHiddenMenus(menuTree)
+      if (response.code === 10000 && response.data) {
+        permissions = response.data;
+        // 更新本地存储
+        localStorage.setItem('permissions', JSON.stringify(permissions));
+      } else {
+        throw new Error('获取权限数据失败');
+      }
+    } else {
+      // 从本地存储获取
+      const permissionsStr = localStorage.getItem('permissions');
+      if (permissionsStr) {
+        permissions = JSON.parse(permissionsStr);
+      }
+    }
+
+    if (permissions.length > 0) {
+      const menuTree = buildMenuFromPermissions(permissions);
+      const visibleMenu = filterHiddenMenus(menuTree);
       
       // 如果权限菜单为空，使用默认菜单
       if (visibleMenu.length === 0) {
-        menuItems.value = defaultMenuItems
+        menuItems.value = defaultMenuItems;
       } else {
-        menuItems.value = visibleMenu
+        menuItems.value = visibleMenu;
+        
       }
     } else {
-      menuItems.value = defaultMenuItems
+      menuItems.value = defaultMenuItems;
+      ElMessage.info('无数据权限')
     }
   } catch (error) {
-    menuItems.value = defaultMenuItems
+    console.error('初始化菜单失败:', error);
+    menuItems.value = defaultMenuItems;
   }
 }
 
@@ -116,9 +147,27 @@ const handleLogout = async () => {
 }
 
 // 处理菜单变更事件（WebSocket消息）
-const handleMenuChangeEvent = () => {
-  console.log('收到菜单变更通知，正在刷新菜单...')
-  initMenu()
+const handleMenuChangeEvent = async (event: Event) => {
+  const customEvent = event as CustomEvent;
+
+  try {
+    // 强制从服务器刷新菜单数据
+    await initMenu(true);
+    
+    // 显示成功提示
+    ElMessage({
+      type: 'success',
+      message: '导航栏已更新',
+      duration: 2000
+    });
+  } catch (error) {
+    console.error('刷新导航栏失败:', error);
+    ElMessage({
+      type: 'error',
+      message: '导航栏更新失败，请刷新页面',
+      duration: 3000
+    });
+  }
 }
 
 // 设置WebSocket监听器
@@ -132,8 +181,8 @@ const cleanupWebSocketListeners = () => {
 }
 
 // 组件挂载时初始化菜单
-onMounted(() => {
-  initMenu()
+onMounted(async () => {
+  await initMenu()
   setupWebSocketListeners()
 })
 
