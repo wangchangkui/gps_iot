@@ -2,7 +2,7 @@
  * @Author: coder_wang 17360402335@163.com
  * @Date: 2025-07-06 11:19:34
  * @LastEditors: coder_wang 17360402335@163.com
- * @LastEditTime: 2025-09-11 15:39:22
+ * @LastEditTime: 2025-09-12 15:39:21
  * @FilePath: \web\src\layout\index.vue
  * @Description: 主布局组件
 -->
@@ -48,7 +48,6 @@
             <template #dropdown>
               <el-dropdown-menu>
                 <el-dropdown-item>个人信息</el-dropdown-item>
-                <el-dropdown-item>修改密码</el-dropdown-item>
                 <el-dropdown-item divided @click="handleLogout">退出登录</el-dropdown-item>
               </el-dropdown-menu>
             </template>
@@ -97,7 +96,6 @@ const initMenu = async (forceRefresh: boolean = false) => {
 
       const { MenuApi } = await import('../utils/api/menu/menuApi');
       const response = await MenuApi.getUserMenuTree();
-
 
       if (response.code === 10000 && response.data) {
         permissions = response.data;

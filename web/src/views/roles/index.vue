@@ -94,7 +94,6 @@
                                 show-checkbox
                                 :default-checked-keys="roleFormSelectedPermissions"
                                 :default-expand-all="false"
-                                check-strictly
                                 @check="handleRoleFormPermissionCheck"
                                 class="role-form-permission-tree"
                             >
@@ -517,7 +516,10 @@ const handleRoleFormSelectAll = async () => {
     if (tree && typeof tree.setCheckedKeys === 'function') {
         const allKeys = getAllNodeKeys(menuTree.value)
         console.log('全选所有节点:', allKeys)
-        tree.setCheckedKeys(allKeys)
+        
+        // 使用智能级联选择，只选择根节点，让级联逻辑自动处理子节点
+        const rootKeys = menuTree.value.map(node => node.permissionId.toString())
+        tree.setCheckedKeys(rootKeys)
         roleFormSelectedPermissions.value = allKeys
     } else {
         console.error('权限树引用无效或setCheckedKeys方法不存在')
@@ -537,13 +539,132 @@ const handleRoleFormUnselectAll = async () => {
     }
 }
 
+// 获取节点的所有子节点ID
+const getAllChildIds = (node: any, allNodes: any[]): string[] => {
+    const childIds: string[] = []
+    
+    const findChildren = (parentId: string) => {
+        allNodes.forEach(node => {
+            if (node.parentId === parentId) {
+                childIds.push(node.permissionId.toString())
+                findChildren(node.permissionId.toString())
+            }
+        })
+    }
+    
+    findChildren(node.permissionId.toString())
+    return childIds
+}
+
+// 获取节点的所有父节点ID
+const getAllParentIds = (node: any, allNodes: any[]): string[] => {
+    const parentIds: string[] = []
+    
+    const findParent = (childId: string) => {
+        const child = allNodes.find(n => n.permissionId.toString() === childId)
+        if (child && child.parentId) {
+            parentIds.push(child.parentId.toString())
+            findParent(child.parentId.toString())
+        }
+    }
+    
+    findParent(node.permissionId.toString())
+    return parentIds
+}
+
+// 检查节点的所有子节点是否都被选中
+const areAllChildrenSelected = (node: any, checkedKeys: string[], allNodes: any[]): boolean => {
+    const childIds = getAllChildIds(node, allNodes)
+    return childIds.length > 0 && childIds.every(id => checkedKeys.includes(id))
+}
+
+// 检查节点的所有子节点是否都未被选中
+const areAllChildrenUnselected = (node: any, checkedKeys: string[], allNodes: any[]): boolean => {
+    const childIds = getAllChildIds(node, allNodes)
+    return childIds.length > 0 && childIds.every(id => !checkedKeys.includes(id))
+}
+
+// 获取所有节点（扁平化树结构）
+const getAllNodes = (tree: any[]): any[] => {
+    const nodes: any[] = []
+    
+    const traverse = (nodeList: any[]) => {
+        nodeList.forEach(node => {
+            nodes.push(node)
+            if (node.children && node.children.length > 0) {
+                traverse(node.children)
+            }
+        })
+    }
+    
+    traverse(tree)
+    return nodes
+}
+
 const handleRoleFormPermissionCheck = (data: Permissions, checked: any) => {
     const tree = roleFormPermissionTreeRef.value
     if (tree) {
+        // 获取当前选中的节点
         const checkedKeys = tree.getCheckedKeys() as string[]
-        roleFormSelectedPermissions.value = checkedKeys
+        const halfCheckedKeys = tree.getHalfCheckedKeys() as string[]
+        
+        // 获取所有节点
+        const allNodes = getAllNodes(menuTree.value)
+        
+        // 智能级联处理
+        let finalCheckedKeys = [...checkedKeys]
+        
+        // 如果当前节点被选中，确保所有子节点也被选中
+        if (checkedKeys.includes(data.permissionId.toString())) {
+            const childIds = getAllChildIds(data, allNodes)
+            childIds.forEach(id => {
+                if (!finalCheckedKeys.includes(id)) {
+                    finalCheckedKeys.push(id)
+                }
+            })
+        }
+        
+        // 如果当前节点被取消选中，确保所有子节点也被取消选中
+        if (!checkedKeys.includes(data.permissionId.toString())) {
+            const childIds = getAllChildIds(data, allNodes)
+            finalCheckedKeys = finalCheckedKeys.filter(id => !childIds.includes(id))
+        }
+        
+        // 检查父节点状态
+        const parentIds = getAllParentIds(data, allNodes)
+        parentIds.forEach(parentId => {
+            const parentNode = allNodes.find(n => n.permissionId.toString() === parentId)
+            if (parentNode) {
+                // 如果所有子节点都被选中，父节点也应该被选中
+                if (areAllChildrenSelected(parentNode, finalCheckedKeys, allNodes)) {
+                    if (!finalCheckedKeys.includes(parentId)) {
+                        finalCheckedKeys.push(parentId)
+                    }
+                }
+                // 如果所有子节点都未被选中，父节点也应该被取消选中
+                else if (areAllChildrenUnselected(parentNode, finalCheckedKeys, allNodes)) {
+                    finalCheckedKeys = finalCheckedKeys.filter(id => id !== parentId)
+                }
+            }
+        })
+        
+        // 更新树组件的选中状态
+        tree.setCheckedKeys(finalCheckedKeys)
+        
+        // 更新选中的权限列表
+        roleFormSelectedPermissions.value = finalCheckedKeys
+        
+        console.log('智能级联权限勾选变化:', {
+            node: data.permName,
+            nodeId: data.permissionId,
+            checked: checked.checkedKeys,
+            finalChecked: finalCheckedKeys,
+            childIds: getAllChildIds(data, allNodes),
+            parentIds: getAllParentIds(data, allNodes)
+        })
     }
 }
+
 
 </script>
 

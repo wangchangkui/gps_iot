@@ -8,6 +8,8 @@ import cn.admcc.system.base.entity.SysRolePermission;
 import cn.admcc.system.base.exception.SystemException;
 import cn.admcc.system.base.service.SysPermissionServiceI;
 import cn.admcc.system.base.service.SysRoleServiceI;
+import cn.admcc.system.base.websocket.ChatMessage;
+import cn.admcc.system.base.websocket.MessageConstant;
 import cn.admcc.util.PageQuery;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.IdUtil;
@@ -15,6 +17,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,10 +38,13 @@ public class SysRoleServiceImpl extends ServiceImpl<SysRoleDao, SysRole> impleme
 
     private final SysRolePermissionDao sysRolePermissionDao;
 
+    private final SimpMessagingTemplate messagingTemplate;
+
     private final SysPermissionServiceI permissionServiceI;
 
-    public SysRoleServiceImpl(SysRolePermissionDao sysRolePermissionDao, SysPermissionServiceI permissionServiceI) {
+    public SysRoleServiceImpl(SysRolePermissionDao sysRolePermissionDao, SimpMessagingTemplate messagingTemplate, SysPermissionServiceI permissionServiceI) {
         this.sysRolePermissionDao = sysRolePermissionDao;
+        this.messagingTemplate = messagingTemplate;
         this.permissionServiceI = permissionServiceI;
     }
 
@@ -121,6 +127,9 @@ public class SysRoleServiceImpl extends ServiceImpl<SysRoleDao, SysRole> impleme
 
         // todo 更新权限管理，redis
 
+        // 更新前端面板
+        messagingTemplate.convertAndSend(MessageConstant.MENU_CHANGE,new ChatMessage("修改系统角色","系统",LocalDateTime.now(),"menu_change"));
+
     }
 
     @Override
@@ -130,6 +139,8 @@ public class SysRoleServiceImpl extends ServiceImpl<SysRoleDao, SysRole> impleme
         sysRolePermissionDao.delete(new LambdaQueryWrapper<SysRolePermission>().eq(SysRolePermission::getRoleId,roleId));
         // todo 更新权限管理，redis
 
+        // 更新前端面板
+        messagingTemplate.convertAndSend(MessageConstant.MENU_CHANGE,new ChatMessage("修改系统角色","系统",LocalDateTime.now(),"menu_change"));
 
     }
 }
