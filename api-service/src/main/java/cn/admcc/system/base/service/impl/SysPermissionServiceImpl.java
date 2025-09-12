@@ -58,6 +58,12 @@ public class SysPermissionServiceImpl extends ServiceImpl<SysPermissionsDao,SysP
     }
 
     @Override
+    public List<SysPermissions> getRolePermissionTree(Long roleId) {
+        List<SysPermissions> rolePermissions =sysPermissionsDao.getRolePermission(roleId);
+        return buildPermissionTree(rolePermissions);
+    }
+
+    @Override
     public void add(SysPermissions sysPermissions) {
         SysPermissions one = this.getOne(new LambdaQueryWrapper<SysPermissions>().eq(SysPermissions::getPermKey, sysPermissions.getPermKey()));
         if(one != null){

@@ -23,12 +23,21 @@ public class SysRole {
     
     @TableField("role_name")
     private String roleName;
-    
+
+    @TableField(value = "description")
+    private String description;
+
+    @TableField(value = "role_code")
+    private String roleCode;
+
+
     @TableField(value = "created_time",fill = FieldFill.INSERT)
     private LocalDateTime createdTime;
     
     @TableField(value = "updated_time",fill = FieldFill.INSERT_UPDATE)
     private LocalDateTime updatedTime;
+
+
 
     @TableField(exist = false)
     private List<SysPermissions> permissions;

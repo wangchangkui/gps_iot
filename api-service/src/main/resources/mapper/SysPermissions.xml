@@ -52,4 +52,59 @@
         WHERE permission_id != #{permissionId}
         ORDER BY permission_id;
     </select>
+    <select id="getRolePermission" resultType="cn.admcc.system.base.entity.SysPermissions">
+        WITH RECURSIVE permission_tree AS (
+            -- 基础查询：获取角色直接关联的权限
+            SELECT
+                p.permission_id,
+                p.perm_key,
+                p.perm_name,
+                p.perm_type,
+                p.parent_id,
+                p.component_path,
+                p.sort_order,
+                p.is_hidden,
+                p.created_time,
+                p.updated_time,
+                p.allow_delete
+
+            FROM sys_permissions p
+                     INNER JOIN sys_role_permission rp ON p.permission_id = rp.permission_id
+            WHERE rp.role_id = #{roleId}
+
+            UNION ALL
+
+            -- 递归查询：获取所有子权限
+            SELECT
+                child.permission_id,
+                child.perm_key,
+                child.perm_name,
+                child.perm_type,
+                child.parent_id,
+                child.component_path,
+                child.sort_order,
+                child.is_hidden,
+                child.created_time,
+                child.updated_time,
+                child.allow_delete
+
+            FROM sys_permissions child
+                     INNER JOIN permission_tree pt ON child.parent_id = pt.permission_id
+        )
+        SELECT DISTINCT
+            permission_id,
+            perm_key,
+            perm_name,
+            perm_type,
+            parent_id,
+            component_path,
+            sort_order,
+            is_hidden,
+            created_time,
+            updated_time,
+            allow_delete
+
+        FROM permission_tree
+        ORDER BY  sort_order, permission_id;
+    </select>
 </mapper>

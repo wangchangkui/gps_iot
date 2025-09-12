@@ -83,6 +83,12 @@ const routes: Array<RouteRecordRaw> = [
         name: 'Analysis',
         component: () => import('../views/analysis/index.vue'),
         meta: { title: '数据分析', icon: 'DataLine' }
+      },
+      {
+        path: '/manage/roles',
+        name: 'RoleManagement',
+        component: () => import('../views/roles/index.vue'),
+        meta: { title: '角色管理', icon: 'UserFilled' }
       }   
     ]
   }

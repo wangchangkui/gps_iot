@@ -119,8 +119,7 @@ import ElMessage from 'element-plus/es/components/message/index'
 import type { Permissions } from '../../utils/api/user/Permissions'
 import { MenuApi } from '../../utils/api/menu/menuApi'
 import ElMessageBox from 'element-plus/es/components/message-box/index'
-import { webSocketManager } from '../../utils/websocket/WebSocketManager'
-import type { MenuChangeMessage } from '../../utils/websocket/types'
+
 
 // 响应式数据
 const treeRef = ref()

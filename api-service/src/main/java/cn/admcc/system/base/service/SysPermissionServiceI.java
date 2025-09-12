@@ -28,6 +28,12 @@ public interface SysPermissionServiceI extends IService<SysPermissions> {
      */
     List<SysPermissions> getAllPermission();
 
+    /**
+     * 获取角色下面的所有权限信息
+     * @param roleId 角色id
+     * @return 权限
+     */
+    List<SysPermissions> getRolePermissionTree(Long roleId);
 
     /**
      * 添加权限

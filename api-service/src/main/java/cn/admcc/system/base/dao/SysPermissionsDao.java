@@ -37,4 +37,11 @@ public interface SysPermissionsDao extends BaseMapper<SysPermissions> {
      * @param allPermissionIds 需要被移除的id的集合
      */
     void deleteAllUserRolePermission(List<Long> allPermissionIds);
+
+    /**
+     * 获取角色下面的所有权限
+     * @param roleId 角色id
+     * @return SysPermissions
+     */
+    List<SysPermissions> getRolePermission(Long roleId);
 }
