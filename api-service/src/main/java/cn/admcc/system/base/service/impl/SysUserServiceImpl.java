@@ -313,7 +313,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserDao, SysUser> impleme
         Optional.ofNullable(queryObject.getPhoneNumber()).ifPresent(t->{
             userLambdaQueryWrapper.like(SysUser::getPhoneNumber, t);
         });
-
+        userLambdaQueryWrapper.orderByDesc(SysUser::getCreatedTime);
         this.page(pageObject,userLambdaQueryWrapper);
 
         for (SysUser user : pageObject.getRecords()) {

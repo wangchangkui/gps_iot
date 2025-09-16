@@ -2,7 +2,7 @@
  * @Author: coder_wang 17360402335@163.com
  * @Date: 2025-07-06 11:19:34
  * @LastEditors: coder_wang 17360402335@163.com
- * @LastEditTime: 2025-09-12 17:57:24
+ * @LastEditTime: 2025-09-16 16:14:54
  * @FilePath: \web\src\layout\index.vue
  * @Description: 主布局组件
 -->
@@ -19,8 +19,8 @@
         active-text-color="#409EFF"
       >
         <div class="logo-container">
-          <img src="../assets/logo.svg" alt="Logo" class="logo" v-if="!isCollapse">
-          <img src="../assets/logo.svg" alt="Logo" class="logo-small" v-else>
+          <img src="../assets/icon.svg" alt="Logo" class="logo" v-if="!isCollapse">
+          <img src="../assets/icon.svg" alt="Logo" class="logo-small" v-else>
         </div>
         <!-- 动态菜单 -->
         <MenuTree :menu-items="menuItems" />
