@@ -2,6 +2,8 @@ package cn.admcc.system.base.entity.dto;
 
 import lombok.Data;
 
+import java.util.List;
+
 /**
  * @author coder wang
  * @version 1.0.0
@@ -41,6 +43,10 @@ public class UserRegisterDto {
      */
     private  String phone;
 
+    /**
+     * 是否启用
+     */
+    private Boolean isActive;
 
     /**
      * 验证码
@@ -56,4 +62,5 @@ public class UserRegisterDto {
      * 性别
      */
     private Integer gender;
+
 }

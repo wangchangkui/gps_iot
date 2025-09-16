@@ -97,6 +97,17 @@ public class LoginController {
         return R.success();
     }
 
+    /**
+     * 强制注册用户
+     * @param userRegisterDto 用户的信息
+     * @return success
+     */
+    @PostMapping("/register/force")
+    public R<String> registerUserNoMatch(@RequestBody UserRegisterDto userRegisterDto){
+        loginServiceI.registerUserNoMatchCode(userRegisterDto);
+        return R.success();
+    }
+
 
     /**
      * 判断邮箱是否被注册

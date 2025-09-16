@@ -5,9 +5,11 @@ import cn.admcc.system.base.dao.SysRolePermissionDao;
 import cn.admcc.system.base.entity.SysPermissions;
 import cn.admcc.system.base.entity.SysRole;
 import cn.admcc.system.base.entity.SysRolePermission;
+import cn.admcc.system.base.entity.SysUserRole;
 import cn.admcc.system.base.exception.SystemException;
 import cn.admcc.system.base.service.SysPermissionServiceI;
 import cn.admcc.system.base.service.SysRoleServiceI;
+import cn.admcc.system.base.service.SysUserRoleDaoServiceI;
 import cn.admcc.system.base.websocket.ChatMessage;
 import cn.admcc.system.base.websocket.MessageConstant;
 import cn.admcc.util.PageQuery;
@@ -40,11 +42,14 @@ public class SysRoleServiceImpl extends ServiceImpl<SysRoleDao, SysRole> impleme
 
     private final SimpMessagingTemplate messagingTemplate;
 
+    private final SysUserRoleDaoServiceI userRoleDaoServiceI;
+
     private final SysPermissionServiceI permissionServiceI;
 
-    public SysRoleServiceImpl(SysRolePermissionDao sysRolePermissionDao, SimpMessagingTemplate messagingTemplate, SysPermissionServiceI permissionServiceI) {
+    public SysRoleServiceImpl(SysRolePermissionDao sysRolePermissionDao, SimpMessagingTemplate messagingTemplate, SysUserRoleDaoServiceI userRoleDaoServiceI, SysPermissionServiceI permissionServiceI) {
         this.sysRolePermissionDao = sysRolePermissionDao;
         this.messagingTemplate = messagingTemplate;
+        this.userRoleDaoServiceI = userRoleDaoServiceI;
         this.permissionServiceI = permissionServiceI;
     }
 
@@ -137,6 +142,9 @@ public class SysRoleServiceImpl extends ServiceImpl<SysRoleDao, SysRole> impleme
     public void removeRole(Long roleId) {
         this.removeById(roleId);
         sysRolePermissionDao.delete(new LambdaQueryWrapper<SysRolePermission>().eq(SysRolePermission::getRoleId,roleId));
+        userRoleDaoServiceI.remove(new LambdaQueryWrapper<SysUserRole>().eq(SysUserRole::getRoleId,roleId));
+
+
         // todo 更新权限管理，redis
 
         // 更新前端面板

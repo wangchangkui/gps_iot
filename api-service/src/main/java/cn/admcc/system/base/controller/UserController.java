@@ -2,10 +2,14 @@ package cn.admcc.system.base.controller;
 
 import cn.admcc.system.base.entity.SysUser;
 import cn.admcc.system.base.entity.dto.UserEmailPhoneDto;
+import cn.admcc.system.base.entity.dto.UserRegisterDto;
+import cn.admcc.system.base.entity.dto.UserRoleManagerDto;
 import cn.admcc.system.base.entity.dto.UserUploadDto;
 import cn.admcc.system.base.exception.NoAuthException;
 import cn.admcc.system.base.service.LoginServiceI;
 import cn.admcc.system.base.service.SysUserServiceI;
+import cn.admcc.util.PageQuery;
+import cn.admcc.util.PageVo;
 import cn.admcc.util.R;
 import cn.dev33.satoken.exception.NotLoginException;
 import cn.dev33.satoken.stp.StpUtil;
@@ -114,5 +118,51 @@ public class UserController {
         return R.success();
     }
 
+
+    /**
+     * 分页获取用户信息
+     * @param query 查询对象
+     * @return page
+     */
+    @PostMapping("/page")
+    public R<PageVo<SysUser>> pageUser(@RequestBody PageQuery<SysUser,SysUser> query){
+        return R.success(PageVo.getPage(sysUserServiceI.pageUser(query)));
+    }
+
+
+    /**
+     * 删除用户信息
+     * @param userId 用户id
+     * @return Void
+     */
+    @DeleteMapping("/delete/{userId}")
+    public R<Void> deleteUser(@PathVariable Long userId){
+        sysUserServiceI.deleteUser(userId);
+        return R.success();
+    }
+
+
+    /**
+     * 更新用户
+     * @param userRegisterDto 用户更新对象
+     * @return ok
+     */
+    @PostMapping("/edit")
+    public R<Void> editUser(@RequestBody UserRegisterDto userRegisterDto){
+        sysUserServiceI.updateUserInfo(userRegisterDto);
+        return R.success();
+    }
+
+
+    /**
+     * 管理用户的角色信息
+     * @param userRoleManagerDto 用户角色对象
+     * @return Void
+     */
+    @PostMapping("/manageUserRole")
+    public R<Void> managerUserRole(@RequestBody UserRoleManagerDto userRoleManagerDto){
+        sysUserServiceI.managerUserRole(userRoleManagerDto);
+        return R.success();
+    }
 
 }

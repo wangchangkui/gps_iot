@@ -1,8 +1,12 @@
 package cn.admcc.system.base.service;
 
 import cn.admcc.system.base.entity.SysUser;
+import cn.admcc.system.base.entity.dto.UserRegisterDto;
+import cn.admcc.system.base.entity.dto.UserRoleManagerDto;
 import cn.admcc.system.base.entity.dto.UserUploadDto;
 import cn.admcc.system.base.exception.SystemException;
+import cn.admcc.util.PageQuery;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -114,4 +118,29 @@ public interface SysUserServiceI extends IService<SysUser> {
      * @param userUploadDto 更新参数
      */
     void resetEmail(UserUploadDto userUploadDto);
+
+    /**
+     * 分页获取用户
+     * @param query 分页对象
+     * @return Page
+     */
+    Page<SysUser> pageUser(PageQuery<SysUser, SysUser> query);
+
+    /**
+     * 删除用户
+     * @param userId 用户id
+     */
+    void deleteUser(Long userId);
+
+    /**
+     * 更新用户信息
+     * @param userRegisterDto 更新信息
+     */
+    void updateUserInfo(UserRegisterDto userRegisterDto);
+
+    /**
+     * 用户角色管理
+     * @param userRoleManagerDto 管理
+     */
+    void managerUserRole(UserRoleManagerDto userRoleManagerDto);
 }

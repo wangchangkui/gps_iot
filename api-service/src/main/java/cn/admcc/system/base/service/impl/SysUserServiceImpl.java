@@ -5,6 +5,8 @@ import cn.admcc.storage.FileConsist;
 import cn.admcc.storage.FileStorageHandlerI;
 import cn.admcc.system.base.entity.SysRole;
 import cn.admcc.system.base.entity.SysUserRole;
+import cn.admcc.system.base.entity.dto.UserRegisterDto;
+import cn.admcc.system.base.entity.dto.UserRoleManagerDto;
 import cn.admcc.system.base.exception.NoAuthException;
 import cn.admcc.system.base.service.SysUserRoleDaoServiceI;
 import cn.admcc.system.file.strategy.FileStorageStrategy;
@@ -13,16 +15,19 @@ import cn.admcc.system.base.entity.SysUser;
 import cn.admcc.system.base.entity.dto.UserUploadDto;
 import cn.admcc.system.base.exception.SystemException;
 import cn.admcc.system.base.service.SysUserServiceI;
+import cn.admcc.util.PageQuery;
 import cn.admcc.util.RedisUtil;
 import cn.admcc.util.RsaUtil;
 import cn.dev33.satoken.exception.NotLoginException;
 import cn.dev33.satoken.stp.StpUtil;
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.io.file.FileNameUtil;
 import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.core.util.URLUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -284,6 +289,95 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserDao, SysUser> impleme
         } catch (Exception e) {
             throw new SystemException("改邮箱已被绑定，请更换");
         }
+    }
+
+    @Override
+    public Page<SysUser> pageUser(PageQuery<SysUser, SysUser> query) {
+
+        LambdaQueryWrapper<SysUser> userLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        Page<SysUser> pageObject = query.getPage();
+        SysUser queryObject = query.getQuery();
+        // 按照账号模糊查询
+        Optional.ofNullable(queryObject.getUserName()).ifPresent(t->{
+            userLambdaQueryWrapper.like(SysUser::getUserName, t);
+        });
+        // 按照邮箱模糊查询
+        Optional.ofNullable(queryObject.getEmail()).ifPresent(t->{
+            userLambdaQueryWrapper.like(SysUser::getEmail, t);
+        });
+        // 按照昵称模糊查询
+        Optional.ofNullable(queryObject.getNickName()).ifPresent(t->{
+            userLambdaQueryWrapper.like(SysUser::getNickName, t);
+        });
+        // 那招手机号模糊查询
+        Optional.ofNullable(queryObject.getPhoneNumber()).ifPresent(t->{
+            userLambdaQueryWrapper.like(SysUser::getPhoneNumber, t);
+        });
+
+        this.page(pageObject,userLambdaQueryWrapper);
+
+        for (SysUser user : pageObject.getRecords()) {
+            user.setPassword("*");
+        }
+
+
+        return pageObject;
+    }
+
+    @Transactional(rollbackFor = Exception.class )
+    @Override
+    public void deleteUser(Long userId) {
+
+
+        // 删除用户关联角色
+        sysUserRoleDaoServiceI.remove(new LambdaQueryWrapper<SysUserRole>().eq(SysUserRole::getUserId,userId));
+        // 删除
+        this.removeById(userId);
+
+
+    }
+
+    @Override
+    public void updateUserInfo(UserRegisterDto userRegisterDto) {
+        SysUser user = getByAccount(userRegisterDto.getAccount());
+        user.setNickName(userRegisterDto.getNickName());
+        user.setPhoneNumber(userRegisterDto.getPhone());
+        user.setIsActive(userRegisterDto.getIsActive());
+        user.setLastLogin(LocalDateTime.now());
+        user.setUpdatedTime(LocalDateTime.now());
+        user.setEmail(userRegisterDto.getEmail());
+        if(StrUtil.isNotEmpty(userRegisterDto.getPassword())){
+            try {
+                String nwp = rsaUtil.encrypt(userRegisterDto.getPassword());
+                user.setPassword(nwp);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
+        try {
+            this.updateById(user);
+        } catch (Exception e) {
+            throw new SystemException("电话号码、邮箱、用户名中存在重复，请尝试修改");
+        }
+    }
+
+    @Override
+    public void managerUserRole(UserRoleManagerDto userRoleManagerDto) {
+        String userAccount = userRoleManagerDto.getAccount();
+        SysUser user = getByAccount(userAccount);
+        // 表示删除所有的角色
+        sysUserRoleDaoServiceI.remove(new LambdaQueryWrapper<SysUserRole>().eq(SysUserRole::getUserId,user.getId()));
+        if(CollUtil.isEmpty(userRoleManagerDto.getRoleId())){
+            return;
+        }
+        List<SysUserRole> userRole = userRoleManagerDto.getRoleId().stream().map(f -> {
+            SysUserRole sysUserRole = new SysUserRole();
+            sysUserRole.setId(IdUtil.getSnowflakeNextId());
+            sysUserRole.setUserId(user.getId());
+            sysUserRole.setRoleId(f);
+            return sysUserRole;
+        }).toList();
+        sysUserRoleDaoServiceI.saveBatch(userRole);
     }
 
     @Transactional(rollbackFor = Exception.class)

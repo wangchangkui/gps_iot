@@ -21,10 +21,10 @@ public class SysUserRole {
     @TableId("id")
     private Long id;
 
-    @TableField("user_id")
+    @TableField("sys_user_id")
     private Long userId;
 
-    @TableField("role_id")
+    @TableField("sys_role_id")
     private Long roleId;
 
     @TableField(value = "created_time",fill = FieldFill.INSERT)

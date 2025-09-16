@@ -16,6 +16,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -49,6 +50,9 @@ public abstract class AbstractLoginHandler implements LoginHandler {
 
         // 执行登录
         SysUser user = this.login(loginUserDto);
+        user.setLastLogin(LocalDateTime.now());
+        sysUserServiceI.updateById(user);
+
 
         // 设置权限
         List<SysPermissions> userAllPermissions = permissionServiceI.getUserAllPermissions(user.getId());

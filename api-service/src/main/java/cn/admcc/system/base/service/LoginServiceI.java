@@ -56,6 +56,12 @@ public interface LoginServiceI {
     void registerUser(UserRegisterDto userRegisterDto);
 
     /**
+     * 强制注册用户不需要验证
+     * @param userRegisterDto 用户信息
+     */
+    void registerUserNoMatchCode(UserRegisterDto userRegisterDto);
+
+    /**
      * 更新用户的手机号或邮箱
      * @param userUploadDto 新的手机号或邮箱
      */

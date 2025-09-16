@@ -10,6 +10,8 @@ import cn.dev33.satoken.stp.StpUtil;
 import cn.hutool.core.util.StrUtil;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDateTime;
+
 /**
  * @author coder wang
  * @version 1.0.0
@@ -60,6 +62,8 @@ public class AccountLogin extends AbstractLoginHandler implements LoginHandler {
 
         // 登录
         StpUtil.login(user.getId());
+
+
         return user;
     }
 

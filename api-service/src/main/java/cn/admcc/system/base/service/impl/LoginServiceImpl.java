@@ -50,11 +50,6 @@ public class LoginServiceImpl implements LoginServiceI {
 
     private final RedisUtil<String> redisUtil;
 
-
-
-
-
-
     private final ResourceLoader resourceLoader;
 
     private final EmailConfig emailConfig;
@@ -136,12 +131,17 @@ public class LoginServiceImpl implements LoginServiceI {
         }
         String emailCode = userRegisterDto.getEmailCode();
         checkEmail(email,emailCode);
+        this.registerUserNoMatchCode(userRegisterDto);
+    }
 
+
+    @Override
+    public void registerUserNoMatchCode(UserRegisterDto userRegisterDto){
         // 注册用户
         SysUser sysUser = new SysUser();
         sysUser.setUserName(userRegisterDto.getAccount());
         sysUser.setNickName(userRegisterDto.getNickName());
-        sysUser.setEmail(email);
+        sysUser.setEmail(userRegisterDto.getEmail());
         String encryptPassword;
         try {
             encryptPassword = rsaUtil.encrypt(userRegisterDto.getPassword());
@@ -151,12 +151,13 @@ public class LoginServiceImpl implements LoginServiceI {
         }
         sysUser.setPassword(encryptPassword);
         // 添加默认的头像
-        sysUser.setAvatarUrl("/marker.png");
+        sysUser.setAvatarUrl("https://admcc.cn/marker.png");
         sysUser.setSex(userRegisterDto.getGender());
         sysUser.setPhoneNumber(userRegisterDto.getPhone());
         sysUser.setLastLogin(LocalDateTime.now());
         sysUserService.addUser(sysUser);
     }
+
 
     @Override
     public void updateUserEmailAndPhone(UserEmailPhoneDto userUploadDto) {
