@@ -17,6 +17,17 @@ public class UserUploadDto extends UserRegisterDto {
 
     private MultipartFile avatar;
 
+    /**
+     * 新密码
+     */
+    private String newPassword;
+
+
+    /**
+     * 新邮箱
+     */
+    private String newEmail;
+
 
 
 }

@@ -194,7 +194,8 @@ public class LoginServiceImpl implements LoginServiceI {
     }
 
 
-    public void checkEmail(String email,String emailCode){
+    @Override
+    public void checkEmail(String email, String emailCode){
         if(StrUtil.isEmpty(emailCode)){
             throw new SystemException("请输入邮箱验证码");
         }

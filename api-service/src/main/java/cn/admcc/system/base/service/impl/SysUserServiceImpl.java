@@ -3,7 +3,9 @@ package cn.admcc.system.base.service.impl;
 import cn.admcc.config.StorageConfig;
 import cn.admcc.storage.FileConsist;
 import cn.admcc.storage.FileStorageHandlerI;
+import cn.admcc.system.base.entity.SysRole;
 import cn.admcc.system.base.entity.SysUserRole;
+import cn.admcc.system.base.exception.NoAuthException;
 import cn.admcc.system.base.service.SysUserRoleDaoServiceI;
 import cn.admcc.system.file.strategy.FileStorageStrategy;
 import cn.admcc.system.base.dao.SysUserDao;
@@ -11,9 +13,15 @@ import cn.admcc.system.base.entity.SysUser;
 import cn.admcc.system.base.entity.dto.UserUploadDto;
 import cn.admcc.system.base.exception.SystemException;
 import cn.admcc.system.base.service.SysUserServiceI;
+import cn.admcc.util.RedisUtil;
+import cn.admcc.util.RsaUtil;
+import cn.dev33.satoken.exception.NotLoginException;
+import cn.dev33.satoken.stp.StpUtil;
+import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.io.file.FileNameUtil;
 import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.StrUtil;
+import cn.hutool.core.util.URLUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +34,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -44,6 +53,11 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserDao, SysUser> impleme
     private final StorageConfig storageConfig;
 
     private final SysUserRoleDaoServiceI sysUserRoleDaoServiceI;
+
+    private final RsaUtil rsaUtil;
+
+
+
 
 
     @Override
@@ -138,7 +152,9 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserDao, SysUser> impleme
         // 跟新头像
         MultipartFile avatar = userUploadDto.getAvatar();
         if(avatar != null){
-            uploadAvatar(avatar,userUploadDto.getAccount());
+            String savePath = uploadAvatar(avatar, userUploadDto.getAccount());
+            String webPath = URLUtil.completeUrl(storageConfig.getWebBaseUrl(), savePath);
+            user.setAvatarUrl(webPath);
         }
         // 更新用户名
         if(!StrUtil.isEmpty(userUploadDto.getNickName())){
@@ -152,7 +168,14 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserDao, SysUser> impleme
             }
         }
 
-        this.updateById(user);
+        try {
+            this.updateById(user);
+        } catch (Exception e) {
+            if(avatar!=null){
+                 Paths.get(storageConfig.getSrc(), user.getAvatarUrl());
+            }
+            log.error("更新信息失败",e);
+        }
     }
 
     @Override
@@ -164,6 +187,104 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserDao, SysUser> impleme
         return user;
     }
 
+    @Override
+    public SysUser getUserInfo(Long userId) {
+        SysUser user = this.getById(userId);
+        if(user == null){
+            throw new SystemException("用户不存在");
+        }
+        // 移除用户的密码信息
+        user.setPassword("*");
+
+        // 获取用户的所有角色
+        List<SysRole> sysRoles =
+                sysUserRoleDaoServiceI.userRoleList(userId);
+        user.setSysRoles(sysRoles);
+        return user;
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public String uploadUserAvatar(MultipartFile file) {
+        String userId;
+        try {
+            userId = StpUtil.getLoginId().toString();
+        } catch (NotLoginException e) {
+            throw new NoAuthException("未登录");
+        }
+        SysUser user = getById(Long.parseLong(userId));
+        String savePath = this.uploadAvatar(file, user.getUserName());
+        log.info("保存地址：{}",savePath);
+        // 保存用户的地址信息
+        String webPath = URLUtil.completeUrl(storageConfig.getWebBaseUrl(), savePath);
+        user.setAvatarUrl(webPath);
+        try {
+            this.updateById(user);
+        } catch (Exception e) {
+            FileUtil.del(Paths.get(storageConfig.getSrc(), savePath));
+            log.error("更新头像失败",e);
+        }
+        return webPath;
+    }
+
+    @Override
+    public void resetPassword(UserUploadDto userUploadDto) {
+        String newPassword = userUploadDto.getNewPassword();
+        if(StrUtil.isEmpty(newPassword)){
+            throw new SystemException("请输入新密码");
+        }
+
+        SysUser user = getByAccount(userUploadDto.getAccount());
+        String currentPassword = userUploadDto.getPassword();
+        String dbPassword = user.getPassword();
+        // 解密传入的常昊
+        try {
+
+            String decrypt1 = rsaUtil.decrypt(dbPassword);
+            if(currentPassword.equals(decrypt1)){
+                // 设置新密码
+                String npw = rsaUtil.encrypt(newPassword);
+                user.setPassword(npw);
+            }else{
+                throw new SystemException("旧密码错误");
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        this.updateById(user);
+    }
+
+
+    @Override
+    public void initPassword(String account, String newPassword){
+        if(StrUtil.isEmpty(newPassword)){
+            throw new SystemException("请输入新密码");
+        }
+        SysUser user = getByAccount(account);
+
+        try {
+            String wpd = rsaUtil.encrypt(newPassword);
+            user.setPassword(wpd);
+        } catch (Exception e) {
+            throw new SystemException("加密失败,联系管理员",e);
+        }
+
+        this.updateById(user);
+
+
+    }
+
+
+    @Override
+    public void resetEmail(UserUploadDto userUploadDto) {
+        SysUser user = getByAccount(userUploadDto.getAccount());
+        user.setEmail(userUploadDto.getNewEmail());
+        try {
+            this.updateById(user);
+        } catch (Exception e) {
+            throw new SystemException("改邮箱已被绑定，请更换");
+        }
+    }
 
     @Transactional(rollbackFor = Exception.class)
     public String uploadAvatar(MultipartFile avatar,String userAccount) {
@@ -180,7 +301,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserDao, SysUser> impleme
             throw new SystemException("上传用户头像失败",e);
         }
 
-        return Paths.get(FileConsist.USER, userAccount).toString();
+        return Paths.get(FileConsist.USER, userAccount,fileName +"."+ suffix).toString();
 
     }
 }

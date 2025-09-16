@@ -2,7 +2,7 @@
  * @Author: coder_wang 17360402335@163.com
  * @Date: 2025-07-06 11:19:34
  * @LastEditors: coder_wang 17360402335@163.com
- * @LastEditTime: 2025-09-12 15:39:21
+ * @LastEditTime: 2025-09-12 17:57:24
  * @FilePath: \web\src\layout\index.vue
  * @Description: 主布局组件
 -->
@@ -41,13 +41,22 @@
           <WebSocketStatus />
           <el-dropdown>
             <span class="el-dropdown-link">
-              <img :src="avatar" crossorigin="anonymous" alt="avatar" class="avatar">
+              <div class="header-avatar">
+                <img 
+                  crossorigin="anonymous" 
+                  v-if="userInfo.avatarUrl" 
+                  :src="userInfo.avatarUrl" 
+                  alt="用户头像"
+                  @error="handleAvatarError"
+                />
+                <el-icon v-else><User /></el-icon>
+              </div>
               <span>{{ nickName }}</span>
               <el-icon class="el-icon--right"><arrow-down /></el-icon>
             </span>
             <template #dropdown>
               <el-dropdown-menu>
-                <el-dropdown-item>个人信息</el-dropdown-item>
+                <el-dropdown-item @click="goToProfile">个人信息</el-dropdown-item>
                 <el-dropdown-item divided @click="handleLogout">退出登录</el-dropdown-item>
               </el-dropdown-menu>
             </template>
@@ -69,7 +78,8 @@ import ElMessage from 'element-plus/es/components/message/index'
 import {
   Fold,
   Expand,
-  ArrowDown
+  ArrowDown,
+  User
 } from '@element-plus/icons-vue'
 import { loginOut } from '../utils/api/user/login_out_util'
 import MenuTree from '../components/MenuTree.vue'
@@ -79,12 +89,22 @@ import { defaultMenuItems } from '../utils/menu/defaultMenu'
 import { Permissions } from '../utils/api/user/Permissions'
 
 const route = useRoute()
+const router = useRouter()
 
 const isCollapse = ref(false)
 const menuItems = ref<MenuItem[]>([])
 
 const nickName=ref(localStorage.getItem('nickName') || '')
-const avatar=ref(localStorage.getItem('avatar') || '')
+
+// 用户信息
+const userInfo = ref({
+  avatarUrl: localStorage.getItem('avatar') || ''
+})
+
+// 头像错误处理
+const handleAvatarError = () => {
+  console.log('头像加载失败，使用默认头像')
+}
 
 // 初始化菜单
 const initMenu = async (forceRefresh: boolean = false) => {
@@ -140,8 +160,11 @@ const toggleCollapse = () => {
 }
 
 const handleLogout = async () => {
-  
   loginOut()
+}
+
+const goToProfile = () => {
+  router.push('/manage/profile')
 }
 
 // 处理菜单变更事件（WebSocket消息）
@@ -168,14 +191,28 @@ const handleMenuChangeEvent = async (event: Event) => {
   }
 }
 
+// 处理用户信息更新事件
+const handleUserInfoUpdateEvent = (event: Event) => {
+  const customEvent = event as CustomEvent;
+  const { avatarUrl } = customEvent.detail;
+  
+  if (avatarUrl !== undefined) {
+    userInfo.value.avatarUrl = avatarUrl;
+    // 同时更新localStorage
+    localStorage.setItem('avatar', avatarUrl);
+  }
+}
+
 // 设置WebSocket监听器
 const setupWebSocketListeners = () => {
   window.addEventListener('menu-change', handleMenuChangeEvent)
+  window.addEventListener('user-info-update', handleUserInfoUpdateEvent)
 }
 
 // 清理WebSocket监听器
 const cleanupWebSocketListeners = () => {
   window.removeEventListener('menu-change', handleMenuChangeEvent)
+  window.removeEventListener('user-info-update', handleUserInfoUpdateEvent)
 }
 
 // 组件挂载时初始化菜单
@@ -305,16 +342,31 @@ onUnmounted(() => {
           color: #606266;
           gap: 8px;
           
-          .avatar {
+          .header-avatar {
             width: 32px;
             height: 32px;
             border-radius: 50%;
-            object-fit: cover;
             border: 2px solid #e4e7ed;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #f5f7fa;
             transition: border-color 0.3s;
+            
+            img {
+              width: 100%;
+              height: 100%;
+              object-fit: cover;
+            }
+            
+            .el-icon {
+              font-size: 16px;
+              color: #909399;
+            }
           }
           
-          &:hover .avatar {
+          &:hover .header-avatar {
             border-color: #409EFF;
           }
           

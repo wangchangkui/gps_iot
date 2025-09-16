@@ -89,6 +89,12 @@ const routes: Array<RouteRecordRaw> = [
         name: 'RoleManagement',
         component: () => import('../views/roles/index.vue'),
         meta: { title: '角色管理', icon: 'UserFilled' }
+      },
+      {
+        path: '/manage/profile',
+        name: 'Profile',
+        component: () => import('../views/profile/index.vue'),
+        meta: { title: '个人信息', icon: 'User' }
       }   
     ]
   }

@@ -21,6 +21,7 @@ server:
     context-path: /api
 
 storage:
+  web-base-url: https://admcc.cn
   src: ${USER_SAVE:/src}
   type: Local
 

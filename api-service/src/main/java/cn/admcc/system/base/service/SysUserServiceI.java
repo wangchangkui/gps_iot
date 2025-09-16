@@ -4,6 +4,7 @@ import cn.admcc.system.base.entity.SysUser;
 import cn.admcc.system.base.entity.dto.UserUploadDto;
 import cn.admcc.system.base.exception.SystemException;
 import com.baomidou.mybatisplus.extension.service.IService;
+import org.springframework.web.multipart.MultipartFile;
 
 /**
  * @author coder wang
@@ -79,4 +80,38 @@ public interface SysUserServiceI extends IService<SysUser> {
      * @return SysUser
      */
     SysUser getByAccount(String account);
+
+    /**
+     * 获取用户的详细信息
+     * @param userId 用户id
+     * @return SysUser
+     */
+    SysUser getUserInfo(Long userId);
+
+    /**
+     * 更新用户头像
+     *
+     * @param file 用户信息
+     * @return 访问地址
+     */
+    String uploadUserAvatar(MultipartFile file);
+
+    /**
+     * 更新密码
+     * @param userUploadDto url
+     */
+    void resetPassword(UserUploadDto userUploadDto);
+
+    /**
+     * 初始化重置密码
+     * @param account 重置账号
+     * @param newPassword 密码
+     */
+    void initPassword(String account, String newPassword);
+
+    /**
+     * 更新邮箱
+     * @param userUploadDto 更新参数
+     */
+    void resetEmail(UserUploadDto userUploadDto);
 }

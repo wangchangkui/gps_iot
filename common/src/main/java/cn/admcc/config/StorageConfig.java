@@ -17,6 +17,12 @@ public class StorageConfig {
 
 
     /**
+     * 前端访问的路径
+     * 这个地址需要与nginx配合使用
+     */
+    private String webBaseUrl;
+
+    /**
      * 本地存储或桶的位置
      */
     private String src;

@@ -65,4 +65,11 @@ public interface LoginServiceI {
      * 退出登录
      */
     void loginOut();
+
+    /**
+     * 检查邮箱验证码是否正确
+     * @param email 邮箱
+     * @param emailCode 验证码
+     */
+    void checkEmail(String email, String emailCode);
 }

@@ -4,4 +4,19 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="cn.admcc.system.base.dao.SysRoleDao">
 
+    <select id="userRoleList" resultType="cn.admcc.system.base.entity.SysRole">
+        SELECT
+            r.id,
+            r.role_name,
+            r.role_code,
+            r.description,
+            r.created_time,
+            r.updated_time,
+            ur.created_time as assign_time
+        FROM sys_role r
+                 INNER JOIN sys_user_role ur ON r.id = ur.sys_role_id
+        WHERE ur.sys_user_id =#{userId}
+        ORDER BY ur.created_time DESC
+
+    </select>
 </mapper>
