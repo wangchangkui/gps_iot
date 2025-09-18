@@ -318,12 +318,13 @@ const handleEditRole = async (role: RoleType) => {
     }, 100)
 }
 
-// 从嵌套的权限数据中提取所有权限ID
+// 从嵌套的权限数据中提取所有权限ID（只提取叶子节点，避免级联选择问题）
 const extractPermissionIds = (permissions: any[]): string[] => {
     const ids: string[] = []
     
     const extractFromPermission = (permission: any) => {
-        if (permission.permissionId) {
+        // 只提取没有子节点的权限（叶子节点）
+        if (permission.permissionId && (!permission.children || permission.children.length === 0)) {
             ids.push(permission.permissionId.toString())
         }
         if (permission.children && Array.isArray(permission.children)) {

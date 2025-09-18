@@ -11,6 +11,9 @@ import cn.admcc.system.base.service.SysUserServiceI;
 import cn.admcc.util.PageQuery;
 import cn.admcc.util.PageVo;
 import cn.admcc.util.R;
+import cn.dev33.satoken.annotation.SaCheckLogin;
+import cn.dev33.satoken.annotation.SaCheckPermission;
+import cn.dev33.satoken.annotation.SaMode;
 import cn.dev33.satoken.exception.NotLoginException;
 import cn.dev33.satoken.stp.StpUtil;
 import lombok.RequiredArgsConstructor;
@@ -38,6 +41,7 @@ public class UserController {
      * @param userUploadDto 更新信息
      * @return success
      */
+    @SaCheckLogin
     @PostMapping("/update/base")
     public R<String> uploadUser(@RequestBody UserUploadDto userUploadDto) {
         sysUserServiceI.updateUserBaseInfo(userUploadDto);
@@ -49,6 +53,7 @@ public class UserController {
      * 获取当前登录用户的信息
      * @return SysUser
      */
+    @SaCheckLogin
     @GetMapping("/loginUser")
     public R<SysUser> getLoginUserInfo(){
         long userId;
@@ -66,6 +71,7 @@ public class UserController {
      * @param userId 用户id
      * @return SysUser
      */
+    @SaCheckPermission(value = {"func:user:manager"},mode = SaMode.OR)
     @GetMapping("/detail")
     public R<SysUser> getUserInfo(Long userId){
         return R.success(sysUserServiceI.getUserInfo(userId));
@@ -77,6 +83,7 @@ public class UserController {
      * @param userUploadDto 用户的新的信息
      * @return success
      */
+    @SaCheckPermission(value = {"func:user:manager"},mode = SaMode.OR)
     @PostMapping("/update/email/phone")
     public R<String> updateUserEmailAndPhone(UserEmailPhoneDto userUploadDto) {
         loginServiceI.updateUserEmailAndPhone(userUploadDto);
@@ -88,6 +95,7 @@ public class UserController {
      * @param file 头像文件
      * @return String
      */
+    @SaCheckPermission(value = {"func:user:manager"},mode = SaMode.OR)
     @PostMapping("/upload-avatar")
     public R<String> uploadUserAvatar(MultipartFile file){
         return R.successByData(sysUserServiceI.uploadUserAvatar(file));
@@ -99,6 +107,7 @@ public class UserController {
      * @param userUploadDto 密码
      * @return  String
      */
+    @SaCheckPermission(value = {"func:user:manager"},mode = SaMode.OR)
     @PostMapping("/resetPassword")
     public R<String> resetPassword(@RequestBody UserUploadDto userUploadDto){
         sysUserServiceI.resetPassword(userUploadDto);
@@ -111,6 +120,7 @@ public class UserController {
      * @param userUploadDto 更新参数
      * @return String
      */
+    @SaCheckPermission(value = {"func:user:manager"},mode = SaMode.OR)
     @PostMapping("/resetEmail")
     public R<String> resetEmail(@RequestBody UserUploadDto userUploadDto){
         loginServiceI.checkEmail(userUploadDto.getEmail(),userUploadDto.getEmailCode());
@@ -124,6 +134,7 @@ public class UserController {
      * @param query 查询对象
      * @return page
      */
+    @SaCheckPermission(value = {"func:user:list","func:user:manager"},mode = SaMode.OR)
     @PostMapping("/page")
     public R<PageVo<SysUser>> pageUser(@RequestBody PageQuery<SysUser,SysUser> query){
         return R.success(PageVo.getPage(sysUserServiceI.pageUser(query)));
@@ -135,6 +146,7 @@ public class UserController {
      * @param userId 用户id
      * @return Void
      */
+    @SaCheckPermission(value = {"func:user:delete","func:user:manager"},mode = SaMode.OR)
     @DeleteMapping("/delete/{userId}")
     public R<Void> deleteUser(@PathVariable Long userId){
         sysUserServiceI.deleteUser(userId);
@@ -147,6 +159,7 @@ public class UserController {
      * @param userRegisterDto 用户更新对象
      * @return ok
      */
+    @SaCheckPermission(value = {"func:user:manager"},mode = SaMode.OR)
     @PostMapping("/edit")
     public R<Void> editUser(@RequestBody UserRegisterDto userRegisterDto){
         sysUserServiceI.updateUserInfo(userRegisterDto);
@@ -159,6 +172,7 @@ public class UserController {
      * @param userRoleManagerDto 用户角色对象
      * @return Void
      */
+    @SaCheckPermission(value = {"func:user:manager"},mode = SaMode.OR)
     @PostMapping("/manageUserRole")
     public R<Void> managerUserRole(@RequestBody UserRoleManagerDto userRoleManagerDto){
         sysUserServiceI.managerUserRole(userRoleManagerDto);

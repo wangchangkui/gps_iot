@@ -6,6 +6,8 @@ import cn.admcc.system.base.service.SysRoleServiceI;
 import cn.admcc.util.PageQuery;
 import cn.admcc.util.PageVo;
 import cn.admcc.util.R;
+import cn.dev33.satoken.annotation.SaCheckPermission;
+import cn.dev33.satoken.annotation.SaMode;
 import org.springframework.web.bind.annotation.*;
 
 /**
@@ -16,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
  */
 @RestController
 @RequestMapping("/role")
+
 public class SysRoleController {
 
 
@@ -32,6 +35,7 @@ public class SysRoleController {
      * @return SysRole
      */
     @PostMapping("/page")
+    @SaCheckPermission({"func:role:manager:role"})
     public R<PageVo<SysRole>> getAllSysRole(@RequestBody PageQuery<SysRole,SysRole> page){
         return R.success(PageVo.getPage(sysRoleServiceI.getAllSysRole(page)));
     }
@@ -43,6 +47,7 @@ public class SysRoleController {
      * @return String
      */
     @RequestMapping("/add")
+    @SaCheckPermission({"func:role:manager:role"})
     public R<String> addRole(@RequestBody SysRole sysRole){
         try {
             sysRoleServiceI.add(sysRole);
@@ -59,6 +64,7 @@ public class SysRoleController {
      * @return SysRole
      */
     @GetMapping("/detail")
+    @SaCheckPermission({"func:role:manager:role"})
     public R<SysRole> getRoleAndPermission(Long roleId){
         return R.success(sysRoleServiceI.getRoleDetail(roleId));
     }
@@ -69,6 +75,7 @@ public class SysRoleController {
      * @return String
      */
     @PostMapping("/edit")
+    @SaCheckPermission({"func:role:manager:role"})
     public R<String> updateRole(@RequestBody SysRole sysRole){
         try {
             sysRoleServiceI.updateRole(sysRole);
@@ -84,6 +91,7 @@ public class SysRoleController {
      * @param roleId 角色id
      * @return String
      */
+    @SaCheckPermission({"func:role:manager:role"})
     @DeleteMapping("/delete")
     public R<String> removeRole(Long roleId){
         sysRoleServiceI.removeRole(roleId);

@@ -128,10 +128,8 @@
             is_hidden,
             created_time,
             updated_time,
-            allow_delete,
-            level
+            allow_delete
         FROM permission_tree
-        ORDER BY level DESC, sort_order, permission_id;
-
+        ORDER by sort_order, permission_id;
     </select>
 </mapper>

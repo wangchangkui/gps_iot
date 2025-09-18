@@ -5,6 +5,8 @@ import cn.admcc.system.base.exception.NoAuthException;
 import cn.admcc.system.base.exception.SystemException;
 import cn.admcc.util.R;
 
+import cn.dev33.satoken.exception.NotLoginException;
+import cn.dev33.satoken.exception.NotPermissionException;
 import jakarta.servlet.http.HttpServletResponse;
 
 import lombok.extern.slf4j.Slf4j;
@@ -37,6 +39,29 @@ public class GlobalExceptionHandler {
         log.error("高德服务存在异常", ex);
         setResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR);
         return R.failed("高德服务异常！请联系管理员处理！"+ex.getMessage());
+    }
+
+    /**
+     * 未登录验证
+     * @param ex NotLoginException
+     * @return String
+     */
+    @ExceptionHandler(value = NotLoginException.class)
+    public R<String> validationNotLoginExceptionException(NotLoginException ex) {
+        setResponseStatus(HttpStatus.UNAUTHORIZED);
+        return R.failed("你没有登录，无法访问接口！"+ex.getMessage());
+    }
+
+    /**
+     * 没有权限
+     * @param ex NotLoginException
+     * @return String
+     */
+    @ExceptionHandler(value = NotPermissionException.class)
+    public R<String> validationNotPermissionException(NotPermissionException ex) {
+        log.warn("没有权限：{}",ex.getMessage());
+        setResponseStatus(HttpStatus.FORBIDDEN);
+        return R.failed("你没有权限访问该接口，请联系管理员！");
     }
 
 

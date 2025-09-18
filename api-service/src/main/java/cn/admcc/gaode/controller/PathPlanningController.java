@@ -3,6 +3,8 @@ package cn.admcc.gaode.controller;
 import cn.admcc.gaode.entity.TmcsVo;
 import cn.admcc.gaode.service.PathPlanningServiceI;
 import cn.admcc.util.R;
+import cn.dev33.satoken.annotation.SaCheckLogin;
+import cn.dev33.satoken.annotation.SaCheckPermission;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -19,6 +21,7 @@ import java.util.List;
  */
 @RestController
 @RequestMapping("/api/gd")
+
 @RequiredArgsConstructor
 public class PathPlanningController {
 
@@ -32,6 +35,7 @@ public class PathPlanningController {
      * @param end 结束点位
      * @return roadLine 线路数据
      */
+    @SaCheckLogin
     @GetMapping("/path/planning/{start}/{end}")
     public R<List<String>> pathPlanning(@PathVariable("start") String start,@PathVariable("end") String end){
         return R.success(pathPlanningServiceI.pathPlanning(start,end));

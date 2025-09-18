@@ -39,7 +39,7 @@ const initWebSocket = async () => {
   try {
     // 检查用户是否已登录
     const token =  localStorage.getItem('authentication');
-    console.log(token)
+  
     if (token) {
       await webSocketManager.initialize({
         enableLogging: import.meta.env.DEV,
@@ -49,8 +49,11 @@ const initWebSocket = async () => {
       console.log('WebSocket初始化成功');
     }else{
       // 重新登录
- 
-      router.push('/login')
+      // 检查当前路径是否是home,如果是home则不做任何操作
+      const currentPath = router.currentRoute.value.path
+      if (currentPath !== '/home') {
+        router.push('/login')
+      }
     }
   } catch (error) {
     console.error('WebSocket初始化失败:', error);

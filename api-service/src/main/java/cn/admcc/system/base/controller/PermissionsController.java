@@ -4,6 +4,8 @@ import cn.admcc.system.base.entity.SysPermissions;
 import cn.admcc.system.base.exception.NoAuthException;
 import cn.admcc.system.base.service.SysPermissionServiceI;
 import cn.admcc.util.R;
+import cn.dev33.satoken.annotation.SaCheckLogin;
+import cn.dev33.satoken.annotation.SaCheckPermission;
 import cn.dev33.satoken.exception.NotLoginException;
 import cn.dev33.satoken.stp.StpUtil;
 import lombok.RequiredArgsConstructor;
@@ -31,6 +33,7 @@ public class PermissionsController {
      * @return List
      */
     @GetMapping("/list")
+    @SaCheckPermission({"func:menu:options"})
     public R<List<SysPermissions>> getAllPermission(){
         return R.success(sysPermissionServiceI.getAllPermission());
     }
@@ -40,6 +43,7 @@ public class PermissionsController {
      * 获取用户的所有权限的集合
      * @return List
      */
+    @SaCheckLogin
     @GetMapping("/user/list")
     public R<List<SysPermissions>> getUserAllPermission(){
         long userId;
@@ -56,6 +60,7 @@ public class PermissionsController {
      * @param sysPermissions 权限
      * @return 字符串
      */
+    @SaCheckPermission({"func:menu:options"})
     @PostMapping("/add")
     public R<String> addPermission(@RequestBody SysPermissions sysPermissions){
         sysPermissionServiceI.add(sysPermissions);
@@ -68,6 +73,7 @@ public class PermissionsController {
      * @param permissionId 权限id
      * @return 成功
      */
+    @SaCheckPermission({"func:menu:options"})
     @DeleteMapping("/delete/{permissionId}")
     public R<String> deletePermission(@PathVariable Long permissionId){
         sysPermissionServiceI.deletePermission(permissionId);
@@ -79,6 +85,7 @@ public class PermissionsController {
      * @param permissionId 权限id
      * @return 详情
      */
+    @SaCheckPermission({"func:menu:options"})
     @GetMapping("/detail/{permissionId}")
     public R<SysPermissions> getDetail(@PathVariable Long permissionId){
         return R.success(sysPermissionServiceI.getById(permissionId));
@@ -90,6 +97,7 @@ public class PermissionsController {
      * @param sysPermissions 权限
      * @return 字符串
      */
+    @SaCheckPermission({"func:menu:options"})
     @PostMapping("/edit")
     public R<String> editPermission(@RequestBody SysPermissions sysPermissions){
         sysPermissionServiceI.edit(sysPermissions);

@@ -682,7 +682,22 @@ const requestRouteData = (start_point: string, end_point: string) => {
       ElMessage.warning('获取的路径规划数据为空')
     }
   }).catch((err) => {
-    console.error('路径规划错误详情:', err)
+    // 如果状态码是401 需要登陆后使用，跳转登录页面，这里因为是filter.ts文件中放开了允许home进行操作，所以这里单独判断
+
+    
+    if (err && err.response.status === 401) {
+      ElMessage.error('需要登陆后才能定位导航')
+
+      // 清除本地存储的认证信息 
+      // 这里也许是本地有缓存，但是后台已经失效
+      localStorage.removeItem('authentication')
+      localStorage.removeItem('permissions')
+
+      // 1秒钟的延迟
+      return
+    }
+
+
     if (err && err.code !== undefined) {
       ElMessage.error(`获取路径规划失败: ${err.message || '未知错误'}`)
     } else {

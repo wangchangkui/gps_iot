@@ -53,7 +53,7 @@
               </div>
               <span>{{ nickName }}</span>
               <el-icon class="el-icon--right"><arrow-down /></el-icon>
-            </span>
+            </span> 
             <template #dropdown>
               <el-dropdown-menu>
                 <el-dropdown-item @click="goToProfile">个人信息</el-dropdown-item>

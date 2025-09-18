@@ -7,6 +7,8 @@ import cn.admcc.system.base.entity.dto.UserRegisterDto;
 import cn.admcc.system.base.service.LoginServiceI;
 import cn.admcc.system.base.service.SysUserServiceI;
 import cn.admcc.util.R;
+import cn.dev33.satoken.annotation.SaCheckPermission;
+import cn.dev33.satoken.annotation.SaMode;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Optional;
@@ -102,6 +104,7 @@ public class LoginController {
      * @param userRegisterDto 用户的信息
      * @return success
      */
+    @SaCheckPermission(value = {"func:user:create:force","func:user:manager"},mode = SaMode.OR)
     @PostMapping("/register/force")
     public R<String> registerUserNoMatch(@RequestBody UserRegisterDto userRegisterDto){
         loginServiceI.registerUserNoMatchCode(userRegisterDto);
