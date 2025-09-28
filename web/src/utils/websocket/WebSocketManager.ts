@@ -119,6 +119,11 @@ class WebSocketManager {
     stompService.subscribe('/topic/menu-change', (message) => {
       this.handleStompMessage(message);
     });
+
+    // 订阅首页用户状态变更
+    stompService.subscribe('/topic/home', (message) => {
+      this.handleHomeMessage(message);
+    });
   }
 
   /**
@@ -142,6 +147,36 @@ class WebSocketManager {
         default:
           console.log('未知的消息类型:', message.type);
       }
+    }
+  }
+
+  /**
+   * 处理首页消息
+   */
+  private handleHomeMessage(message: any): void {
+    console.log('收到首页消息:', message);
+    
+    if (message.type === 'join') {
+      // 用户加入消息
+      window.dispatchEvent(new CustomEvent('user-join', {
+        detail: {
+          sender: message.sender,
+          content: message.content, // 坐标信息
+          timestamp: message.timestamp
+        }
+      }));
+    } else if (message.type === 'leave') {
+      // 用户离开消息
+      window.dispatchEvent(new CustomEvent('user-leave', {
+        detail: {
+          sender: message.sender,
+          content: message.content, // 坐标信息
+          timestamp: message.timestamp
+        }
+      }));
+    } else {
+      // 其他消息类型
+      console.log('首页其他消息:', message);
     }
   }
 
@@ -226,6 +261,40 @@ class WebSocketManager {
 
     if (this.useStoredProtocol) {
       stompService.send('/app/topic/menu-change', message);
+    } else {
+      webSocketService.send(message);
+    }
+  }
+
+  /**
+   * 发送用户加入消息
+   */
+  public notifyUserJoin(coordinates: string): void {
+    const message = {
+      type: 'join',
+      content: coordinates, // 坐标信息 "lng,lat"
+      timestamp: this.nowDate(new Date())
+    };
+
+    if (this.useStoredProtocol) {
+      stompService.send('/app/user/join', message);
+    } else {
+      webSocketService.send(message);
+    }
+  }
+
+  /**
+   * 发送用户离开消息
+   */
+  public notifyUserLeave(coordinates: string): void {
+    const message = {
+      type: 'leave',
+      content: coordinates, // 坐标信息 "lng,lat"
+      timestamp: this.nowDate(new Date())
+    };
+
+    if (this.useStoredProtocol) {
+      stompService.send('/app/user/leave', message);
     } else {
       webSocketService.send(message);
     }

@@ -1,5 +1,13 @@
+<!--
+ * @Author: coder_wang 17360402335@163.com
+ * @Date: 2025-08-27 20:24:39
+ * @LastEditors: coder_wang 17360402335@163.com
+ * @LastEditTime: 2025-09-26 10:38:49
+ * @FilePath: \gps_iost\api-service\src\main\resources\WebSocket-.html
+ * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
+-->
 <!DOCTYPE html>
-<html lang="">
+<html lang="zh">
 <head>
     <title>WebSocket 连接示例</title>
     <script src="./sockjs.min.js"></script>
@@ -8,6 +16,10 @@
 <body>
     <div id="status">no connect</div>
     <div id="messages"></div>
+    <button onclick="testSubscribe()">测试订阅</button>
+    <button onclick="sendTestMessage()">发送测试消息</button>
+    <button onclick="sendUserJoin()">发送用户加入</button>
+    <button onclick="sendUserLeave()">发送用户离开</button>
 
     <script>
         // 完整的 WebSocket URL
@@ -27,22 +39,17 @@
             function(frame) {
                 console.log('connect success:', frame);
                 document.getElementById('status').textContent = 'connect success';
-                
+            
                 // 订阅主题
-                stompClient.subscribe('/topic/messages', function(message) {
-                    console.log(message)
+                stompClient.subscribe('/topic/home', function(message) {
+                    console.log('收到消息:', message)
                     const msg = JSON.parse(message.body);
-
+                    console.log('解析后的消息:', msg);
 
                     document.getElementById('messages').innerHTML += 
                         `<p>${msg.sender}: ${msg.content}</p>`;
                 });
                 
-                // 发送测试消息
-                stompClient.send("/app/chat", {}, JSON.stringify({
-                    content: 'Hello WebSocket!',
-                    type: 'CHAT'
-                }));
             },
             function(error) {
                 console.error('connect failed:', error);
@@ -56,6 +63,60 @@
                 stompClient.disconnect();
             }
             document.getElementById('status').textContent = 'connect loss';
+        }
+        
+        // 测试订阅函数
+        function testSubscribe() {
+            if (stompClient && stompClient.connected) {
+
+                stompClient.subscribe('/topic/home', function(message) {
+                    console.log('测试订阅收到消息:', message);
+                    const msg = JSON.parse(message.body);
+                    document.getElementById('messages').innerHTML += 
+                        `<p style="color: red;">测试订阅: ${msg.sender}: ${msg.content}</p>`;
+                });
+            } else {
+                console.log('WebSocket 未连接');
+            }
+        }
+        
+        // 发送测试消息函数
+        function sendTestMessage() {
+            if (stompClient && stompClient.connected) {
+                stompClient.send("/app/chat/home", {}, JSON.stringify({
+                    content: '测试消息',
+                    type: 'CHAT'
+                }));
+                console.log('发送测试消息');
+            } else {
+                console.log('WebSocket 未连接');
+            }
+        }
+
+        // 发送用户加入消息
+        function sendUserJoin() {
+            if (stompClient && stompClient.connected) {
+                stompClient.send("/app/user/join", {}, JSON.stringify({
+                    type: 'join',
+                    content: '104.063641,30.467283' // 测试坐标
+                }));
+                console.log('发送用户加入消息');
+            } else {
+                console.log('WebSocket 未连接');
+            }
+        }
+
+        // 发送用户离开消息
+        function sendUserLeave() {
+            if (stompClient && stompClient.connected) {
+                stompClient.send("/app/user/leave", {}, JSON.stringify({
+                    type: 'leave',
+                    content: '104.063641,30.467283' // 测试坐标
+                }));
+                console.log('发送用户离开消息');
+            } else {
+                console.log('WebSocket 未连接');
+            }
         }
     </script>
 </body>

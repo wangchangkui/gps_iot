@@ -6,7 +6,10 @@
         <img src="/marker.png" alt="logo" />
         <span>Admcc</span>
 
-        <span style="font-size: 12px;color: #999;margin-left: 10px;">当前在线设备：{{ devices.length }}</span>
+        <span style="font-size: 12px;color: #999;margin-left: 10px;">当前在线设备：{{ devices.length }} | 在线用户：{{ onlineUsers.length }}</span>
+        
+        <!-- WebSocket状态指示器 -->
+        <WebSocketStatus style="margin-left: 15px;" />
       </div>
       <div class="nav-right">
         <template v-if="isLoggedIn">
@@ -109,6 +112,23 @@
           :background-color="Cesium.Color.BLACK" 
           :background-padding="new Cesium.Cartesian2(8, 4)" />
         </vc-entity>
+
+        <!-- 在线用户位置 -->
+        <vc-entity v-for="user in onlineUsers" :key="user.id"
+          :position="fromDegrees(user.position.lng, user.position.lat, user.position.height)"
+          @click="handleEntityClick(user, false)">
+          <vc-graphics-billboard :image="'/boy.png'" :vertical-origin="Cesium.VerticalOrigin.BOTTOM" :scale="0.15" />
+          <vc-graphics-label 
+          :text="user.name" :font="'12pt sans-serif'" 
+          :fill-color="Cesium.Color.CYAN"
+          :outline-color="Cesium.Color.BLACK" 
+          :outline-width="2" 
+          :style="Cesium.LabelStyle.FILL_AND_OUTLINE"
+          :pixel-offset="new Cesium.Cartesian2(0, -60)" 
+          :show="false" :show-background="false"
+          :background-color="Cesium.Color.BLACK" 
+          :background-padding="new Cesium.Cartesian2(6, 3)" />
+        </vc-entity>
       </vc-viewer>
 
       <!-- 经纬度信息面板 -->
@@ -206,12 +226,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted, watch, onUnmounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { get_direction } from '../../utils/api/gd/gd_api'
 
 import ElMessage from 'element-plus/es/components/message/index'
 import { loginOut } from '../../utils/api/user/login_out_util'
+import { webSocketManager } from '../../utils/websocket/WebSocketManager'
+import WebSocketStatus from '../../components/WebSocketStatus.vue'
 // 移除错误的导入
 const Cesium = (window as any).Cesium
 defineExpose({ Cesium })
@@ -289,6 +311,18 @@ const devices = ref([
     }
   }
 ])
+
+// 在线用户数据
+const onlineUsers = ref<Array<{
+  id: string;
+  name: string;
+  position: {
+    lng: number;
+    lat: number;
+    height: number;
+  };
+  isVisible: boolean;
+}>>([])
 
 
 // 地图类型
@@ -750,6 +784,10 @@ const getUserLocation = () => {
       }
 
       ElMessage.success('位置获取成功！')
+      
+      // 发送用户加入消息
+      const coordinates = `${longitude.toFixed(6)},${latitude.toFixed(6)}`
+      webSocketManager.notifyUserJoin(coordinates)
     },
     (error) => {
       console.error('获取位置失败:', error)
@@ -793,7 +831,73 @@ const handleAvatarError = (event: Event) => {
   console.log('头像加载失败，使用默认头像')
 }
 
-onMounted(() => {
+// WebSocket事件处理函数
+const handleUserJoin = (event: CustomEvent) => {
+  const { sender, content } = event.detail
+  console.log('用户加入:', sender, content)
+  
+  // 解析坐标
+  const [lng, lat] = content.split(',').map(Number)
+  
+  // 添加到在线用户列表
+  const newUser = {
+    id: sender,
+    name: sender,
+    position: {
+      lng: lng,
+      lat: lat,
+      height: 0
+    },
+    isVisible: true
+  }
+  
+  // 检查是否已存在，避免重复添加
+  const existingUserIndex = onlineUsers.value.findIndex(user => user.id === sender)
+  if (existingUserIndex === -1) {
+    onlineUsers.value.push(newUser)
+    ElMessage.info(`${sender} 加入了地图`)
+  } else {
+    // 更新位置
+    onlineUsers.value[existingUserIndex].position = newUser.position
+  }
+}
+
+const handleUserLeave = (event: CustomEvent) => {
+  const { sender, content } = event.detail
+  console.log('用户离开:', sender, content)
+  
+  // 从在线用户列表中移除
+  const userIndex = onlineUsers.value.findIndex(user => user.id === sender)
+  if (userIndex !== -1) {
+    onlineUsers.value.splice(userIndex, 1)
+    ElMessage.info(`${sender} 离开了地图`)
+  }
+}
+
+// 初始化WebSocket连接
+const initializeWebSocket = async () => {
+  try {
+    await webSocketManager.initialize()
+    
+    // 监听用户加入和离开事件
+    window.addEventListener('user-join', handleUserJoin as EventListener)
+    window.addEventListener('user-leave', handleUserLeave as EventListener)
+    
+    console.log('WebSocket连接初始化成功')
+  } catch (error) {
+    console.error('WebSocket连接初始化失败:', error)
+  }
+}
+
+// 发送用户离开消息
+const sendUserLeaveMessage = () => {
+  if (userLocation.value.isVisible) {
+    const coordinates = `${userLocation.value.position.lng.toFixed(6)},${userLocation.value.position.lat.toFixed(6)}`
+    webSocketManager.notifyUserLeave(coordinates)
+  }
+}
+
+onMounted(async () => {
   // 获取存储在系统的token 如果token 不为空，则表示已经登录
   const token = localStorage.getItem('authentication')
   if (token) {
@@ -807,6 +911,21 @@ onMounted(() => {
   } else {
     console.log('未找到头像URL') // 调试信息
   }
+  
+  // 初始化WebSocket连接
+  await initializeWebSocket()
+})
+
+onUnmounted(() => {
+  // 发送用户离开消息
+  sendUserLeaveMessage()
+  
+  // 移除事件监听器
+  window.removeEventListener('user-join', handleUserJoin as EventListener)
+  window.removeEventListener('user-leave', handleUserLeave as EventListener)
+  
+  // 断开WebSocket连接
+  webSocketManager.disconnect()
 })
 </script>
 

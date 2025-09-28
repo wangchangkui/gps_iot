@@ -4,10 +4,17 @@ import cn.admcc.system.base.dao.SysPermissionsDao;
 import cn.admcc.system.base.dao.SysUserDao;
 import cn.admcc.system.base.entity.SysPermissions;
 import cn.admcc.system.base.entity.SysUser;
+import cn.admcc.system.base.websocket.ChatMessage;
+import cn.admcc.system.base.websocket.MessageConstant;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.messaging.Message;
+import org.springframework.messaging.MessageHeaders;
+import org.springframework.messaging.converter.SimpleMessageConverter;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 
+import java.time.LocalDateTime;
 import java.util.*;
 
 /**
@@ -23,9 +30,21 @@ public class ApplicationMainTest {
     @Autowired
     private SysUserDao sysUserDao;
 
+    @Autowired
+    private  SimpMessagingTemplate messagingTemplate;
 
     @Autowired
     private SysPermissionsDao sysPermissionsDao;
+
+
+    @Test
+    void test02(){
+        ChatMessage welcome = new ChatMessage();
+        welcome.setContent("Hello ！");
+        welcome.setSender("系统");
+        welcome.setTimestamp(LocalDateTime.now());
+        messagingTemplate.convertAndSend(MessageConstant.APP+MessageConstant.HOME_HALL,welcome);
+    }
 
     @Test
     void test(){

@@ -39,6 +39,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 
@@ -60,6 +61,8 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserDao, SysUser> impleme
     private final SysUserRoleDaoServiceI sysUserRoleDaoServiceI;
 
     private final RsaUtil rsaUtil;
+
+    private final HashMap<Long,SysUser> userCache = new HashMap<>(10);
 
 
 
@@ -143,6 +146,8 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserDao, SysUser> impleme
         if(us == null){
             throw new SystemException("用户不存在");
         }
+        userCache.remove(userId);
+
         this.updateById(user);
     }
 
@@ -174,6 +179,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserDao, SysUser> impleme
         }
 
         try {
+            userCache.remove(user.getId());
             this.updateById(user);
         } catch (Exception e) {
             if(avatar!=null){
@@ -205,6 +211,8 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserDao, SysUser> impleme
         List<SysRole> sysRoles =
                 sysUserRoleDaoServiceI.userRoleList(userId);
         user.setSysRoles(sysRoles);
+
+        userCache.put(userId,user);
         return user;
     }
 
@@ -333,6 +341,8 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserDao, SysUser> impleme
         sysUserRoleDaoServiceI.remove(new LambdaQueryWrapper<SysUserRole>().eq(SysUserRole::getUserId,userId));
         // 删除
         this.removeById(userId);
+        // 删除用户缓存
+        userCache.remove(userId);
 
 
     }
@@ -359,6 +369,9 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserDao, SysUser> impleme
         } catch (Exception e) {
             throw new SystemException("电话号码、邮箱、用户名中存在重复，请尝试修改");
         }
+        userCache.remove(user.getId());
+
+
     }
 
     @Override

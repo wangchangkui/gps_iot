@@ -2,6 +2,7 @@ package cn.admcc.system.base.websocket;
 
 import cn.dev33.satoken.stp.StpUtil;
 import lombok.NonNull;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
@@ -24,14 +25,18 @@ import java.security.Principal;
 @EnableWebSocketMessageBroker
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
+
+
     @Override
     public void configureMessageBroker(MessageBrokerRegistry config) {
         // 启用简单的内存消息代理，目的地前缀为 /topic
-        config.enableSimpleBroker("/topic", "/queue");
-        // 配置应用程序目的地前缀
+        config.enableSimpleBroker("/topic");
+        // 配置应用程序目的地前缀 前端访问必须要携带/app前缀
         config.setApplicationDestinationPrefixes("/app");
         config.setUserDestinationPrefix("/user");
     }
+
+
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {

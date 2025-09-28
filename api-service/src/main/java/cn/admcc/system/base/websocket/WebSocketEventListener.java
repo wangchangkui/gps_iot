@@ -28,9 +28,8 @@ public class WebSocketEventListener {
     public void handleWebSocketConnectListener(SessionConnectedEvent event) {
         StompHeaderAccessor sha = StompHeaderAccessor.wrap(event.getMessage());
         log.info("STOMP连接建立: {}", sha.getSessionId());
-        
         // 发送连接成功消息
-        messagingTemplate.convertAndSend(MessageConstant.MESSAGE,
+        messagingTemplate.convertAndSend(MessageConstant.HOME_HALL,
             new ChatMessage("新用户连接", "系统", LocalDateTime.now(), "JOIN"));
     }
  
@@ -39,7 +38,7 @@ public class WebSocketEventListener {
         StompHeaderAccessor sha = StompHeaderAccessor.wrap(event.getMessage());
         log.info("STOMP连接断开: {}", sha.getSessionId());
         
-        messagingTemplate.convertAndSend(MessageConstant.MESSAGE,
+        messagingTemplate.convertAndSend(MessageConstant.HOME_HALL,
             new ChatMessage("用户断开连接", "系统", LocalDateTime.now(), "LEAVE"));
     }
  
@@ -48,4 +47,5 @@ public class WebSocketEventListener {
         StompHeaderAccessor sha = StompHeaderAccessor.wrap(event.getMessage());
         log.info("用户订阅: {} -> {}", sha.getSessionId(), sha.getDestination());
     }
+
 }
