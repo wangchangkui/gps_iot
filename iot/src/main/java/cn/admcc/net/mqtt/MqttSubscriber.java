@@ -5,7 +5,9 @@ import cn.admcc.gps.gp10.entity.BaseGpsInfo;
 import cn.admcc.net.data.handler.DataPacket;
 import cn.admcc.net.data.handler.DataPacketHandler;
 import cn.admcc.net.mqtt.config.MqStarterConfig;
+import cn.hutool.core.util.RandomUtil;
 import cn.hutool.extra.spring.SpringUtil;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.annotation.Bean;
@@ -30,6 +32,12 @@ public class MqttSubscriber implements InitializingBean {
     private final MqStarterConfig mqStarterConfig;
 
 
+    /**
+     * 注册到EX的id
+     */
+    @Getter
+    public String client;
+
     public MqttSubscriber(MqStarterConfig mqStarterConfig) {
         this.mqStarterConfig = mqStarterConfig;
     }
@@ -43,9 +51,12 @@ public class MqttSubscriber implements InitializingBean {
     public MqttPahoMessageDrivenChannelAdapter inboundAdapter(
             MqttPahoClientFactory factory) {
         // 订阅主题
+        String clientId = mqStarterConfig.getClientId();
+        clientId = clientId +"_"+ RandomUtil.randomString(5);
+        client = clientId;
         String[] topics = {mqStarterConfig.getTopic()};
         MqttPahoMessageDrivenChannelAdapter adapter = 
-            new MqttPahoMessageDrivenChannelAdapter(mqStarterConfig.getClientId(),factory, topics);
+            new MqttPahoMessageDrivenChannelAdapter(clientId,factory, topics);
 
         adapter.setConverter(new DefaultPahoMessageConverter());
         adapter.setQos(1);
