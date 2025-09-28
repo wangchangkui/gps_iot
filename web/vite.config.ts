@@ -44,7 +44,9 @@ export default defineConfig(({ mode }) => {
             cesium: 'Cesium'
           }
         }
-      }
+      },
+      outDir: 'dist',
+      assetsDir: 'assets'
     },
     define: {
       'process.env': env

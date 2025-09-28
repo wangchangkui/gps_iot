@@ -2,7 +2,7 @@
  * @Author: coder_wang 17360402335@163.com
  * @Date: 2025-06-17 21:58:18
  * @LastEditors: coder_wang 17360402335@163.com
- * @LastEditTime: 2025-09-03 20:42:18
+ * @LastEditTime: 2025-09-28 17:32:09
  * @FilePath: \web\src\router\index.ts
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -14,12 +14,12 @@ const routes: Array<RouteRecordRaw> = [
   {
     path: '/',
     name: 'home',
-   redirect: '/home'
+    component: () => import('../views/home/index.vue')
   },
   {
     path: '/index',
     name: 'index',
-    redirect:'/home'
+    component: () => import('../views/home/index.vue')
   },
   {
     path: '/home',
