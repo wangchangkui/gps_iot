@@ -237,7 +237,7 @@ import { webSocketManager } from '../../utils/websocket/WebSocketManager'
 import WebSocketStatus from '../../components/WebSocketStatus.vue'
 import { HomeApi } from '../../utils/api/home/homeApi'
 import type { OnlineUser } from '../../utils/api/home/homeTypes'
-import { randomUUID } from 'crypto'
+
 // 移除错误的导入
 const Cesium = (window as any).Cesium
 defineExpose({ Cesium })
