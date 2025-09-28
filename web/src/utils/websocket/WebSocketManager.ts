@@ -269,11 +269,12 @@ class WebSocketManager {
   /**
    * 发送用户加入消息
    */
-  public notifyUserJoin(coordinates: string): void {
+  public notifyUserJoin(coordinates: string,onlyId:string): void {
     const message = {
       type: 'join',
       content: coordinates, // 坐标信息 "lng,lat"
-      timestamp: this.nowDate(new Date())
+      timestamp: this.nowDate(new Date()),
+      onlyId: onlyId
     };
 
     if (this.useStoredProtocol) {

@@ -1,5 +1,6 @@
 package cn.admcc.system.base.websocket;
 
+import cn.admcc.system.base.websocket.onlily.Homeliness;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -19,9 +20,12 @@ import java.time.LocalDateTime;
 public class WebSocketEventListener {
  
     private final SimpMessagingTemplate messagingTemplate;
+
+    private final Homeliness homeliness;
  
-    public WebSocketEventListener(SimpMessagingTemplate messagingTemplate) {
+    public WebSocketEventListener(SimpMessagingTemplate messagingTemplate, Homeliness homeliness) {
         this.messagingTemplate = messagingTemplate;
+        this.homeliness = homeliness;
     }
  
     @EventListener
@@ -37,7 +41,7 @@ public class WebSocketEventListener {
     public void handleWebSocketDisconnectListener(SessionDisconnectEvent event) {
         StompHeaderAccessor sha = StompHeaderAccessor.wrap(event.getMessage());
         log.info("STOMP连接断开: {}", sha.getSessionId());
-        
+        homeliness.leaveHome(sha.getSessionId());
         messagingTemplate.convertAndSend(MessageConstant.HOME_HALL,
             new ChatMessage("用户断开连接", "系统", LocalDateTime.now(), "LEAVE"));
     }

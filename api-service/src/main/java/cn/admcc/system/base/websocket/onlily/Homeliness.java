@@ -57,7 +57,7 @@ public class Homeliness {
         ChatMessage joinMessage = new ChatMessage();
         String header = ((StompHeaderAccessor) ma).getFirstNativeHeader("Authorization");
         // 设置登录用户
-        String ano = "anonymous" + ((StompHeaderAccessor) ma).getSessionId();
+        String ano = "anonymous" +"_"+ ((StompHeaderAccessor) ma).getSessionId();
         if(StrUtil.isEmpty(header)){
             joinMessage.setSender(ano);
         }else{
@@ -73,6 +73,7 @@ public class Homeliness {
         LinersUser linersUser = new LinersUser();
         linersUser.setSessionId(((StompHeaderAccessor) ma).getSessionId());
         linersUser.setUserName(joinMessage.getSender());
+        linersUser.setOnlyId(message.getOnlyId());
         String content = message.getContent();
         if(StrUtil.isEmpty(content)){
             return;
@@ -124,6 +125,32 @@ public class Homeliness {
         // 广播给所有用户
         messagingTemplate.convertAndSend(MessageConstant.HOME_HALL, leaveMessage);
     }
+
+    /**
+     * 离开信息
+     * @param sessionId 唯一id
+     */
+    public void leaveHome(String sessionId){
+        LinersUser user = ann.get(sessionId);
+        if(user != null){
+            log.info("用户离开 : {}", user.getUserName());
+
+
+            ChatMessage leaveMessage = new ChatMessage();
+            leaveMessage.setType(MessageConstant.USER_LEAVE);
+            leaveMessage.setSender(user.getUserName());
+            Point centroid = user.getCoordinate().getCentroid();
+            String content = centroid.getX() + "," + centroid.getY();
+            leaveMessage.setContent(content);
+            leaveMessage.setTimestamp(LocalDateTime.now());
+
+            ann.remove(sessionId);
+            // 广播给所有用户
+            messagingTemplate.convertAndSend(MessageConstant.HOME_HALL, leaveMessage);
+        }
+
+    }
+
 
 
     /**

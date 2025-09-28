@@ -230,10 +230,14 @@ import { ref, onMounted, watch, onUnmounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { get_direction } from '../../utils/api/gd/gd_api'
 
+import { v4 as uuidv4 } from 'uuid'
 import ElMessage from 'element-plus/es/components/message/index'
 import { loginOut } from '../../utils/api/user/login_out_util'
 import { webSocketManager } from '../../utils/websocket/WebSocketManager'
 import WebSocketStatus from '../../components/WebSocketStatus.vue'
+import { HomeApi } from '../../utils/api/home/homeApi'
+import type { OnlineUser } from '../../utils/api/home/homeTypes'
+import { randomUUID } from 'crypto'
 // 移除错误的导入
 const Cesium = (window as any).Cesium
 defineExpose({ Cesium })
@@ -283,7 +287,8 @@ const userLocation = ref({
     lat: 0,
     height: 0
   },
-  isVisible: false
+  isVisible: false,
+  onlyId:''
 })
 
 // 弹出面板状态
@@ -772,6 +777,10 @@ const getUserLocation = () => {
     (position) => {
       const { longitude, latitude, altitude } = position.coords
 
+      // 如果有登录id 则用登录id，否则生成随机id
+      const onlyId = localStorage.getItem('authentication') || uuidv4()
+
+
       userLocation.value = {
         id: 'user',
         name: '我的位置',
@@ -780,14 +789,17 @@ const getUserLocation = () => {
           lat: latitude,
           height: altitude || 0
         },
-        isVisible: true
+        isVisible: true,
+        onlyId: onlyId
       }
 
       ElMessage.success('位置获取成功！')
       
       // 发送用户加入消息
       const coordinates = `${longitude.toFixed(6)},${latitude.toFixed(6)}`
-      webSocketManager.notifyUserJoin(coordinates)
+
+
+      webSocketManager.notifyUserJoin(coordinates,onlyId)
     },
     (error) => {
       console.error('获取位置失败:', error)
@@ -833,8 +845,17 @@ const handleAvatarError = (event: Event) => {
 
 // WebSocket事件处理函数
 const handleUserJoin = (event: CustomEvent) => {
-  const { sender, content } = event.detail
-  console.log('用户加入:', sender, content)
+  const { sender, content, onlyId } = event.detail
+  console.log('用户加入:', sender, content, 'onlyId:', onlyId)
+  
+  // 获取当前用户的onlyId，避免自己加入在线用户列表
+  const currentUserOnlyId = userLocation.value.onlyId
+  
+  // 如果onlyId一致，说明是自己，则忽略
+  if (onlyId && onlyId === currentUserOnlyId) {
+    console.log('忽略自己的加入消息，避免重复显示')
+    return
+  }
   
   // 解析坐标
   const [lng, lat] = content.split(',').map(Number)
@@ -897,6 +918,40 @@ const sendUserLeaveMessage = () => {
   }
 }
 
+// 获取所有在线用户
+const loadAllOnlineUsers = async () => {
+  try {
+    const response = await HomeApi.getAllOnlineUsers()
+    if (response.code === 10000 && response.data) {
+      // 清空现有的在线用户列表
+      onlineUsers.value = []
+      
+      // 将API返回的用户数据转换为页面需要的格式
+      response.data.forEach((user: OnlineUser) => {
+        const [lng, lat] = user.coordinate.coordinates
+        const newUser = {
+          id: user.sessionId,
+          name: user.userName,
+          position: {
+            lng: lng,
+            lat: lat,
+            height: 0
+          },
+          isVisible: true
+        }
+        onlineUsers.value.push(newUser)
+      })
+      
+      console.log('成功加载在线用户:', onlineUsers.value.length, '人')
+    } else {
+      console.warn('获取在线用户失败:', response.message)
+    }
+  } catch (error) {
+    console.error('获取在线用户时发生错误:', error)
+    ElMessage.error('获取在线用户失败')
+  }
+}
+
 onMounted(async () => {
   // 获取存储在系统的token 如果token 不为空，则表示已经登录
   const token = localStorage.getItem('authentication')
@@ -911,6 +966,9 @@ onMounted(async () => {
   } else {
     console.log('未找到头像URL') // 调试信息
   }
+  
+  // 获取所有在线用户
+  await loadAllOnlineUsers()
   
   // 初始化WebSocket连接
   await initializeWebSocket()

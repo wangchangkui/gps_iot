@@ -23,6 +23,11 @@ public class LinersUser {
     private String userName;
 
     /**
+     * 前端生成的唯一id
+     */
+    private String onlyId;
+
+    /**
      * 点位
      */
     private Geometry coordinate;
